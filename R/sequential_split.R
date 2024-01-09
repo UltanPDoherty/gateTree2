@@ -8,7 +8,16 @@
 #'
 #' @return splits, typemarker, subsetter
 #' @export
-sequential_split <- function(x, typemarker, min_height = 0.1, min_score = 0.1, plot = TRUE){
+sequential_split <- function(
+    x,
+    typemarker,
+    min_height = 0.1,
+    min_score = 0.1,
+    min_val_cutoff = NULL,
+    max_val_cutoff = NULL,
+    plot = TRUE
+){
+  
   progress <- splits <- scores <- array(dim = dim(typemarker))
   G <- nrow(typemarker)
   P <- ncol(typemarker)
