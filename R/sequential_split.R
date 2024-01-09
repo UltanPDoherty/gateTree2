@@ -85,8 +85,7 @@ sequential_split <- function(
           min_gp <- min(x_gp)
           max_gp <- max(x_gp)
           dens_gp <- stats::density((x_gp - min_gp) / (max_gp - min_gp))
-          plot(dens_gp,
-               main = paste0("g = ", g, ", p = ", p))
+          
           gmm_out <- splitgmm(x_gp)
           
           if (gmm_out$bic_two < gmm_out$bic_one) {
@@ -121,21 +120,30 @@ sequential_split <- function(
         splits[g, p_choice] <- proposals[1, p_choice]
         scores[g, p_choice] <- proposals[2, p_choice]
         progress[g, p_choice] <- TRUE
-
+        
         x_gp <- x[subsetter[, g], p_choice]
         min_gp <- min(x_gp)
         max_gp <- max(x_gp)
         dens_gp <- stats::density((x_gp - min_gp) / (max_gp - min_gp))
-        plot(dens_gp,
-             main = paste0("g = ", g, ", p = ", p_choice,
-                           ", score = ", round(scores[g, p_choice], 3)))
-        graphics::abline(v = (splits[g, p_choice] - min_gp) / (max_gp - min_gp))
-
-        if (typemarker[g, p_choice] == +1) {
-          subsetter[, g] <- subsetter[, g] & x[, p_choice] > splits[g, p_choice]
-        } else {
+        trans_split_gp <- (splits[g, p_choice] - min_gp) / (max_gp - min_gp)
+        if (typemarker[g, p_choice] == -1) {
+          plot(dens_gp,
+               main = paste0("g = ", g, ", p = ", p_choice,
+                             ", score = ", round(scores[g, p_choice], 3)),
+               sub = paste0(rownames(typemarker)[g], ", ", colnames(typemarker)[p_choice]),
+               panel.first = graphics::rect(0, 0, trans_split_gp, max(dens_gp$y),
+                                            col = "green", border =  NA))
           subsetter[, g] <- subsetter[, g] & x[, p_choice] < splits[g, p_choice]
+        } else if (typemarker[g, p_choice] == +1) {
+          plot(dens_gp,
+               main = paste0("g = ", g, ", p = ", p_choice,
+                             ", score = ", round(scores[g, p_choice], 3)),
+               sub = paste0(rownames(typemarker)[g], ", ", colnames(typemarker)[p_choice]),
+               panel.first = graphics::rect(trans_split_gp, 0, 1, max(dens_gp$y),
+                                            col = "green", border =  NA))
+          subsetter[, g] <- subsetter[, g] & x[, p_choice] > splits[g, p_choice]
         }
+        graphics::abline(v = trans_split_gp)
       }
     }
   }
