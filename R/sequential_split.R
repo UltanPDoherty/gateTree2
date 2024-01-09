@@ -33,12 +33,34 @@ sequential_split <- function(
     }
   }
 
+  
+  if (is.null(min_val_cutoff)) {
+    below_cutoff <- array(FALSE, dim = dim(x))
+  } else {
+    below_cutoff <- array(dim = dim(x))
+    for (j in 1:ncol(x)) {
+      below_cutoff[, j] <- x[, j] < min_val_cutoff[j]
+    }
+  }
+  if (is.null(max_val_cutoff)) {
+    above_cutoff <- array(FALSE, dim = dim(x))
+  } else {
+    above_cutoff <- array(dim = dim(x))
+    for (j in 1:ncol(x)) {
+      above_cutoff[, j] <- x[, j] < max_val_cutoff[j]
+    }
+  }
+  inside_cutoffs <- !below_cutoff & !above_cutoff
+  
   row_plot_num <- floor(sqrt(G))
   col_plot_num <- ceiling(G / row_plot_num)
   round_count <- 0
 
+  
   for (g in 1:G){
-    graphics::par(mfrow = c(2, 3))
+    subsetter[, g] <- apply(inside_cutoffs[, typemarker[g, ] != 0], 1, all)
+    
+    graphics::par(mfrow = c(2, 2))
     while (any(!progress[g, ] & !paused[g, ], na.rm = TRUE)) {
       proposals <- matrix(nrow = 2, ncol = P)
       for (p in 1:P){
@@ -47,7 +69,7 @@ sequential_split <- function(
           min_gp <- min(x_gp)
           max_gp <- max(x_gp)
           dens_gp <- stats::density((x_gp - min_gp) / (max_gp - min_gp))
-
+          
           proposals[, p] <- find_valley(
             dens_gp,
             score = TRUE,
@@ -56,11 +78,10 @@ sequential_split <- function(
           proposals[1, p] <- min_gp + (max_gp - min_gp) * proposals[1, p]
         }
       }
-
+      
       if (all(is.na(proposals[1, ]))) {
         paused[g, !is.na(progress[g, ]) & !progress[g, ]] <- TRUE
-        # progress[g, !is.na(progress[g, ])] <- TRUE
-
+        
         for (p in which(!is.na(progress[g, ]) & !progress[g, ])) {
           x_gp <- x[subsetter[, g], p]
           min_gp <- min(x_gp)
