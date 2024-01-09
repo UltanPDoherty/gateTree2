@@ -2,9 +2,17 @@
 % Please edit documentation in R/sequential_split.R
 \name{sequential_split}
 \alias{sequential_split}
-\title{Convert +/- Table Labels into Chunklets}
+\title{Partition data set based on marginal splits described by +/- table.}
 \usage{
-sequential_split(x, typemarker, min_height = 0.1, min_score = 0.1, plot = TRUE)
+sequential_split(
+  x,
+  typemarker,
+  min_height = 0.1,
+  min_score = 0.1,
+  min_val_cutoff = NULL,
+  max_val_cutoff = NULL,
+  plot = TRUE
+)
 }
 \arguments{
 \item{x}{Dataset in matrix or data.frame form.}
@@ -15,11 +23,15 @@ sequential_split(x, typemarker, min_height = 0.1, min_score = 0.1, plot = TRUE)
 
 \item{min_score}{Minimum score for a split to be returned by find_valley.}
 
+\item{min_val_cutoff}{Minimum value for an observation to be included.}
+
+\item{max_val_cutoff}{Maximum value for an observation to be included.}
+
 \item{plot}{Logical value.}
 }
 \value{
 splits, typemarker, subsetter
 }
 \description{
-Convert +/- Table Labels into Chunklets
+Partition data set based on marginal splits described by +/- table.
 }
