@@ -87,6 +87,33 @@ sequential_split <- function(
           dens_gp <- stats::density((x_gp - min_gp) / (max_gp - min_gp))
           plot(dens_gp,
                main = paste0("g = ", g, ", p = ", p))
+          gmm_out <- splitgmm(x_gp)
+          
+          if (gmm_out$bic_two < gmm_out$bic_one) {
+            splits[g, p] <- gmm_out$split
+            scores[g, p] <- -Inf
+            trans_split_gp <- (splits[g, p] - min_gp) / (max_gp - min_gp)
+            if (typemarker[g, p] == -1) {
+              plot(dens_gp,
+                   main = paste0("g = ", g, ", p = ", p),
+                   sub = paste0(rownames(typemarker)[g], ", ", colnames(typemarker)[p_choice]),
+                   panel.first = graphics::rect(0, 0, trans_split_gp, max(dens_gp$y),
+                                                col = "blue", border =  NA))
+              subsetter[, g] <- subsetter[, g] & x[, p] < splits[g, p]
+            } else if (typemarker[g, p] == +1) {
+              plot(dens_gp,
+                   main = paste0("g = ", g, ", p = ", p),
+                   sub = paste0(rownames(typemarker)[g], ", ", colnames(typemarker)[p_choice]),
+                   panel.first = graphics::rect(trans_split_gp, 0, 1, max(dens_gp$y),
+                                                col = "blue", border =  NA))
+              subsetter[, g] <- subsetter[, g] & x[, p] > splits[g, p]
+            }
+            abline(v = trans_split_gp)
+          } else {
+            plot(dens_gp,
+                 main = paste0("g = ", g, ", p = ", p),
+                 sub = paste0(rownames(typemarker)[g], ", ", colnames(typemarker)[p]))
+          }
         }
         next
       } else {
