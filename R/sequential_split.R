@@ -1,4 +1,4 @@
-#' Convert +/- Table Labels into Chunklets
+#' Partition data set based on marginal splits described by +/- table.
 #'
 #' @param x Dataset in matrix or data.frame form.
 #' @param typemarker Cell-type marker table.
@@ -17,14 +17,14 @@ sequential_split <- function(
     max_val_cutoff = NULL,
     plot = TRUE
 ){
-  
+
   progress <- splits <- scores <- array(dim = dim(typemarker))
   G <- nrow(typemarker)
   P <- ncol(typemarker)
   N <- nrow(x)
   subsetter <- matrix(TRUE, nrow = N, ncol = G)
   paused <- array(FALSE, dim = dim(typemarker))
-  
+
   for (g in 1:G){
     for (p in 1:P){
       if (typemarker[g, p] != 0) {
@@ -32,7 +32,7 @@ sequential_split <- function(
       }
     }
   }
-  
+
   if (is.null(min_val_cutoff)) {
     below_cutoff <- array(FALSE, dim = dim(x))
   } else {
@@ -50,14 +50,14 @@ sequential_split <- function(
     }
   }
   inside_cutoffs <- !below_cutoff & !above_cutoff
-  
+
   row_plot_num <- floor(sqrt(G))
   col_plot_num <- ceiling(G / row_plot_num)
   round_count <- 0
-  
+
   for (g in 1:G){
     subsetter[, g] <- apply(inside_cutoffs[, typemarker[g, ] != 0], 1, all)
-    
+
     graphics::par(mfrow = c(2, 2))
     while (any(!progress[g, ] & !paused[g, ], na.rm = TRUE)) {
       proposals <- matrix(nrow = 2, ncol = P)
@@ -67,7 +67,7 @@ sequential_split <- function(
           min_gp <- min(x_gp)
           max_gp <- max(x_gp)
           dens_gp <- stats::density((x_gp - min_gp) / (max_gp - min_gp))
-          
+
           proposals[, p] <- find_valley(
             dens_gp,
             score = TRUE,
@@ -76,18 +76,18 @@ sequential_split <- function(
           proposals[1, p] <- min_gp + (max_gp - min_gp) * proposals[1, p]
         }
       }
-      
+
       if (all(is.na(proposals[1, ]))) {
         paused[g, !is.na(progress[g, ]) & !progress[g, ]] <- TRUE
-        
+
         for (p in which(!is.na(progress[g, ]) & !progress[g, ])) {
           x_gp <- x[subsetter[, g], p]
           min_gp <- min(x_gp)
           max_gp <- max(x_gp)
           dens_gp <- stats::density((x_gp - min_gp) / (max_gp - min_gp))
-          
-          gmm_out <- splitgmm(x_gp)
-          
+
+          gmm_out <- split_gmm(x_gp)
+
           if (gmm_out$bic_two < gmm_out$bic_one) {
             splits[g, p] <- gmm_out$split
             scores[g, p] <- -Inf
@@ -120,7 +120,7 @@ sequential_split <- function(
         splits[g, p_choice] <- proposals[1, p_choice]
         scores[g, p_choice] <- proposals[2, p_choice]
         progress[g, p_choice] <- TRUE
-        
+
         x_gp <- x[subsetter[, g], p_choice]
         min_gp <- min(x_gp)
         max_gp <- max(x_gp)
@@ -147,7 +147,7 @@ sequential_split <- function(
       }
     }
   }
-  
+
   if (G > 1) {
     equal_subsets <- matrix(nrow = G, ncol = G)
     is_a_duplicate <- rep(FALSE, G)
@@ -163,7 +163,7 @@ sequential_split <- function(
     }
     if (any(is_a_duplicate)) {
       to_be_deleted <- which(is_a_duplicate)
-      
+
       subsetter <- subsetter[, -to_be_deleted]
       progress <- progress[-to_be_deleted, ]
       splits <- splits[-to_be_deleted, ]
@@ -173,7 +173,7 @@ sequential_split <- function(
       G <- G - sum(is_a_duplicate)
     }
   }
-  
+
   for (g in 1:G) {
     for (p in 1:P) {
       if (is.na(splits[g, p])) {
@@ -181,7 +181,7 @@ sequential_split <- function(
       }
     }
   }
-  
+
   return(list(splits = splits,
               typemarker = typemarker,
               subsetter = subsetter))
