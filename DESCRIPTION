@@ -1,12 +1,10 @@
-Package: cytozones
-Title: Semi-Supervised Model-Based Clustering Methods informed via a Positive / Negative Table
-Version: 0.0.1.0010
+Package: marginalSplit
+Title: Marginal Splitting of Multivariate Data
+Version: 0.0.0.0001
 Authors@R: 
     person("Ultán", "Doherty", , "dohertyu@tcd.ie", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0003-1791-395X"))
-Description: Gaussian Mixture Modelling clustering with positive / must-link constraints, 
-  as in Melnykov et al (2016). Code was originally based off the constrEM function in the 
-  MBCbook companion package to the book "Model-Based Clustering" by Bouveyron et al (2019).
+Description: 
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
