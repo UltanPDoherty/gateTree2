@@ -24,7 +24,7 @@ sequential_split <- function(
   N <- nrow(x)
   subsetter <- matrix(TRUE, nrow = N, ncol = G)
   paused <- array(FALSE, dim = dim(typemarker))
-
+  
   for (g in 1:G){
     for (p in 1:P){
       if (typemarker[g, p] != 0) {
@@ -32,7 +32,6 @@ sequential_split <- function(
       }
     }
   }
-
   
   if (is.null(min_val_cutoff)) {
     below_cutoff <- array(FALSE, dim = dim(x))
@@ -55,7 +54,6 @@ sequential_split <- function(
   row_plot_num <- floor(sqrt(G))
   col_plot_num <- ceiling(G / row_plot_num)
   round_count <- 0
-
   
   for (g in 1:G){
     subsetter[, g] <- apply(inside_cutoffs[, typemarker[g, ] != 0], 1, all)
@@ -114,7 +112,7 @@ sequential_split <- function(
       }
     }
   }
-
+  
   if (G > 1) {
     equal_subsets <- matrix(nrow = G, ncol = G)
     is_a_duplicate <- rep(FALSE, G)
@@ -128,17 +126,19 @@ sequential_split <- function(
         }
       }
     }
-    to_be_deleted <- which(is_a_duplicate)
-
-    subsetter <- subsetter[, -to_be_deleted]
-    progress <- progress[-to_be_deleted, ]
-    splits <- splits[-to_be_deleted, ]
-    scores <- scores[-to_be_deleted, ]
-    paused <- paused[-to_be_deleted, ]
-    typemarker <- typemarker[-to_be_deleted, ]
-    G <- G - sum(is_a_duplicate)
+    if (any(is_a_duplicate)) {
+      to_be_deleted <- which(is_a_duplicate)
+      
+      subsetter <- subsetter[, -to_be_deleted]
+      progress <- progress[-to_be_deleted, ]
+      splits <- splits[-to_be_deleted, ]
+      scores <- scores[-to_be_deleted, ]
+      paused <- paused[-to_be_deleted, ]
+      typemarker <- typemarker[-to_be_deleted, ]
+      G <- G - sum(is_a_duplicate)
+    }
   }
-
+  
   for (g in 1:G) {
     for (p in 1:P) {
       if (is.na(splits[g, p])) {
@@ -146,7 +146,7 @@ sequential_split <- function(
       }
     }
   }
-
+  
   return(list(splits = splits,
               typemarker = typemarker,
               subsetter = subsetter))
