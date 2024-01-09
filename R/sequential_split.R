@@ -4,6 +4,8 @@
 #' @param typemarker Cell-type marker table.
 #' @param min_height Minimum height for a peak to be recognised by find_peaks.
 #' @param min_score Minimum score for a split to be returned by find_valley.
+#' @param min_val_cutoff Minimum value for an observation to be included.
+#' @param max_val_cutoff Maximum value for an observation to be included.
 #' @param plot Logical value.
 #'
 #' @return splits, typemarker, subsetter
@@ -107,7 +109,7 @@ sequential_split <- function(
                                                 col = "blue", border =  NA))
               subsetter[, g] <- subsetter[, g] & x[, p] > splits[g, p]
             }
-            abline(v = trans_split_gp)
+            graphics::abline(v = trans_split_gp)
           } else {
             plot(dens_gp,
                  main = paste0("g = ", g, ", p = ", p),
