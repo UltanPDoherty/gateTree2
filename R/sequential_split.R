@@ -99,14 +99,14 @@ sequential_split <- function(
                    main = paste0("g = ", g, ", p = ", p),
                    sub = paste0(rownames(typemarker)[g], ", ", colnames(typemarker)[p_choice]),
                    panel.first = graphics::rect(0, 0, trans_split_gp, max(dens_gp$y),
-                                                col = "blue", border =  NA))
+                                                col = "lightblue", border =  NA))
               subsetter[, g] <- subsetter[, g] & x[, p] < splits[g, p]
             } else if (typemarker[g, p] == +1) {
               plot(dens_gp,
                    main = paste0("g = ", g, ", p = ", p),
                    sub = paste0(rownames(typemarker)[g], ", ", colnames(typemarker)[p_choice]),
                    panel.first = graphics::rect(trans_split_gp, 0, 1, max(dens_gp$y),
-                                                col = "blue", border =  NA))
+                                                col = "lightblue", border =  NA))
               subsetter[, g] <- subsetter[, g] & x[, p] > splits[g, p]
             }
             graphics::abline(v = trans_split_gp)
