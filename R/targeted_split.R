@@ -32,14 +32,23 @@ targeted_split <- function(
 
   inside_cutoffs <- find_inside_cutoffs(x, min_val_cutoff, max_val_cutoff)
 
+  # loop over the gating pathways
   for (g in 1:G){
+    # exclude observations that are outside the cutoffs for any marker used in
+    # this gating pathway
     subsetter[, g] <- apply(inside_cutoffs[, typemarker[g, ] != 0], 1, all)
 
     graphics::par(mfrow = c(2, 2))
+    # continue inner loop until this pathway's row of the progress & paused
+    # matrices do not contain any FALSE values.
+    # that is, move onto the next pathway only when every required variable for
+    # this pathway is TRUE
     while (any(!progress[g, ] & !paused[g, ], na.rm = TRUE)) {
 
       proposals <- propose_splits(x, g, P, subsetter, progress, min_score, min_height)
 
+      # if all of the current round's proposals are NA, use split_gmm,
+      # otherwise, choose the proposed split with the highest score
       if (all(is.na(proposals[1, ]))) {
         paused[g, !is.na(progress[g, ]) & !progress[g, ]] <- TRUE
 
