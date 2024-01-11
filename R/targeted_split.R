@@ -47,9 +47,6 @@ targeted_split <- function(
   paused <- array(FALSE, dim = dim(typemarker))
   progress <- typemarker == 0
 
-  row_plot_num <- floor(sqrt(G))
-  col_plot_num <- ceiling(G / row_plot_num)
-  round_count <- 0
 
   for (g in 1:G){
     subsetter[, g] <- apply(inside_cutoffs[, typemarker[g, ] != 0], 1, all)
