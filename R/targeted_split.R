@@ -10,7 +10,7 @@
 #'
 #' @return splits, typemarker, subsetter
 #' @export
-sequential_split <- function(
+targeted_split <- function(
     x,
     typemarker,
     min_height = 0.1,
