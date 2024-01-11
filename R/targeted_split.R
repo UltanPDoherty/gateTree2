@@ -20,20 +20,11 @@ targeted_split <- function(
     plot = TRUE
 ){
 
-  progress <- splits <- scores <- array(dim = dim(typemarker))
   G <- nrow(typemarker)
   P <- ncol(typemarker)
   N <- nrow(x)
-  subsetter <- matrix(TRUE, nrow = N, ncol = G)
-  paused <- array(FALSE, dim = dim(typemarker))
 
-  for (g in 1:G){
-    for (p in 1:P){
-      if (typemarker[g, p] != 0) {
-        progress[g, p] = FALSE
-      }
-    }
-  }
+  splits <- scores <- array(dim = dim(typemarker))
 
   if (is.null(min_val_cutoff)) {
     below_cutoff <- array(FALSE, dim = dim(x))
@@ -52,6 +43,9 @@ targeted_split <- function(
     }
   }
   inside_cutoffs <- !below_cutoff & !above_cutoff
+  subsetter <- matrix(TRUE, nrow = N, ncol = G)
+  paused <- array(FALSE, dim = dim(typemarker))
+  progress <- typemarker == 0
 
   row_plot_num <- floor(sqrt(G))
   col_plot_num <- ceiling(G / row_plot_num)
