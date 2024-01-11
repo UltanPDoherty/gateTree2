@@ -53,23 +53,23 @@ targeted_split <- function(
         paused[g, !is.na(progress[g, ]) & !progress[g, ]] <- TRUE
         for (p in which(!is.na(progress[g, ]) & !progress[g, ])) {
           x_gp <- x[subsetter[, g], p]
-          min_gp <- min(x_gp)
-          max_gp <- max(x_gp)
-          dens_gp <- stats::density((x_gp - min_gp) / (max_gp - min_gp))
-
           gmm_out <- split_gmm(x_gp)
+
+          dens01_gp <- dens01(x_gp)
           if (gmm_out$bic_two < gmm_out$bic_one) {
             splits[g, p] <- gmm_out$split
             scores[g, p] <- -Inf
-            trans_split_gp <- (splits[g, p] - min_gp) / (max_gp - min_gp)
+            trans_split_gp <- (splits[g, p] - dens01_gp$min) / (dens01_gp$max - dens01_gp$min)
 
-            if (typemarker[g, p] == -1) {
-              subsetter[, g] <- subsetter[, g] & x[, p] < splits[g, p]
+            is_neg_gp <- typemarker[g, p] == -1
+
+            if (is_neg_gp) {
+              subsetter[, g] <- subsetter[, g] & (x[, p] < splits[g, p])
 
               xleft <- 0
               xright <- trans_split_gp
-            } else if (typemarker[g, p] == +1) {
-              subsetter[, g] <- subsetter[, g] & x[, p] > splits[g, p]
+            } else {
+              subsetter[, g] <- subsetter[, g] & (x[, p] > splits[g, p])
 
               xleft <- trans_split_gp
               xright <- 1
@@ -78,7 +78,7 @@ targeted_split <- function(
           } else {
             trans_split_gp <- rect_col <- xleft <- xright <- NA
           }
-          plot_targeted_split(dens_gp, g, p, scores[g, p], typemarker,
+          plot_targeted_split(dens01_gp$dens, g, p, scores[g, p], typemarker,
                               xleft, xright, rect_col, trans_split_gp)
         }
       } else {
@@ -87,11 +87,9 @@ targeted_split <- function(
         scores[g, p_choice] <- proposals[2, p_choice]
         progress[g, p_choice] <- TRUE
 
-        x_gp <- x[subsetter[, g], p_choice]
-        min_gp <- min(x_gp)
-        max_gp <- max(x_gp)
-        dens_gp <- stats::density((x_gp - min_gp) / (max_gp - min_gp))
-        trans_split_gp <- (splits[g, p_choice] - min_gp) / (max_gp - min_gp)
+        dens01_gp <- dens01(x[subsetter[, g], p_choice])
+
+        trans_split_gp <- (splits[g, p_choice] - dens01_gp$min) / (dens01_gp$max - dens01_gp$min)
 
         if (typemarker[g, p_choice] == -1) {
           subsetter[, g] <- subsetter[, g] & x[, p_choice] < splits[g, p_choice]
@@ -105,7 +103,7 @@ targeted_split <- function(
           xright <- 1
         }
         rect_col <- "green"
-        plot_targeted_split(dens_gp, g, p_choice, scores[g, p_choice], typemarker,
+        plot_targeted_split(dens01_gp$dens, g, p_choice, scores[g, p_choice], typemarker,
                             xleft, xright, rect_col, trans_split_gp)
       }
     }
@@ -194,19 +192,25 @@ propose_splits <- function(x, g, P, subsetter, progress, min_score, min_height){
     # find variables that are not NA or TRUE in the progress matrix
     if (!is.na(progress[g, p]) & !progress[g, p]){
       # 0-1 scale this variable for the pathway's current subset
-      x_gp <- x[subsetter[, g], p]
-      min_gp <- min(x_gp)
-      max_gp <- max(x_gp)
-      dens_gp <- stats::density((x_gp - min_gp) / (max_gp - min_gp))
+      scale_gp <- dens01(x[subsetter[, g], p])
 
       proposals[, p] <- find_valley(
-        dens_gp,
+        scale_gp$dens,
         score = TRUE,
         min_score = min_score,
         min_height = min_height)
-      proposals[1, p] <- min_gp + (max_gp - min_gp) * proposals[1, p]
+
+      proposals[1, p] <- proposals[1, p] * (scale_gp$max - scale_gp$min) + scale_gp$min
     }
   }
 
   return(proposals)
+}
+
+dens01 <- function(x){
+  min_x <- min(x)
+  max_x <- max(x)
+  dens_x <- stats::density((x - min_x) / (max_x - min_x))
+
+  return(list(min = min_x, max = max_x, dens = dens_x))
 }
