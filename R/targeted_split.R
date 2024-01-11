@@ -26,27 +26,11 @@ targeted_split <- function(
 
   splits <- scores <- array(dim = dim(typemarker))
 
-  if (is.null(min_val_cutoff)) {
-    below_cutoff <- array(FALSE, dim = dim(x))
-  } else {
-    below_cutoff <- array(dim = dim(x))
-    for (j in 1:ncol(x)) {
-      below_cutoff[, j] <- x[, j] < min_val_cutoff[j]
-    }
-  }
-  if (is.null(max_val_cutoff)) {
-    above_cutoff <- array(FALSE, dim = dim(x))
-  } else {
-    above_cutoff <- array(dim = dim(x))
-    for (j in 1:ncol(x)) {
-      above_cutoff[, j] <- x[, j] < max_val_cutoff[j]
-    }
-  }
-  inside_cutoffs <- !below_cutoff & !above_cutoff
   subsetter <- matrix(TRUE, nrow = N, ncol = G)
   paused <- array(FALSE, dim = dim(typemarker))
   progress <- typemarker == 0
 
+  inside_cutoffs <- find_inside_cutoffs(x, min_val_cutoff, max_val_cutoff)
 
   for (g in 1:G){
     subsetter[, g] <- apply(inside_cutoffs[, typemarker[g, ] != 0], 1, all)
@@ -178,4 +162,29 @@ targeted_split <- function(
   return(list(splits = splits,
               typemarker = typemarker,
               subsetter = subsetter))
+}
+
+find_inside_cutoffs <- function(x, min_val_cutoff, max_val_cutoff) {
+  # find which observations are outside either of the cutoffs for each marker
+  if (is.null(min_val_cutoff)) {
+    below_cutoff <- array(FALSE, dim = dim(x))
+  } else {
+    below_cutoff <- array(dim = dim(x))
+    for (j in 1:ncol(x)) {
+      below_cutoff[, j] <- x[, j] < min_val_cutoff[j]
+    }
+  }
+  if (is.null(max_val_cutoff)) {
+    above_cutoff <- array(FALSE, dim = dim(x))
+  } else {
+    above_cutoff <- array(dim = dim(x))
+    for (j in 1:ncol(x)) {
+      above_cutoff[, j] <- x[, j] < max_val_cutoff[j]
+    }
+  }
+  # inside_cutoffs is a matrix of the same dimensions as the data
+  # an observation-marker pair is TRUE if it is inside the two cutoffs
+  inside_cutoffs <- !below_cutoff & !above_cutoff
+
+  return(inside_cutoffs)
 }
