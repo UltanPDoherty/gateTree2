@@ -51,7 +51,6 @@ targeted_split <- function(
       # otherwise, choose the proposed split with the highest score
       if (all(is.na(proposals[1, ]))) {
         paused[g, !is.na(progress[g, ]) & !progress[g, ]] <- TRUE
-
         for (p in which(!is.na(progress[g, ]) & !progress[g, ])) {
           x_gp <- x[subsetter[, g], p]
           min_gp <- min(x_gp)
@@ -59,34 +58,29 @@ targeted_split <- function(
           dens_gp <- stats::density((x_gp - min_gp) / (max_gp - min_gp))
 
           gmm_out <- split_gmm(x_gp)
-
           if (gmm_out$bic_two < gmm_out$bic_one) {
             splits[g, p] <- gmm_out$split
             scores[g, p] <- -Inf
             trans_split_gp <- (splits[g, p] - min_gp) / (max_gp - min_gp)
+
             if (typemarker[g, p] == -1) {
-              plot(dens_gp,
-                   main = paste0("g = ", g, ", p = ", p),
-                   sub = paste0(rownames(typemarker)[g], ", ", colnames(typemarker)[p_choice]),
-                   panel.first = graphics::rect(0, 0, trans_split_gp, max(dens_gp$y),
-                                                col = "lightblue", border =  NA))
               subsetter[, g] <- subsetter[, g] & x[, p] < splits[g, p]
+
+              xleft <- 0
+              xright <- trans_split_gp
             } else if (typemarker[g, p] == +1) {
-              plot(dens_gp,
-                   main = paste0("g = ", g, ", p = ", p),
-                   sub = paste0(rownames(typemarker)[g], ", ", colnames(typemarker)[p_choice]),
-                   panel.first = graphics::rect(trans_split_gp, 0, 1, max(dens_gp$y),
-                                                col = "lightblue", border =  NA))
               subsetter[, g] <- subsetter[, g] & x[, p] > splits[g, p]
+
+              xleft <- trans_split_gp
+              xright <- 1
             }
-            graphics::abline(v = trans_split_gp)
+            rect_col <- "lightblue"
           } else {
-            plot(dens_gp,
-                 main = paste0("g = ", g, ", p = ", p),
-                 sub = paste0(rownames(typemarker)[g], ", ", colnames(typemarker)[p]))
+            trans_split_gp <- rect_col <- xleft <- xright <- NA
           }
+          plot_targeted_split(dens_gp, g, p, scores[g, p], typemarker,
+                              xleft, xright, rect_col, trans_split_gp)
         }
-        next
       } else {
         p_choice <- which.max(proposals[2, ])
         splits[g, p_choice] <- proposals[1, p_choice]
@@ -98,24 +92,21 @@ targeted_split <- function(
         max_gp <- max(x_gp)
         dens_gp <- stats::density((x_gp - min_gp) / (max_gp - min_gp))
         trans_split_gp <- (splits[g, p_choice] - min_gp) / (max_gp - min_gp)
+
         if (typemarker[g, p_choice] == -1) {
-          plot(dens_gp,
-               main = paste0("g = ", g, ", p = ", p_choice,
-                             ", score = ", round(scores[g, p_choice], 3)),
-               sub = paste0(rownames(typemarker)[g], ", ", colnames(typemarker)[p_choice]),
-               panel.first = graphics::rect(0, 0, trans_split_gp, max(dens_gp$y),
-                                            col = "green", border =  NA))
           subsetter[, g] <- subsetter[, g] & x[, p_choice] < splits[g, p_choice]
+
+          xleft <- 0
+          xright <- trans_split_gp
         } else if (typemarker[g, p_choice] == +1) {
-          plot(dens_gp,
-               main = paste0("g = ", g, ", p = ", p_choice,
-                             ", score = ", round(scores[g, p_choice], 3)),
-               sub = paste0(rownames(typemarker)[g], ", ", colnames(typemarker)[p_choice]),
-               panel.first = graphics::rect(trans_split_gp, 0, 1, max(dens_gp$y),
-                                            col = "green", border =  NA))
           subsetter[, g] <- subsetter[, g] & x[, p_choice] > splits[g, p_choice]
+
+          xleft <- trans_split_gp
+          xright <- 1
         }
-        graphics::abline(v = trans_split_gp)
+        rect_col <- "green"
+        plot_targeted_split(dens_gp, g, p_choice, scores[g, p_choice], typemarker,
+                            xleft, xright, rect_col, trans_split_gp)
       }
     }
   }
@@ -182,6 +173,17 @@ find_inside_cutoffs <- function(x, min_val_cutoff, max_val_cutoff) {
   inside_cutoffs <- !below_cutoff & !above_cutoff
 
   return(inside_cutoffs)
+}
+
+plot_targeted_split <- function(dens_gp, g, p, score, typemarker,
+                                xleft, xright, rect_col, trans_split_gp) {
+  plot(dens_gp,
+       main = paste0("g = ", g, ", p = ", p,
+                     ", score = ", round(score, 3)),
+       sub = paste0(rownames(typemarker)[g], ", ", colnames(typemarker)[p]),
+       panel.first = graphics::rect(xleft, 0, xright, max(dens_gp$y),
+                                    col = rect_col, border =  NA))
+  graphics::abline(v = trans_split_gp)
 }
 
 propose_splits <- function(x, g, P, subsetter, progress, min_score, min_height){
