@@ -37,22 +37,8 @@ targeted_split <- function(
 
     graphics::par(mfrow = c(2, 2))
     while (any(!progress[g, ] & !paused[g, ], na.rm = TRUE)) {
-      proposals <- matrix(nrow = 2, ncol = P)
-      for (p in 1:P){
-        if (!is.na(progress[g, p]) & !progress[g, p]){
-          x_gp <- x[subsetter[, g], p]
-          min_gp <- min(x_gp)
-          max_gp <- max(x_gp)
-          dens_gp <- stats::density((x_gp - min_gp) / (max_gp - min_gp))
 
-          proposals[, p] <- find_valley(
-            dens_gp,
-            score = TRUE,
-            min_score = min_score,
-            min_height = min_height)
-          proposals[1, p] <- min_gp + (max_gp - min_gp) * proposals[1, p]
-        }
-      }
+      proposals <- propose_splits(x, g, P, subsetter, progress, min_score, min_height)
 
       if (all(is.na(proposals[1, ]))) {
         paused[g, !is.na(progress[g, ]) & !progress[g, ]] <- TRUE
@@ -187,4 +173,29 @@ find_inside_cutoffs <- function(x, min_val_cutoff, max_val_cutoff) {
   inside_cutoffs <- !below_cutoff & !above_cutoff
 
   return(inside_cutoffs)
+}
+
+propose_splits <- function(x, g, P, subsetter, progress, min_score, min_height){
+  proposals <- matrix(nrow = 2, ncol = P)
+
+  # loop over all variables to propose splits
+  for (p in 1:P){
+    # find variables that are not NA or TRUE in the progress matrix
+    if (!is.na(progress[g, p]) & !progress[g, p]){
+      # 0-1 scale this variable for the pathway's current subset
+      x_gp <- x[subsetter[, g], p]
+      min_gp <- min(x_gp)
+      max_gp <- max(x_gp)
+      dens_gp <- stats::density((x_gp - min_gp) / (max_gp - min_gp))
+
+      proposals[, p] <- find_valley(
+        dens_gp,
+        score = TRUE,
+        min_score = min_score,
+        min_height = min_height)
+      proposals[1, p] <- min_gp + (max_gp - min_gp) * proposals[1, p]
+    }
+  }
+
+  return(proposals)
 }
