@@ -115,13 +115,6 @@ targeted_split <- function(
     }
   }
 
-  for (g in 1:path_num) {
-    for (p in 1:var_num) {
-      if (is.na(splits[g, p])) {
-        typemarker[g, p] <- 0
-      }
-    }
-  }
   is_a_duplicate <- check_duplicates(subsetter, path_num)
   subsetter <- subsetter[, !is_a_duplicate]
   progress <- progress[!is_a_duplicate, ]
@@ -130,6 +123,8 @@ targeted_split <- function(
   paused <- paused[!is_a_duplicate, ]
   typemarker <- typemarker[!is_a_duplicate, ]
   path_num <- path_num - sum(is_a_duplicate)
+
+  typemarker <- typemarker * !is.na(splits)
 
   return(list(splits = splits,
               typemarker = typemarker,
