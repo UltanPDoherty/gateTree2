@@ -71,27 +71,30 @@ targeted_split <- function(
       if (found_valley || found_boundary) {
         progress[g, p_choice] <- TRUE
 
-        dens01_gp <- dens01(x[subsetter[, g], p_choice])
-
-        trans_split_gp <- (splits[g, p_choice] - dens01_gp$min) / (dens01_gp$max - dens01_gp$min)
+        scale01_gp <- scale01(x[subsetter[, g], p_choice])
 
         # find which events have values less than the chosen split
         less_gp <- x[, p_choice] < splits[g, p_choice]
         is_neg_gp <- typemarker[g, p_choice] == -1
         subsetter[, g] <- subsetter[, g] & ((is_neg_gp & less_gp) | (!is_neg_gp & !less_gp))
 
+        trans_split_gp <- scale01(splits[g, p_choice],
+                                  scale01_gp$min, scale01_gp$max)$y
         xleft <- ifelse(is_neg_gp, 0, trans_split_gp)
         xright <- ifelse(is_neg_gp, trans_split_gp, 1)
-        plot_targeted_split(dens01_gp$dens, g, p_choice, scores[g, p_choice], typemarker,
+        plot_targeted_split(stats::density(scale01_gp$y), g, p_choice,
+                            scores[g, p_choice], typemarker,
                             xleft, xright, rect_col, trans_split_gp, score_name)
       } else {
         paused[g, !is.na(progress[g, ]) & !progress[g, ]] <- TRUE
-        trans_split_gp <- xleft <- xright <- rect_col <- score_name <- NA
+        trans_split_gp <- xleft <- xright <- rect_col <- NA
+        score_name <- "score"
         for (p in which(!is.na(progress[g, ]) & !progress[g, ])) {
-          dens01_gp <- dens01(x[subsetter[, g], p])
+          scale01_gp <- scale01(x[subsetter[, g], p])
 
-          plot_targeted_split(dens01_gp$dens, g, p, scores[g, p], typemarker,
-                            xleft, xright, rect_col, trans_split_gp, score_name)
+          plot_targeted_split(stats::density(scale01_gp$y), g, p,
+                              scores[g, p], typemarker,
+                              xleft, xright, rect_col, trans_split_gp, score_name)
         }
       }
     }
@@ -181,15 +184,17 @@ propose_valleys <- function(x, g, var_num, subsetter, progress, min_score, min_h
     # find variables that are not NA or TRUE in the progress matrix
     if (!is.na(progress[g, p]) && !progress[g, p]) {
       # 0-1 scale this variable for the pathway's current subset
-      dens01_gp <- dens01(x[subsetter[, g], p])
+      scale01_gp <- scale01(x[subsetter[, g], p])
+      dens01_gp <- stats::density(scale01_gp$y)
 
       valleys[, p] <- find_valley(
-        dens01_gp$dens,
+        dens01_gp,
         score = TRUE,
         min_score = min_score,
-        min_height = min_height)
+        min_height = min_height
+      )
 
-      valleys[1, p] <- valleys[1, p] * (dens01_gp$max - dens01_gp$min) + dens01_gp$min
+      valleys[1, p] <- unscale01(valleys[1, p], scale01_gp$min, scale01_gp$max)
     }
   }
 
@@ -210,10 +215,25 @@ propose_boundaries <- function(x, g, var_num, subsetter, progress) {
   return(boundaries)
 }
 
-dens01 <- function(x){
-  min_x <- min(x)
-  max_x <- max(x)
-  dens_x <- stats::density((x - min_x) / (max_x - min_x))
+scale01 <- function(x, other_min = NULL, other_max = NULL) {
 
-  return(list(min = min_x, max = max_x, dens = dens_x))
+  if (is.null(other_min)) {
+    minimum <- min(x)
+  } else {
+    minimum <- other_min
+  }
+
+  if (is.null(other_max)) {
+    maximum <- max(x)
+  } else {
+    maximum <- other_max
+  }
+
+  y <- (x - minimum) / (maximum - minimum)
+
+  return(list(y = y, min = minimum, max = maximum))
+}
+
+unscale01 <- function(x, unscaled_min, unscaled_max) {
+  return(x * (unscaled_max - unscaled_min) + unscaled_min)
 }
