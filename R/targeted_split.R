@@ -11,29 +11,29 @@
 #' @return splits, typemarker, subsetter
 #' @export
 targeted_split <- function(
-    x,
-    typemarker,
-    min_height = 0.1,
-    min_score = 0.1,
-    min_val_cutoff = NULL,
-    max_val_cutoff = NULL,
-    plot = TRUE
-){
+  x,
+  typemarker,
+  min_height = 0.1,
+  min_score = 0.1,
+  min_val_cutoff = NULL,
+  max_val_cutoff = NULL,
+  plot = TRUE
+) {
 
-  G <- nrow(typemarker)
-  P <- ncol(typemarker)
-  N <- nrow(x)
+  path_num <- nrow(typemarker)
+  var_num <- ncol(typemarker)
+  obs_num <- nrow(x)
 
   splits <- scores <- array(dim = dim(typemarker))
 
-  subsetter <- matrix(TRUE, nrow = N, ncol = G)
+  subsetter <- matrix(TRUE, nrow = obs_num, ncol = path_num)
   paused <- array(FALSE, dim = dim(typemarker))
   progress <- typemarker == 0
 
   inside_cutoffs <- find_inside_cutoffs(x, min_val_cutoff, max_val_cutoff)
 
   # loop over the gating pathways
-  for (g in 1:G){
+  for (g in 1:path_num){
     # exclude observations that are outside the cutoffs for any marker used in
     # this gating pathway
     subsetter[, g] <- apply(inside_cutoffs[, typemarker[g, ] != 0], 1, all)
@@ -45,7 +45,8 @@ targeted_split <- function(
     # this pathway is TRUE
     while (any(!progress[g, ] & !paused[g, ], na.rm = TRUE)) {
 
-      proposals <- propose_valleys(x, g, P, subsetter, progress, min_score, min_height)
+      proposals <- propose_valleys(x, g, var_num, subsetter, progress,
+                                   min_score, min_height)
       found_valley <- any(!is.na(proposals[1, ]))
 
       if (found_valley) {
@@ -53,7 +54,7 @@ targeted_split <- function(
         rect_col <- "green"
         score_name <- "depth"
       } else {
-        proposals <- propose_boundaries(x, g, P, subsetter, progress)
+        proposals <- propose_boundaries(x, g, var_num, subsetter, progress)
         found_boundary <- any(!is.na(proposals[1, ]))
         rect_col <- "lightblue"
         score_name <- "bic"
@@ -67,7 +68,7 @@ targeted_split <- function(
 
       # if all of the current round's proposals are NA, use split_gmm,
       # otherwise, choose the proposed split with the highest score
-      if (found_valley | found_boundary) {
+      if (found_valley || found_boundary) {
         progress[g, p_choice] <- TRUE
 
         dens01_gp <- dens01(x[subsetter[, g], p_choice])
@@ -96,11 +97,11 @@ targeted_split <- function(
     }
   }
 
-  if (G > 1) {
-    equal_subsets <- matrix(nrow = G, ncol = G)
-    is_a_duplicate <- rep(FALSE, G)
-    for (g in 1:(G-1)) {
-      for (h in (g + 1):G) {
+  if (path_num > 1) {
+    equal_subsets <- matrix(nrow = path_num, ncol = path_num)
+    is_a_duplicate <- rep(FALSE, path_num)
+    for (g in 1:(path_num - 1)) {
+      for (h in (g + 1):path_num) {
         equal_subsets[g, h] <- all(subsetter[, g] == subsetter[, h])
         if (equal_subsets[g, h]) {
           print(paste0("Failed to distinguish between populations ",
@@ -118,12 +119,12 @@ targeted_split <- function(
       scores <- scores[-to_be_deleted, ]
       paused <- paused[-to_be_deleted, ]
       typemarker <- typemarker[-to_be_deleted, ]
-      G <- G - sum(is_a_duplicate)
+      path_num <- path_num - sum(is_a_duplicate)
     }
   }
 
-  for (g in 1:G) {
-    for (p in 1:P) {
+  for (g in 1:path_num) {
+    for (p in 1:var_num) {
       if (is.na(splits[g, p])) {
         typemarker[g, p] <- 0
       }
@@ -141,7 +142,7 @@ find_inside_cutoffs <- function(x, min_val_cutoff, max_val_cutoff) {
     below_cutoff <- array(FALSE, dim = dim(x))
   } else {
     below_cutoff <- array(dim = dim(x))
-    for (j in 1:ncol(x)) {
+    for (j in seq_len(ncol(x))) {
       below_cutoff[, j] <- x[, j] < min_val_cutoff[j]
     }
   }
@@ -149,7 +150,7 @@ find_inside_cutoffs <- function(x, min_val_cutoff, max_val_cutoff) {
     above_cutoff <- array(FALSE, dim = dim(x))
   } else {
     above_cutoff <- array(dim = dim(x))
-    for (j in 1:ncol(x)) {
+    for (j in seq_len(ncol(x))) {
       above_cutoff[, j] <- x[, j] < max_val_cutoff[j]
     }
   }
@@ -172,13 +173,13 @@ plot_targeted_split <- function(dens_gp, g, p, score, typemarker,
   graphics::abline(v = trans_split_gp)
 }
 
-propose_valleys <- function(x, g, P, subsetter, progress, min_score, min_height){
-  valleys <- matrix(nrow = 2, ncol = P)
+propose_valleys <- function(x, g, var_num, subsetter, progress, min_score, min_height) {
+  valleys <- matrix(nrow = 2, ncol = var_num)
 
   # loop over all variables to propose splits
-  for (p in 1:P){
+  for (p in 1:var_num){
     # find variables that are not NA or TRUE in the progress matrix
-    if (!is.na(progress[g, p]) & !progress[g, p]){
+    if (!is.na(progress[g, p]) && !progress[g, p]) {
       # 0-1 scale this variable for the pathway's current subset
       dens01_gp <- dens01(x[subsetter[, g], p])
 
@@ -195,13 +196,13 @@ propose_valleys <- function(x, g, P, subsetter, progress, min_score, min_height)
   return(valleys)
 }
 
-propose_boundaries <- function(x, g, P, subsetter, progress){
-  boundaries <- matrix(nrow = 2, ncol = P)
+propose_boundaries <- function(x, g, var_num, subsetter, progress) {
+  boundaries <- matrix(nrow = 2, ncol = var_num)
 
   # loop over all variables to propose splits
-  for (p in 1:P){
+  for (p in 1:var_num){
     # find variables that are not NA or TRUE in the progress matrix
-    if (!is.na(progress[g, p]) & !progress[g, p]){
+    if (!is.na(progress[g, p]) && !progress[g, p]) {
       boundaries[, p] <- find_boundary(x[subsetter[, g], p])
     }
   }
