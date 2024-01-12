@@ -164,13 +164,41 @@ find_inside_cutoffs <- function(x, min_val_cutoff, max_val_cutoff) {
 plot_targeted_split <- function(dens_gp, g, p, score, typemarker,
                                 xleft, xright, rect_col, trans_split_gp,
                                 score_name) {
+plot_targeted_split <- function(x_gp, g, p, depth, typemarker,
+                                is_negative, scenario, split_gp) {
+
+  rect_col <- switch(scenario,
+                     "valley" = "lightgreen",
+                     "boundary" = "lightblue",
+                     "nothing" = NA,
+                     "undiscovered" = NA)
+  depth <- switch(scenario,
+                  "valley" = depth,
+                  "boundary" = NA,
+                  "nothing" = NA,
+                  "undiscovered" = depth)
+  linetype <- switch(scenario,
+                     "valley" = "solid",
+                     "boundary" = "dashed",
+                     "nothing" = "blank",
+                     "undiscovered" = "dotted")
+
+  scale01_gp <- scale01(x_gp)
+  dens_gp <- stats::density(scale01_gp$y)
+
+  trans_split_gp <- scale01(split_gp,
+                            scale01_gp$min, scale01_gp$max)$y
+
+  xleft <- ifelse(is_negative, 0, trans_split_gp)
+  xright <- ifelse(is_negative, trans_split_gp, 1)
+
   plot(dens_gp,
        main = paste0("g = ", g, ", p = ", p,
-                     ", ", score_name, " = ", round(score, 3)),
+                     ", depth = ", round(depth, 3)),
        sub = paste0(rownames(typemarker)[g], ", ", colnames(typemarker)[p]),
        panel.first = graphics::rect(xleft, 0, xright, max(dens_gp$y),
-                                    col = rect_col, border =  NA))
-  graphics::abline(v = trans_split_gp)
+                                    col = rect_col, border =  NA),)
+  graphics::abline(v = trans_split_gp, lty = linetype)
 }
 
 propose_valleys <- function(x, g, var_num, subsetter, progress, min_score, min_height) {
