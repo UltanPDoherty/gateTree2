@@ -13,7 +13,7 @@
 targeted_split <- function(
   x,
   typemarker,
-  min_height = 0.1,
+  min_height = 0.5,
   min_depth = 0.5,
   min_val_cutoff = NULL,
   max_val_cutoff = NULL,
@@ -73,20 +73,23 @@ targeted_split <- function(
         refine_subset <- (is_neg_gp & less_gp) | (!is_neg_gp & !less_gp)
         subsetter[, g] <- subsetter[, g] & refine_subset
 
+        split_size <- c(length(x_gp), sum(subsetter[, g]))
+
         plot_targeted_split(x_gp, g, p_choice,
                             scores[g, p_choice], typemarker,
                             is_neg_gp, scenario,
-                            splits[g, p_choice])
+                            splits[g, p_choice], split_size)
       } else {
         paused[g, !is.na(progress[g, ]) & !progress[g, ]] <- TRUE
         is_neg_gp <- NA
         scenario <- "nothing"
         for (p in which(!is.na(progress[g, ]) & !progress[g, ])) {
           x_gp <- x[subsetter[, g], p]
+          split_size <- c(length(x_gp), NA)
           plot_targeted_split(x_gp, g, p,
                               scores[g, p], typemarker,
                               is_neg_gp, scenario,
-                              splits[g, p])
+                              splits[g, p], split_size)
         }
       }
     }
@@ -99,12 +102,15 @@ targeted_split <- function(
       for (p in 1:var_num) {
         if (!is.na(proposals[1, p])) {
           x_gp <- x[subsetter[, g], p]
-          is_neg_gp <- NA
-          scenario <- "undiscovered"
-          plot_targeted_split(x_gp, g, p,
-                              proposals[2, p], typemarker,
-                              is_neg_gp, scenario,
-                              proposals[1, p])
+          split_size <- c(length(x_gp), sum(x_gp > proposals[1, p]))
+          if (split_size[1] > 100) {
+            is_neg_gp <- FALSE
+            scenario <- "undiscovered"
+            plot_targeted_split(x_gp, g, p,
+                                proposals[2, p], typemarker,
+                                is_neg_gp, scenario,
+                                proposals[1, p], split_size)
+          }
         }
       }
     }
@@ -141,7 +147,7 @@ find_inside_cutoffs <- function(x, min_val_cutoff, max_val_cutoff) {
   } else {
     above_cutoff <- array(dim = dim(x))
     for (j in seq_len(ncol(x))) {
-      above_cutoff[, j] <- x[, j] < max_val_cutoff[j]
+      above_cutoff[, j] <- x[, j] > max_val_cutoff[j]
     }
   }
   # inside_cutoffs is a matrix of the same dimensions as the data
@@ -152,13 +158,13 @@ find_inside_cutoffs <- function(x, min_val_cutoff, max_val_cutoff) {
 }
 
 plot_targeted_split <- function(x_gp, g, p, depth, typemarker,
-                                is_negative, scenario, split_gp) {
+                                is_negative, scenario, split_gp, split_size) {
 
   rect_col <- switch(scenario,
                      "valley" = "lightgreen",
                      "boundary" = "lightblue",
                      "nothing" = NA,
-                     "undiscovered" = NA)
+                     "undiscovered" = "lightcoral")
   depth <- switch(scenario,
                   "valley" = depth,
                   "boundary" = NA,
@@ -183,6 +189,8 @@ plot_targeted_split <- function(x_gp, g, p, depth, typemarker,
        main = paste0("g = ", g, ", p = ", p,
                      ", depth = ", round(depth, 3)),
        sub = paste0(rownames(typemarker)[g], ", ", colnames(typemarker)[p]),
+       xlab = paste0("N before = ", split_size[1], ", ",
+                     "N after = ", split_size[2]),
        panel.first = graphics::rect(xleft, 0, xright, max(dens_gp$y),
                                     col = rect_col, border =  NA),)
   graphics::abline(v = trans_split_gp, lty = linetype)
