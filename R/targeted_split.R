@@ -74,7 +74,7 @@ targeted_split <- function(
 
             rect_col <- "lightblue"
           } else {
-            trans_split_gp <- rect_col <- xleft <- xright <- NA
+            trans_split_gp <- xleft <- xright <- rect_col <- NA
           }
           plot_targeted_split(dens01_gp$dens, g, p, scores[g, p], typemarker,
                               xleft, xright, rect_col, trans_split_gp)
