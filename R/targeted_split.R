@@ -113,17 +113,6 @@ targeted_split <- function(
         }
       }
     }
-    if (any(is_a_duplicate)) {
-      to_be_deleted <- which(is_a_duplicate)
-
-      subsetter <- subsetter[, -to_be_deleted]
-      progress <- progress[-to_be_deleted, ]
-      splits <- splits[-to_be_deleted, ]
-      scores <- scores[-to_be_deleted, ]
-      paused <- paused[-to_be_deleted, ]
-      typemarker <- typemarker[-to_be_deleted, ]
-      path_num <- path_num - sum(is_a_duplicate)
-    }
   }
 
   for (g in 1:path_num) {
@@ -133,6 +122,14 @@ targeted_split <- function(
       }
     }
   }
+  is_a_duplicate <- check_duplicates(subsetter, path_num)
+  subsetter <- subsetter[, !is_a_duplicate]
+  progress <- progress[!is_a_duplicate, ]
+  splits <- splits[!is_a_duplicate, ]
+  scores <- scores[!is_a_duplicate, ]
+  paused <- paused[!is_a_duplicate, ]
+  typemarker <- typemarker[!is_a_duplicate, ]
+  path_num <- path_num - sum(is_a_duplicate)
 
   return(list(splits = splits,
               typemarker = typemarker,
@@ -236,4 +233,25 @@ scale01 <- function(x, other_min = NULL, other_max = NULL) {
 
 unscale01 <- function(x, unscaled_min, unscaled_max) {
   return(x * (unscaled_max - unscaled_min) + unscaled_min)
+}
+
+check_duplicates <- function(subsetter, path_num) {
+
+  is_a_duplicate <- rep(FALSE, path_num)
+
+  if (path_num > 1) {
+    equal_subsets <- matrix(nrow = path_num, ncol = path_num)
+    for (g in 1:(path_num - 1)) {
+      for (h in (g + 1):path_num) {
+        equal_subsets[g, h] <- all(subsetter[, g] == subsetter[, h])
+        if (equal_subsets[g, h]) {
+          print(paste0("Failed to distinguish between populations ",
+                       g, " & ", h, "."))
+          is_a_duplicate[h] <- TRUE
+        }
+      }
+    }
+  }
+
+  return(is_a_duplicate)
 }
