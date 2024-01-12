@@ -100,16 +100,6 @@ targeted_split <- function(
     }
   }
 
-  if (path_num > 1) {
-    equal_subsets <- matrix(nrow = path_num, ncol = path_num)
-    is_a_duplicate <- rep(FALSE, path_num)
-    for (g in 1:(path_num - 1)) {
-      for (h in (g + 1):path_num) {
-        equal_subsets[g, h] <- all(subsetter[, g] == subsetter[, h])
-        if (equal_subsets[g, h]) {
-          print(paste0("Failed to distinguish between populations ",
-                       g, " & ", h, "."))
-          is_a_duplicate[h] <- TRUE
         }
       }
     }
