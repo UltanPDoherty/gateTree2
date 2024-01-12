@@ -35,10 +35,17 @@ split_gmm <- function(x){
   bic_one = 2 * log(N) - 2 * ll_one
   bic_two = 4 * log(N) - 2 * ll_max
 
-  return(list(ll_vec = ll,
-              ll_max = ll_max,
-              ll_one = ll_one,
-              bic_one = bic_one,
-              bic_two = bic_two,
-              split = xseq[which.max(ll)]))
+  if (return_all) {
+    return(list(ll_vec = ll,
+                ll_max = ll_max,
+                ll_one = ll_one,
+                bic_one = bic_one,
+                bic_two = bic_two,
+                boundary = xseq[which.max(ll)]))
+  } else if (bic_two < bic_one) {
+    return(c(xseq[which.max(ll)], bic_two))
+  } else {
+    return(c(NA, NA))
+  }
+
 }
