@@ -1,11 +1,12 @@
-find_valley <- function(dens, is_peak = NULL, score = FALSE, min_score = 0.01, min_height = 0.01) {
+find_valley <- function(dens, is_peak = NULL, score = FALSE,
+                        min_score = 0.01, min_height = 0.01) {
 
-  if(is.null(is_peak)) {
+  if (is.null(is_peak)) {
     is_peak <- find_peaks(dens, min_height = min_height)
   }
 
-  if(sum(is_peak) == 1) {
-    if (score){
+  if (sum(is_peak) == 1) {
+    if (score) {
       return(c(NA, NA))
     } else {
       return(NA)
@@ -32,14 +33,14 @@ find_valley <- function(dens, is_peak = NULL, score = FALSE, min_score = 0.01, m
   }
 
   if (max(scores) < min_score) {
-    if(score) {
+    if (score) {
       return(c(NA, NA))
     } else {
       return(NA)
     }
   } else {
     if (score) {
-      return(c(dens$x[valley_ind[which.max(scores)]],max(scores)))
+      return(c(dens$x[valley_ind[which.max(scores)]], max(scores)))
     } else {
       return(dens$x[valley_ind[which.max(scores)]])
     }
