@@ -50,6 +50,11 @@ targeted_split <- function(
       # if all of the current round's proposals are NA, use split_gmm,
       # otherwise, choose the proposed split with the highest score
       if (all(is.na(proposals[1, ]))) {
+        less_gp <- x[, p_choice] < splits[g, p_choice]
+        is_neg_gp <- typemarker[g, p_choice] == -1
+        xleft <- ifelse(is_neg_gp, 0, trans_split_gp)
+        xright <- ifelse(is_neg_gp, trans_split_gp, 1)
+        subsetter[, g] <- subsetter[, g] & ((is_neg_gp & less_gp) | (!is_neg_gp & !less_gp))
         paused[g, !is.na(progress[g, ]) & !progress[g, ]] <- TRUE
         for (p in which(!is.na(progress[g, ]) & !progress[g, ])) {
           x_gp <- x[subsetter[, g], p]
@@ -59,21 +64,14 @@ targeted_split <- function(
           if (gmm_out$bic_two < gmm_out$bic_one) {
             splits[g, p] <- gmm_out$split
             scores[g, p] <- -Inf
+            less_gp <- x[, p] < splits[g, p]
             trans_split_gp <- (splits[g, p] - dens01_gp$min) / (dens01_gp$max - dens01_gp$min)
 
             is_neg_gp <- typemarker[g, p] == -1
+            xleft <- ifelse(is_neg_gp, 0, trans_split_gp)
+            xright <- ifelse(is_neg_gp, trans_split_gp, 1)
+            subsetter[, g] <- subsetter[, g] & ((is_neg_gp & less_gp) | (!is_neg_gp & !less_gp))
 
-            if (is_neg_gp) {
-              subsetter[, g] <- subsetter[, g] & (x[, p] < splits[g, p])
-
-              xleft <- 0
-              xright <- trans_split_gp
-            } else {
-              subsetter[, g] <- subsetter[, g] & (x[, p] > splits[g, p])
-
-              xleft <- trans_split_gp
-              xright <- 1
-            }
             rect_col <- "lightblue"
           } else {
             trans_split_gp <- rect_col <- xleft <- xright <- NA
@@ -91,17 +89,6 @@ targeted_split <- function(
 
         trans_split_gp <- (splits[g, p_choice] - dens01_gp$min) / (dens01_gp$max - dens01_gp$min)
 
-        if (typemarker[g, p_choice] == -1) {
-          subsetter[, g] <- subsetter[, g] & x[, p_choice] < splits[g, p_choice]
-
-          xleft <- 0
-          xright <- trans_split_gp
-        } else if (typemarker[g, p_choice] == +1) {
-          subsetter[, g] <- subsetter[, g] & x[, p_choice] > splits[g, p_choice]
-
-          xleft <- trans_split_gp
-          xright <- 1
-        }
         rect_col <- "green"
         plot_targeted_split(dens01_gp$dens, g, p_choice, scores[g, p_choice], typemarker,
                             xleft, xright, rect_col, trans_split_gp)
