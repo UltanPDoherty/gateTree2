@@ -3,7 +3,7 @@
 #' @param x Dataset in matrix or data.frame form.
 #' @param typemarker Cell-type marker table.
 #' @param min_height Minimum height for a peak to be recognised by find_peaks.
-#' @param min_score Minimum score for a split to be returned by find_valley.
+#' @param min_depth Minimum depth for a split to be returned by find_valley.
 #' @param min_val_cutoff Minimum value for an observation to be included.
 #' @param max_val_cutoff Maximum value for an observation to be included.
 #' @param plot Logical value.
@@ -14,10 +14,9 @@ targeted_split <- function(
   x,
   typemarker,
   min_height = 0.1,
-  min_score = 0.1,
+  min_depth = 0.5,
   min_val_cutoff = NULL,
   max_val_cutoff = NULL,
-  plot = TRUE
   explore = TRUE
 ) {
 
@@ -47,59 +46,50 @@ targeted_split <- function(
     while (any(!progress[g, ] & !paused[g, ], na.rm = TRUE)) {
 
       proposals <- propose_valleys(x, g, var_num, subsetter, progress,
-                                   min_score, min_height)
+                                   min_depth, min_height)
       found_valley <- any(!is.na(proposals[1, ]))
 
       if (found_valley) {
         found_boundary <- NA
-        rect_col <- "green"
-        score_name <- "depth"
+        scenario <- "valley"
       } else {
         proposals <- propose_boundaries(x, g, var_num, subsetter, progress)
         found_boundary <- any(!is.na(proposals[1, ]))
-        rect_col <- "lightblue"
-        score_name <- "bic"
+        scenario <- "boundary"
       }
 
-      # find the proposed valley with the highest score
-      p_choice <- which.max(proposals[2, ])
-      # put the valley and its score into the splits and scores matrices
-      splits[g, p_choice] <- proposals[1, p_choice]
-      scores[g, p_choice] <- proposals[2, p_choice]
-
-      # if all of the current round's proposals are NA, use split_gmm,
-      # otherwise, choose the proposed split with the highest score
       if (found_valley || found_boundary) {
+        # find the proposed valley with the highest score
+        p_choice <- which.max(proposals[2, ])
+        # put the valley and its score into the splits and scores matrices
+        splits[g, p_choice] <- proposals[1, p_choice]
+        scores[g, p_choice] <- proposals[2, p_choice]
+
         progress[g, p_choice] <- TRUE
-
-        scale01_gp <- scale01(x[subsetter[, g], p_choice])
-
+        x_gp <- x[subsetter[, g], p_choice]
         # find which events have values less than the chosen split
         less_gp <- x[, p_choice] < splits[g, p_choice]
         is_neg_gp <- typemarker[g, p_choice] == -1
-        subsetter[, g] <- subsetter[, g] & ((is_neg_gp & less_gp) | (!is_neg_gp & !less_gp))
+        refine_subset <- (is_neg_gp & less_gp) | (!is_neg_gp & !less_gp)
+        subsetter[, g] <- subsetter[, g] & refine_subset
 
-        trans_split_gp <- scale01(splits[g, p_choice],
-                                  scale01_gp$min, scale01_gp$max)$y
-        xleft <- ifelse(is_neg_gp, 0, trans_split_gp)
-        xright <- ifelse(is_neg_gp, trans_split_gp, 1)
-        plot_targeted_split(stats::density(scale01_gp$y), g, p_choice,
+        plot_targeted_split(x_gp, g, p_choice,
                             scores[g, p_choice], typemarker,
-                            xleft, xright, rect_col, trans_split_gp, score_name)
+                            is_neg_gp, scenario,
+                            splits[g, p_choice])
       } else {
         paused[g, !is.na(progress[g, ]) & !progress[g, ]] <- TRUE
-        trans_split_gp <- xleft <- xright <- rect_col <- NA
-        score_name <- "score"
+        is_neg_gp <- NA
+        scenario <- "nothing"
         for (p in which(!is.na(progress[g, ]) & !progress[g, ])) {
-          scale01_gp <- scale01(x[subsetter[, g], p])
-
-          plot_targeted_split(stats::density(scale01_gp$y), g, p,
+          x_gp <- x[subsetter[, g], p]
+          plot_targeted_split(x_gp, g, p,
                               scores[g, p], typemarker,
-                              xleft, xright, rect_col, trans_split_gp, score_name)
+                              is_neg_gp, scenario,
+                              splits[g, p])
         }
       }
     }
-  }
 
     if (explore) {
       false_progress <- array(FALSE, dim = dim(typemarker))
@@ -161,9 +151,6 @@ find_inside_cutoffs <- function(x, min_val_cutoff, max_val_cutoff) {
   return(inside_cutoffs)
 }
 
-plot_targeted_split <- function(dens_gp, g, p, score, typemarker,
-                                xleft, xright, rect_col, trans_split_gp,
-                                score_name) {
 plot_targeted_split <- function(x_gp, g, p, depth, typemarker,
                                 is_negative, scenario, split_gp) {
 
@@ -201,7 +188,8 @@ plot_targeted_split <- function(x_gp, g, p, depth, typemarker,
   graphics::abline(v = trans_split_gp, lty = linetype)
 }
 
-propose_valleys <- function(x, g, var_num, subsetter, progress, min_score, min_height) {
+propose_valleys <- function(x, g, var_num, subsetter, progress,
+                            min_score, min_height) {
   valleys <- matrix(nrow = 2, ncol = var_num)
 
   # loop over all variables to propose splits
