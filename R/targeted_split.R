@@ -179,15 +179,15 @@ propose_splits <- function(x, g, P, subsetter, progress, min_score, min_height){
     # find variables that are not NA or TRUE in the progress matrix
     if (!is.na(progress[g, p]) & !progress[g, p]){
       # 0-1 scale this variable for the pathway's current subset
-      scale_gp <- dens01(x[subsetter[, g], p])
+      dens01_gp <- dens01(x[subsetter[, g], p])
 
       proposals[, p] <- find_valley(
-        scale_gp$dens,
+        dens01_gp$dens,
         score = TRUE,
         min_score = min_score,
         min_height = min_height)
 
-      proposals[1, p] <- proposals[1, p] * (scale_gp$max - scale_gp$min) + scale_gp$min
+      proposals[1, p] <- proposals[1, p] * (dens01_gp$max - dens01_gp$min) + dens01_gp$min
     }
   }
 
