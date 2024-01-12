@@ -45,20 +45,29 @@ targeted_split <- function(
     # this pathway is TRUE
     while (any(!progress[g, ] & !paused[g, ], na.rm = TRUE)) {
 
-      valleys <- propose_valleys(x, g, P, subsetter, progress, min_score, min_height)
+      proposals <- propose_valleys(x, g, P, subsetter, progress, min_score, min_height)
+      found_valley <- any(!is.na(proposals[1, ]))
 
+      if (found_valley) {
+        found_boundary <- NA
+        rect_col <- "green"
+        score_name <- "depth"
+      } else {
+        proposals <- propose_boundaries(x, g, P, subsetter, progress)
+        found_boundary <- any(!is.na(proposals[1, ]))
+        rect_col <- "lightblue"
+        score_name <- "bic"
+      }
 
+      # find the proposed valley with the highest score
+      p_choice <- which.max(proposals[2, ])
+      # put the valley and its score into the splits and scores matrices
+      splits[g, p_choice] <- proposals[1, p_choice]
+      scores[g, p_choice] <- proposals[2, p_choice]
 
       # if all of the current round's proposals are NA, use split_gmm,
       # otherwise, choose the proposed split with the highest score
-      if (any(!is.na(valleys[1, ]))) {
-
-        # find the proposed valley with the highest score
-        p_choice <- which.max(valleys[2, ])
-        # put the valley and its score into the splits and scores matrices
-        splits[g, p_choice] <- valleys[1, p_choice]
-        scores[g, p_choice] <- valleys[2, p_choice]
-
+      if (found_valley | found_boundary) {
         progress[g, p_choice] <- TRUE
 
         dens01_gp <- dens01(x[subsetter[, g], p_choice])
@@ -72,34 +81,16 @@ targeted_split <- function(
 
         xleft <- ifelse(is_neg_gp, 0, trans_split_gp)
         xright <- ifelse(is_neg_gp, trans_split_gp, 1)
-        rect_col <- "green"
         plot_targeted_split(dens01_gp$dens, g, p_choice, scores[g, p_choice], typemarker,
-                            xleft, xright, rect_col, trans_split_gp)
+                            xleft, xright, rect_col, trans_split_gp, score_name)
       } else {
         paused[g, !is.na(progress[g, ]) & !progress[g, ]] <- TRUE
+        trans_split_gp <- xleft <- xright <- rect_col <- score_name <- NA
         for (p in which(!is.na(progress[g, ]) & !progress[g, ])) {
-          x_gp <- x[subsetter[, g], p]
-          gmm_out <- split_gmm(x_gp)
+          dens01_gp <- dens01(x[subsetter[, g], p])
 
-          dens01_gp <- dens01(x_gp)
-          if (gmm_out$bic_two < gmm_out$bic_one) {
-            scores[g, p] <- -Inf
-
-            splits[g, p] <- gmm_out$split
-            less_gp <- x[, p] < splits[g, p]
-            trans_split_gp <- (splits[g, p] - dens01_gp$min) / (dens01_gp$max - dens01_gp$min)
-
-            is_neg_gp <- typemarker[g, p] == -1
-            xleft <- ifelse(is_neg_gp, 0, trans_split_gp)
-            xright <- ifelse(is_neg_gp, trans_split_gp, 1)
-            subsetter[, g] <- subsetter[, g] & ((is_neg_gp & less_gp) | (!is_neg_gp & !less_gp))
-
-            rect_col <- "lightblue"
-          } else {
-            trans_split_gp <- xleft <- xright <- rect_col <- NA
-          }
           plot_targeted_split(dens01_gp$dens, g, p, scores[g, p], typemarker,
-                              xleft, xright, rect_col, trans_split_gp)
+                            xleft, xright, rect_col, trans_split_gp, score_name)
         }
       }
     }
@@ -170,10 +161,11 @@ find_inside_cutoffs <- function(x, min_val_cutoff, max_val_cutoff) {
 }
 
 plot_targeted_split <- function(dens_gp, g, p, score, typemarker,
-                                xleft, xright, rect_col, trans_split_gp) {
+                                xleft, xright, rect_col, trans_split_gp,
+                                score_name) {
   plot(dens_gp,
        main = paste0("g = ", g, ", p = ", p,
-                     ", score = ", round(score, 3)),
+                     ", ", score_name, " = ", round(score, 3)),
        sub = paste0(rownames(typemarker)[g], ", ", colnames(typemarker)[p]),
        panel.first = graphics::rect(xleft, 0, xright, max(dens_gp$y),
                                     col = rect_col, border =  NA))
@@ -181,7 +173,7 @@ plot_targeted_split <- function(dens_gp, g, p, score, typemarker,
 }
 
 propose_valleys <- function(x, g, P, subsetter, progress, min_score, min_height){
-  proposals <- matrix(nrow = 2, ncol = P)
+  valleys <- matrix(nrow = 2, ncol = P)
 
   # loop over all variables to propose splits
   for (p in 1:P){
@@ -190,17 +182,31 @@ propose_valleys <- function(x, g, P, subsetter, progress, min_score, min_height)
       # 0-1 scale this variable for the pathway's current subset
       dens01_gp <- dens01(x[subsetter[, g], p])
 
-      proposals[, p] <- find_valley(
+      valleys[, p] <- find_valley(
         dens01_gp$dens,
         score = TRUE,
         min_score = min_score,
         min_height = min_height)
 
-      proposals[1, p] <- proposals[1, p] * (dens01_gp$max - dens01_gp$min) + dens01_gp$min
+      valleys[1, p] <- valleys[1, p] * (dens01_gp$max - dens01_gp$min) + dens01_gp$min
     }
   }
 
-  return(proposals)
+  return(valleys)
+}
+
+propose_boundaries <- function(x, g, P, subsetter, progress){
+  boundaries <- matrix(nrow = 2, ncol = P)
+
+  # loop over all variables to propose splits
+  for (p in 1:P){
+    # find variables that are not NA or TRUE in the progress matrix
+    if (!is.na(progress[g, p]) & !progress[g, p]){
+      boundaries[, p] <- find_boundary(x[subsetter[, g], p])
+    }
+  }
+
+  return(boundaries)
 }
 
 dens01 <- function(x){
