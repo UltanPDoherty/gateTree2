@@ -51,7 +51,8 @@ targeted_split <- function(
 
       # if all of the current round's proposals are NA, use split_gmm,
       # otherwise, choose the proposed split with the highest score
-        less_gp <- x[, p_choice] < splits[g, p_choice]
+      if (any(!is.na(valleys[1, ]))) {
+
         # find the proposed valley with the highest score
         p_choice <- which.max(valleys[2, ])
         # put the valley and its score into the splits and scores matrices
@@ -64,11 +65,13 @@ targeted_split <- function(
 
         trans_split_gp <- (splits[g, p_choice] - dens01_gp$min) / (dens01_gp$max - dens01_gp$min)
 
+        # find which events have values less than the chosen split
+        less_gp <- x[, p_choice] < splits[g, p_choice]
         is_neg_gp <- typemarker[g, p_choice] == -1
-        xleft <- ifelse(is_neg_gp, 0, trans_split_gp)
-        xright <- ifelse(is_neg_gp, trans_split_gp, 1)
         subsetter[, g] <- subsetter[, g] & ((is_neg_gp & less_gp) | (!is_neg_gp & !less_gp))
 
+        xleft <- ifelse(is_neg_gp, 0, trans_split_gp)
+        xright <- ifelse(is_neg_gp, trans_split_gp, 1)
         rect_col <- "green"
         plot_targeted_split(dens01_gp$dens, g, p_choice, scores[g, p_choice], typemarker,
                             xleft, xright, rect_col, trans_split_gp)
