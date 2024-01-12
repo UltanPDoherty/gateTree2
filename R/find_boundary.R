@@ -1,4 +1,4 @@
-split_gmm <- function(x){
+find_boundary <- function(x){
   N <- length(x)
   sortx <- sort(x)
 
