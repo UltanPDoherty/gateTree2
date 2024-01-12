@@ -45,15 +45,18 @@ targeted_split <- function(
     # this pathway is TRUE
     while (any(!progress[g, ] & !paused[g, ], na.rm = TRUE)) {
 
-      proposals <- propose_splits(x, g, P, subsetter, progress, min_score, min_height)
+      valleys <- propose_valleys(x, g, P, subsetter, progress, min_score, min_height)
+
+
 
       # if all of the current round's proposals are NA, use split_gmm,
       # otherwise, choose the proposed split with the highest score
-      if (any(!is.na(proposals[1, ]))) {
-        p_choice <- which.max(proposals[2, ])
-        splits[g, p_choice] <- proposals[1, p_choice]
-        scores[g, p_choice] <- proposals[2, p_choice]
         less_gp <- x[, p_choice] < splits[g, p_choice]
+        # find the proposed valley with the highest score
+        p_choice <- which.max(valleys[2, ])
+        # put the valley and its score into the splits and scores matrices
+        splits[g, p_choice] <- valleys[1, p_choice]
+        scores[g, p_choice] <- valleys[2, p_choice]
 
         progress[g, p_choice] <- TRUE
 
@@ -174,7 +177,7 @@ plot_targeted_split <- function(dens_gp, g, p, score, typemarker,
   graphics::abline(v = trans_split_gp)
 }
 
-propose_splits <- function(x, g, P, subsetter, progress, min_score, min_height){
+propose_valleys <- function(x, g, P, subsetter, progress, min_score, min_height){
   proposals <- matrix(nrow = 2, ncol = P)
 
   # loop over all variables to propose splits
