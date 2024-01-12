@@ -18,6 +18,7 @@ targeted_split <- function(
   min_val_cutoff = NULL,
   max_val_cutoff = NULL,
   plot = TRUE
+  explore = TRUE
 ) {
 
   path_num <- nrow(typemarker)
@@ -100,6 +101,20 @@ targeted_split <- function(
     }
   }
 
+    if (explore) {
+      false_progress <- array(FALSE, dim = dim(typemarker))
+
+      proposals <- propose_valleys(x, g, var_num, subsetter, false_progress,
+                                   2 * min_depth, 2 * min_height)
+      for (p in 1:var_num) {
+        if (!is.na(proposals[1, p])) {
+          x_gp <- x[subsetter[, g], p]
+          is_neg_gp <- NA
+          scenario <- "undiscovered"
+          plot_targeted_split(x_gp, g, p,
+                              proposals[2, p], typemarker,
+                              is_neg_gp, scenario,
+                              proposals[1, p])
         }
       }
     }
