@@ -222,7 +222,7 @@ plot_targeted_split <- function(x_gp, g, p, depth, typemarker,
        xlab = paste0("N before = ", size_before, ", ",
                      "N after = ", size_after),
        panel.first = graphics::rect(xleft, 0, xright, max(dens_gp$y),
-                                    col = rect_col, border =  NA),)
+                                    col = rect_col, border =  NA))
   graphics::abline(v = trans_split_gp, lty = linetype)
 
   return(NULL)
@@ -243,7 +243,7 @@ plot_targeted_split <- function(x_gp, g, p, depth, typemarker,
 #' @return valleys
 #' @export
 propose_valleys <- function(x, g, var_num, subsetter, progress,
-                            min_score, min_height) {
+                            min_depth, min_height) {
   valleys <- matrix(nrow = 2, ncol = var_num)
 
   # loop over all variables to propose splits
@@ -257,7 +257,7 @@ propose_valleys <- function(x, g, var_num, subsetter, progress,
       valleys[, p] <- find_valley(
         dens01_gp,
         score = TRUE,
-        min_score = min_score,
+        min_depth = min_depth,
         min_height = min_height
       )
 

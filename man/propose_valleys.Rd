@@ -4,7 +4,7 @@
 \alias{propose_valleys}
 \title{Wrapper for \code{find_valley}.}
 \usage{
-propose_valleys(x, g, var_num, subsetter, progress, min_score, min_height)
+propose_valleys(x, g, var_num, subsetter, progress, min_depth, min_height)
 }
 \arguments{
 \item{x}{Data.}
@@ -17,9 +17,9 @@ propose_valleys(x, g, var_num, subsetter, progress, min_score, min_height)
 
 \item{progress}{The progress matrix.}
 
-\item{min_score}{min_score for find_valley function.}
-
 \item{min_height}{min_height for find_valley function.}
+
+\item{min_score}{min_score for find_valley function.}
 }
 \value{
 valleys

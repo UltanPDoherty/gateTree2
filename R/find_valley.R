@@ -1,12 +1,12 @@
-find_valley <- function(dens, is_peak = NULL, score = FALSE,
-                        min_score = 0.01, min_height = 0.01) {
+find_valley <- function(dens, is_peak = NULL, depth = FALSE,
+                        min_depth = 0.01, min_height = 0.01) {
 
   if (is.null(is_peak)) {
     is_peak <- find_peaks(dens, min_height = min_height)
   }
 
   if (sum(is_peak) == 1) {
-    if (score) {
+    if (depth) {
       return(c(NA, NA))
     } else {
       return(NA)
@@ -21,7 +21,7 @@ find_valley <- function(dens, is_peak = NULL, score = FALSE,
   otherpeaks <- data.frame(x = dens$x[otherpeaks_ind],
                            y = dens$y[otherpeaks_ind])
 
-  scores <- valleys <- valley_ind <- c()
+  depths <- valleys <- valley_ind <- c()
   interpeak <- matrix(nrow = length(dens$x), ncol = length(otherpeaks$x))
   for (i in seq_along(otherpeaks$x)) {
     peakpair_x <- sort(c(otherpeaks$x[i], maxpeak$x))
@@ -29,20 +29,20 @@ find_valley <- function(dens, is_peak = NULL, score = FALSE,
     interpeak[, i] <- dens$x > peakpair_x[1] & dens$x < peakpair_x[2]
     valley_ind[i] <- peakpair_ind[1] + which.min(dens$y[interpeak[, i]])
     valleys[i] <- dens$y[valley_ind[i]]
-    scores[i] <- otherpeaks$y[i] - valleys[i]
+    depths[i] <- otherpeaks$y[i] - valleys[i]
   }
 
-  if (max(scores) < min_score) {
-    if (score) {
+  if (max(depths) < min_depth) {
+    if (depth) {
       return(c(NA, NA))
     } else {
       return(NA)
     }
   } else {
-    if (score) {
-      return(c(dens$x[valley_ind[which.max(scores)]], max(scores)))
+    if (depth) {
+      return(c(dens$x[valley_ind[which.max(depths)]], max(depths)))
     } else {
-      return(dens$x[valley_ind[which.max(scores)]])
+      return(dens$x[valley_ind[which.max(depths)]])
     }
   }
 }
