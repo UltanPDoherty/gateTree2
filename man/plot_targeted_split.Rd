@@ -4,16 +4,7 @@
 \alias{plot_targeted_split}
 \title{Plotting function for \code{targeted_split}.}
 \usage{
-plot_targeted_split(
-  x_gp,
-  g,
-  p,
-  depth,
-  typemarker,
-  scenario,
-  split_gp,
-  split_size
-)
+plot_targeted_split(x_gp, g, p, depth, typemarker, scenario, split_gp)
 }
 \arguments{
 \item{x_gp}{The data to be displayed, should be only pathway g and marker p.}
@@ -29,8 +20,6 @@ plot_targeted_split(
 \item{scenario}{"valley", "boundary", "nothing", or "undiscovered".}
 
 \item{split_gp}{The split value.}
-
-\item{split_size}{The size of the subset before and after the split.}
 }
 \description{
 Plotting function for \code{targeted_split}.
