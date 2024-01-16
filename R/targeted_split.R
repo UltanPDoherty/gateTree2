@@ -6,8 +6,8 @@
 #' @param min_depth Minimum depth for a split to be returned by find_valley.
 #' @param min_val_cutoff Minimum value for an observation to be included.
 #' @param max_val_cutoff Maximum value for an observation to be included.
-#' @param plot Logical value.
 #' @param use_boundaries Logical value.
+#' @param explore Logical value.
 #'
 #' @return splits, typemarker, subsetter
 #' @export
