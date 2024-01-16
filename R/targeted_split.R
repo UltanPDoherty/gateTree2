@@ -7,6 +7,7 @@
 #' @param min_val_cutoff Minimum value for an observation to be included.
 #' @param max_val_cutoff Maximum value for an observation to be included.
 #' @param plot Logical value.
+#' @param use_boundaries Logical value.
 #'
 #' @return splits, typemarker, subsetter
 #' @export
@@ -17,6 +18,7 @@ targeted_split <- function(
   min_depth = 0.5,
   min_val_cutoff = NULL,
   max_val_cutoff = NULL,
+  use_boundaries = TRUE,
   explore = TRUE
 ) {
 
@@ -52,10 +54,13 @@ targeted_split <- function(
       if (found_valley) {
         found_boundary <- NA
         scenario <- "valley"
-      } else {
+      } else if (use_boundaries) {
         proposals <- propose_boundaries(x, g, var_num, subsetter, progress)
         found_boundary <- any(!is.na(proposals[1, ]))
         scenario <- "boundary"
+      } else {
+        found_boundary <- FALSE
+        scenario <- "nothing"
       }
 
       if (found_valley || found_boundary) {
@@ -82,7 +87,6 @@ targeted_split <- function(
       } else {
         paused[g, !is.na(progress[g, ]) & !progress[g, ]] <- TRUE
         is_neg_gp <- NA
-        scenario <- "nothing"
         for (p in which(!is.na(progress[g, ]) & !progress[g, ])) {
           x_gp <- x[subsetter[, g], p]
           split_size <- c(length(x_gp), NA)
