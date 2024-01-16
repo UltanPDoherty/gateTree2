@@ -82,17 +82,16 @@ targeted_split <- function(
 
         plot_targeted_split(x_gp, g, p_choice,
                             scores[g, p_choice], typemarker,
-                            is_neg_gp, scenario,
+                            scenario,
                             splits[g, p_choice], split_size)
       } else {
         paused[g, !is.na(progress[g, ]) & !progress[g, ]] <- TRUE
-        is_neg_gp <- NA
         for (p in which(!is.na(progress[g, ]) & !progress[g, ])) {
           x_gp <- x[subsetter[, g], p]
           split_size <- c(length(x_gp), NA)
           plot_targeted_split(x_gp, g, p,
                               scores[g, p], typemarker,
-                              is_neg_gp, scenario,
+                              scenario,
                               splits[g, p], split_size)
         }
       }
@@ -108,11 +107,10 @@ targeted_split <- function(
           x_gp <- x[subsetter[, g], p]
           split_size <- c(length(x_gp), sum(x_gp > proposals[1, p]))
           if (split_size[1] > 100) {
-            is_neg_gp <- FALSE
             scenario <- "undiscovered"
             plot_targeted_split(x_gp, g, p,
                                 proposals[2, p], typemarker,
-                                is_neg_gp, scenario,
+                                scenario,
                                 proposals[1, p], split_size)
           }
         }
@@ -180,7 +178,6 @@ find_inside_cutoffs <- function(x, min_val_cutoff, max_val_cutoff) {
 #' @param p The marker number.
 #' @param depth The depth of the split.
 #' @param typemarker The cell-type marker table.
-#' @param is_negative Whether the population is negative for this marker.
 #' @param scenario "valley", "boundary", "nothing", or "undiscovered".
 #' @param split_gp The split value.
 #' @param split_size The size of the subset before and after the split.
@@ -188,7 +185,7 @@ find_inside_cutoffs <- function(x, min_val_cutoff, max_val_cutoff) {
 #' @return NULL
 #' @export
 plot_targeted_split <- function(x_gp, g, p, depth, typemarker,
-                                is_negative, scenario, split_gp, split_size) {
+                                scenario, split_gp, split_size) {
 
   rect_col <- switch(scenario,
                      "valley" = "lightgreen",
@@ -205,6 +202,11 @@ plot_targeted_split <- function(x_gp, g, p, depth, typemarker,
                      "boundary" = "dashed",
                      "nothing" = "blank",
                      "undiscovered" = "dotted")
+  is_negative <- switch(scenario,
+                        "valley" = (typemarker[g, p] == -1),
+                        "boundary" = (typemarker[g, p] == -1),
+                        "nothing" = NA,
+                        "undiscovered" = FALSE)
 
   scale01_gp <- scale01(x_gp)
   dens_gp <- stats::density(scale01_gp$y)

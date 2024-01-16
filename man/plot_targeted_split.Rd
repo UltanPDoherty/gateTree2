@@ -10,7 +10,6 @@ plot_targeted_split(
   p,
   depth,
   typemarker,
-  is_negative,
   scenario,
   split_gp,
   split_size
@@ -26,8 +25,6 @@ plot_targeted_split(
 \item{depth}{The depth of the split.}
 
 \item{typemarker}{The cell-type marker table.}
-
-\item{is_negative}{Whether the population is negative for this marker.}
 
 \item{scenario}{"valley", "boundary", "nothing", or "undiscovered".}
 
