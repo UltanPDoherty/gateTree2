@@ -78,21 +78,14 @@ targeted_split <- function(
         refine_subset <- (is_neg_gp & less_gp) | (!is_neg_gp & !less_gp)
         subsetter[, g] <- subsetter[, g] & refine_subset
 
-        split_size <- c(length(x_gp), sum(subsetter[, g]))
-
-        plot_targeted_split(x_gp, g, p_choice,
-                            scores[g, p_choice], typemarker,
-                            scenario,
-                            splits[g, p_choice], split_size)
+        plot_targeted_split(x_gp, g, p_choice, scores[g, p_choice], typemarker,
+                            scenario, splits[g, p_choice])
       } else {
         paused[g, !is.na(progress[g, ]) & !progress[g, ]] <- TRUE
         for (p in which(!is.na(progress[g, ]) & !progress[g, ])) {
           x_gp <- x[subsetter[, g], p]
-          split_size <- c(length(x_gp), NA)
-          plot_targeted_split(x_gp, g, p,
-                              scores[g, p], typemarker,
-                              scenario,
-                              splits[g, p], split_size)
+          plot_targeted_split(x_gp, g, p, scores[g, p], typemarker,
+                              scenario, splits[g, p])
         }
       }
     }
@@ -105,13 +98,10 @@ targeted_split <- function(
       for (p in 1:var_num) {
         if (!is.na(proposals[1, p])) {
           x_gp <- x[subsetter[, g], p]
-          split_size <- c(length(x_gp), sum(x_gp > proposals[1, p]))
-          if (split_size[1] > 100) {
+          if (length(x_gp) > 100) {
             scenario <- "undiscovered"
-            plot_targeted_split(x_gp, g, p,
-                                proposals[2, p], typemarker,
-                                scenario,
-                                proposals[1, p], split_size)
+            plot_targeted_split(x_gp, g, p, proposals[2, p], typemarker,
+                                scenario, proposals[1, p])
           }
         }
       }
@@ -180,12 +170,11 @@ find_inside_cutoffs <- function(x, min_val_cutoff, max_val_cutoff) {
 #' @param typemarker The cell-type marker table.
 #' @param scenario "valley", "boundary", "nothing", or "undiscovered".
 #' @param split_gp The split value.
-#' @param split_size The size of the subset before and after the split.
 #'
 #' @return NULL
 #' @export
 plot_targeted_split <- function(x_gp, g, p, depth, typemarker,
-                                scenario, split_gp, split_size) {
+                                scenario, split_gp) {
 
   rect_col <- switch(scenario,
                      "valley" = "lightgreen",
@@ -217,12 +206,21 @@ plot_targeted_split <- function(x_gp, g, p, depth, typemarker,
   xleft <- ifelse(is_negative, 0, trans_split_gp)
   xright <- ifelse(is_negative, trans_split_gp, 1)
 
+  size_before <- length(x_gp)
+  if (is.na(is_negative)) {
+    size_after <- NA
+  } else if (is_negative) {
+    size_after <- sum(x_gp < split_gp)
+  } else {
+    size_after <- sum(x_gp > split_gp)
+  }
+
   plot(dens_gp,
        main = paste0("g = ", g, ", p = ", p,
                      ", depth = ", round(depth, 3)),
        sub = paste0(rownames(typemarker)[g], ", ", colnames(typemarker)[p]),
-       xlab = paste0("N before = ", split_size[1], ", ",
-                     "N after = ", split_size[2]),
+       xlab = paste0("N before = ", size_before, ", ",
+                     "N after = ", size_after),
        panel.first = graphics::rect(xleft, 0, xright, max(dens_gp$y),
                                     col = rect_col, border =  NA),)
   graphics::abline(v = trans_split_gp, lty = linetype)
