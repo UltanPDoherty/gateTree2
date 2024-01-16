@@ -17,9 +17,9 @@ propose_valleys(x, g, var_num, subsetter, progress, min_depth, min_height)
 
 \item{progress}{The progress matrix.}
 
-\item{min_height}{min_height for find_valley function.}
+\item{min_depth}{\code{min_depth} for \code{find_valley} function.}
 
-\item{min_score}{min_score for find_valley function.}
+\item{min_height}{\code{min_height} for \code{find_valley} function.}
 }
 \value{
 valleys

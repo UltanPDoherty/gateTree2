@@ -237,8 +237,8 @@ plot_targeted_split <- function(x_gp, g, p, depth, typemarker,
 #' @param var_num Total number of markers.
 #' @param subsetter The subsetting matrix.
 #' @param progress The progress matrix.
-#' @param min_score min_score for find_valley function.
-#' @param min_height min_height for find_valley function.
+#' @param min_depth `min_depth` for `find_valley` function.
+#' @param min_height `min_height` for `find_valley` function.
 #'
 #' @return valleys
 #' @export
@@ -256,7 +256,7 @@ propose_valleys <- function(x, g, var_num, subsetter, progress,
 
       valleys[, p] <- find_valley(
         dens01_gp,
-        score = TRUE,
+        depth = TRUE,
         min_depth = min_depth,
         min_height = min_height
       )
