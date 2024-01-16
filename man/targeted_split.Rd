@@ -7,11 +7,12 @@
 targeted_split(
   x,
   typemarker,
-  min_height = 0.1,
-  min_score = 0.1,
+  min_height = 0.5,
+  min_depth = 0.5,
   min_val_cutoff = NULL,
   max_val_cutoff = NULL,
-  plot = TRUE
+  use_boundaries = TRUE,
+  explore = TRUE
 )
 }
 \arguments{
@@ -21,13 +22,15 @@ targeted_split(
 
 \item{min_height}{Minimum height for a peak to be recognised by find_peaks.}
 
-\item{min_score}{Minimum score for a split to be returned by find_valley.}
+\item{min_depth}{Minimum depth for a split to be returned by find_valley.}
 
 \item{min_val_cutoff}{Minimum value for an observation to be included.}
 
 \item{max_val_cutoff}{Maximum value for an observation to be included.}
 
-\item{plot}{Logical value.}
+\item{use_boundaries}{Logical value.}
+
+\item{explore}{Logical value.}
 }
 \value{
 splits, typemarker, subsetter

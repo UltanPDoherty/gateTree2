@@ -136,6 +136,16 @@ targeted_split <- function(
               subsetter = subsetter))
 }
 
+#===============================================================================
+
+#' Find which observations are inside the cutoffs for each marker.
+#'
+#' @param x Dataset in matrix or data.frame form.
+#' @param min_val_cutoff Minimum value for an observation to be included.
+#' @param max_val_cutoff Maximum value for an observation to be included.
+#'
+#' @return inside_cutoffs
+#' @export
 find_inside_cutoffs <- function(x, min_val_cutoff, max_val_cutoff) {
   # find which observations are outside either of the cutoffs for each marker
   if (is.null(min_val_cutoff)) {
@@ -161,6 +171,22 @@ find_inside_cutoffs <- function(x, min_val_cutoff, max_val_cutoff) {
   return(inside_cutoffs)
 }
 
+#===============================================================================
+
+#' Plotting function for `targeted_split`.
+#'
+#' @param x_gp The data to be displayed, should be only pathway g and marker p.
+#' @param g The pathway number.
+#' @param p The marker number.
+#' @param depth The depth of the split.
+#' @param typemarker The cell-type marker table.
+#' @param is_negative Whether the population is negative for this marker.
+#' @param scenario "valley", "boundary", "nothing", or "undiscovered".
+#' @param split_gp The split value.
+#' @param split_size The size of the subset before and after the split.
+#'
+#' @return NULL
+#' @export
 plot_targeted_split <- function(x_gp, g, p, depth, typemarker,
                                 is_negative, scenario, split_gp, split_size) {
 
@@ -198,8 +224,24 @@ plot_targeted_split <- function(x_gp, g, p, depth, typemarker,
        panel.first = graphics::rect(xleft, 0, xright, max(dens_gp$y),
                                     col = rect_col, border =  NA),)
   graphics::abline(v = trans_split_gp, lty = linetype)
+
+  return(NULL)
 }
 
+#===============================================================================
+
+#' Wrapper for `find_valley`.
+#'
+#' @param x Data.
+#' @param g The pathway number.
+#' @param var_num Total number of markers.
+#' @param subsetter The subsetting matrix.
+#' @param progress The progress matrix.
+#' @param min_score min_score for find_valley function.
+#' @param min_height min_height for find_valley function.
+#'
+#' @return valleys
+#' @export
 propose_valleys <- function(x, g, var_num, subsetter, progress,
                             min_score, min_height) {
   valleys <- matrix(nrow = 2, ncol = var_num)
@@ -226,6 +268,18 @@ propose_valleys <- function(x, g, var_num, subsetter, progress,
   return(valleys)
 }
 
+#===============================================================================
+
+#' Wrapper for `find_boundary`.
+#'
+#' @param x Data.
+#' @param g The pathway number.
+#' @param var_num Total number of markers.
+#' @param subsetter The subsetting matrix.
+#' @param progress The progress matrix.
+#'
+#' @return boundaries
+#' @export
 propose_boundaries <- function(x, g, var_num, subsetter, progress) {
   boundaries <- matrix(nrow = 2, ncol = var_num)
 
@@ -240,6 +294,16 @@ propose_boundaries <- function(x, g, var_num, subsetter, progress) {
   return(boundaries)
 }
 
+#===============================================================================
+
+#' 0-1 scaling.
+#'
+#' @param x Data.
+#' @param other_min Minimum to be used for 0-1 scaling.
+#' @param other_max Maximum to be used for 0-1 scaling.
+#'
+#' @return Scaled version of `x`.
+#' @export
 scale01 <- function(x, other_min = NULL, other_max = NULL) {
 
   if (is.null(other_min)) {
@@ -259,10 +323,29 @@ scale01 <- function(x, other_min = NULL, other_max = NULL) {
   return(list(y = y, min = minimum, max = maximum))
 }
 
+#===============================================================================
+
+#' Undo 0-1 scaling.
+#'
+#' @param x Data.
+#' @param unscaled_min Minimum used for 0-1 scaling.
+#' @param unscaled_max Maximum used for 0-1 scaling.
+#'
+#' @return Unscaled version of `x`.
+#' @export
 unscale01 <- function(x, unscaled_min, unscaled_max) {
   return(x * (unscaled_max - unscaled_min) + unscaled_min)
 }
 
+#===============================================================================
+
+#' Undo 0-1 scaling.
+#'
+#' @param subsetter The subsetting matrix.
+#' @param path_num Total number of pathways.
+#'
+#' @return `is_a_duplicate`.
+#' @export
 check_duplicates <- function(subsetter, path_num) {
 
   is_a_duplicate <- rep(FALSE, path_num)
