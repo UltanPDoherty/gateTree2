@@ -2,18 +2,16 @@
 % Please edit documentation in R/targeted_split.R
 \name{check_duplicates}
 \alias{check_duplicates}
-\title{Undo 0-1 scaling.}
+\title{Check if final subsets are identical.}
 \usage{
-check_duplicates(subsetter, path_num)
+check_duplicates(subsetter)
 }
 \arguments{
 \item{subsetter}{The subsetting matrix.}
-
-\item{path_num}{Total number of pathways.}
 }
 \value{
 \code{is_a_duplicate}.
 }
 \description{
-Undo 0-1 scaling.
+Check if final subsets are identical.
 }

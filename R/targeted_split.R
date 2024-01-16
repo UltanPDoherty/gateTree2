@@ -120,7 +120,7 @@ targeted_split <- function(
     }
   }
 
-  is_a_duplicate <- check_duplicates(subsetter, path_num)
+  is_a_duplicate <- check_duplicates(subsetter)
   subsetter <- subsetter[, !is_a_duplicate]
   progress <- progress[!is_a_duplicate, ]
   splits <- splits[!is_a_duplicate, ]
@@ -339,14 +339,15 @@ unscale01 <- function(x, unscaled_min, unscaled_max) {
 
 #===============================================================================
 
-#' Undo 0-1 scaling.
+#' Check if final subsets are identical.
 #'
 #' @param subsetter The subsetting matrix.
-#' @param path_num Total number of pathways.
 #'
 #' @return `is_a_duplicate`.
 #' @export
-check_duplicates <- function(subsetter, path_num) {
+check_duplicates <- function(subsetter) {
+
+  path_num <- ncol(subsetter)
 
   is_a_duplicate <- rep(FALSE, path_num)
 
