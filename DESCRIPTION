@@ -16,4 +16,7 @@ biocViews:
 Imports: 
     clue,
     stats,
-    truncnorm
+    truncnorm,
+    ggplot2,
+    ggraph,
+    ggpubr

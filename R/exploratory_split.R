@@ -1,3 +1,19 @@
+#' Partition data set based on unsupervised marginal splits.
+#'
+#' @param x Dataset in matrix or data.frame form.
+#' @param min_height Minimum height for a peak to be recognised by find_peaks.
+#' @param min_depth Minimum depth for a split to be returned by find_valley.
+#' @param min_val_cutoff Minimum value for an observation to be included.
+#' @param max_val_cutoff Maximum value for an observation to be included.
+#' @param show_plot Logical value.
+#'
+#' @return splits, typemarker, subsetter
+#' @import ggplot2
+#' @import ggraph
+#' @importFrom ggpubr ggarrange
+#' @importFrom graphics par
+#' @importFrom utils tail
+#' @export
 exploratory_split <- function(
   x,
   min_height = 0.5,
@@ -95,7 +111,6 @@ exploratory_split <- function(
       path_nodes[[path_num + 1]] <- append(path_nodes[[path_num + 1]],
                                            node_number + 2)
 
-
       edge_name[node_number + 1] <- paste0(colnames(x)[p_choice], "-")
       edge_name[node_number + 2] <- paste0(colnames(x)[p_choice], "+")
 
@@ -140,7 +155,7 @@ exploratory_split <- function(
   my_ggraph <- ggraph::ggraph(edge_df, layout = "tree") +
     ggraph::geom_edge_elbow(aes(label = edge_name),
                             angle_calc = "across",
-                            label_dodge = unit(-0.03, "npc")) +
+                            label_dodge = grid::unit(-0.03, "npc")) +
     ggraph::geom_node_label(aes(label = leaf_name[order(ggraph_order)])) +
     ggraph::theme_graph()
 
@@ -170,6 +185,23 @@ exploratory_split <- function(
               edge_df = edge_df, labels = labels, signs = signs))
 }
 
+#===============================================================================
+
+#' Plotting function for exploratory_split.
+#'
+#' @param x_gp Univariate data.
+#' @param splits split matrix.
+#' @param g The current pathway.
+#' @param p_choice The chosen variable.
+#' @param subsetter The subsetting matrix.
+#' @param scores The scores matrix.
+#' @param is_negative Whether to display the negative or positive side.
+#' @param var_name The name of the variable.
+#'
+#' @return A ggplot object.
+#' @import ggplot2
+#' @importFrom stats density
+#' @export
 exploratory_plot <- function(
   x_gp,
   splits,
@@ -196,21 +228,33 @@ exploratory_plot <- function(
   size_before <- length(x_gp)
   size_after <- sum(subsetter[, g])
 
-  dens_gp_df <- data.frame(X = dens_gp$x, Y = dens_gp$y)
+  dens_gp_x <- dens_gp$x
+  dens_gp_y <- dens_gp$y
+  dens_gp_df <- data.frame(dens_gp_x, dens_gp_y)
 
-  ggplot2::ggplot(dens_gp_df, aes(x = X, y = Y)) +
-    ggplot2::geom_rect(aes(xmin = xleft, xmax = xright,
-                           ymin = 0, ymax = max(dens_gp$y)),
-                       fill = rect_col) +
-    ggplot2::geom_line() +
-    ggplot2::geom_vline(xintercept = trans_split_gp) +
-    ggplot2::labs(x = paste0("N before = ", size_before, ", ",
-                             "N after = ", size_after),
-                  title = paste0("g = ", g, ", p = ", p_choice, ", ",
-                  subtitle = var_name)
+  ggplot(dens_gp_df, aes(x = dens_gp_x, y = dens_gp_y)) +
+    geom_rect(aes(xmin = xleft, xmax = xright, ymin = 0, ymax = max(dens_gp$y)),
+              fill = rect_col) +
+    geom_line() +
+    geom_vline(xintercept = trans_split_gp) +
+    labs(x = paste0("N before = ", size_before, ", ", "N after = ", size_after),
+         y = "Density %",
+         title = paste0("g = ", g, ", p = ", p_choice, ", ",
                         "depth = ", round(scores[g, p_choice], 1), "%"),
+         subtitle = var_name) +
+    theme_bw()
 }
 
+#===============================================================================
+
+#' Plotting function for exploratory_split.
+#'
+#' @param signs The signs matrix.
+#' @param typemarker The cell type - marker matrix.
+#' @param subsetter The subsetting matrix.
+#'
+#' @return A ggplot object.
+#' @export
 merge_subsets <- function(signs, typemarker, subsetter) {
   match_array <- array(dim = c(nrow(signs), nrow(typemarker), ncol(signs)))
   match_matrix <- matrix(nrow = nrow(signs), ncol = nrow(typemarker))
