@@ -11,7 +11,6 @@
 #' @import ggplot2
 #' @import ggraph
 #' @importFrom ggpubr ggarrange
-#' @importFrom graphics par
 #' @importFrom utils tail
 #' @export
 exploratory_split <- function(
@@ -50,7 +49,6 @@ exploratory_split <- function(
   is_leaf <- c(TRUE)
 
   g <- 1
-  par(mfrow = c(2, 2))
   while (g <= path_num) {
     if (sum(subsetter[, g]) < 100) {
       found_valley <- FALSE
@@ -101,8 +99,8 @@ exploratory_split <- function(
         is_negative = FALSE, var_name = colnames(x)[p_choice]
       )
 
-      parent_node[node_number + 1] <- tail(path_nodes[[g]], 1)
-      parent_node[node_number + 2] <- tail(path_nodes[[g]], 1)
+      parent_node[node_number + 1] <- utils::tail(path_nodes[[g]], 1)
+      parent_node[node_number + 2] <- utils::tail(path_nodes[[g]], 1)
 
 
       path_nodes[[path_num + 1]] <- path_nodes[[g]]

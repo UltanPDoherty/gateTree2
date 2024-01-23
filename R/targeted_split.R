@@ -10,6 +10,7 @@
 #' @param explore Logical value.
 #'
 #' @return splits, typemarker, subsetter
+#' @importFrom ggpubr ggarrange
 #' @export
 targeted_split <- function(
   x,
@@ -27,6 +28,7 @@ targeted_split <- function(
   obs_num <- nrow(x)
 
   splits <- scores <- array(dim = dim(typemarker))
+  plot_list <- vector("list", path_num)
 
   subsetter <- matrix(TRUE, nrow = obs_num, ncol = path_num)
   colnames(subsetter) <- rownames(typemarker)
@@ -41,7 +43,6 @@ targeted_split <- function(
     # this gating pathway
     subsetter[, g] <- apply(inside_cutoffs[, typemarker[g, ] != 0], 1, all)
 
-    graphics::par(mfrow = c(2, 2))
     # continue inner loop until this pathway's row of the progress & paused
     # matrices do not contain any FALSE values.
     # that is, move onto the next pathway only when every required variable for
@@ -79,14 +80,20 @@ targeted_split <- function(
         refine_subset <- (is_neg_gp & less_gp) | (!is_neg_gp & !less_gp)
         subsetter[, g] <- subsetter[, g] & refine_subset
 
-        plot_targeted_split(x_gp, g, p_choice, scores[g, p_choice], typemarker,
-                            scenario, splits[g, p_choice])
+        g_length <- length(plot_list[[g]])
+        plot_list[[g]][[g_length + 1]] <- plot_targeted_split(
+          x_gp, g, p_choice, scores[g, p_choice],
+          typemarker, scenario, splits[g, p_choice]
+        )
       } else {
         paused[g, !is.na(progress[g, ]) & !progress[g, ]] <- TRUE
         for (p in which(!is.na(progress[g, ]) & !progress[g, ])) {
           x_gp <- x[subsetter[, g], p]
-          plot_targeted_split(x_gp, g, p, scores[g, p], typemarker,
-                              scenario, splits[g, p])
+          g_length <- length(plot_list[[g]])
+          plot_list[[g]][[g_length + 1]] <- plot_targeted_split(
+            x_gp, g, p, scores[g, p],
+            typemarker, scenario, splits[g, p]
+          )
         }
       }
     }
@@ -101,10 +108,28 @@ targeted_split <- function(
           x_gp <- x[subsetter[, g], p]
           if (length(x_gp) > 100) {
             scenario <- "undiscovered"
-            plot_targeted_split(x_gp, g, p, proposals[2, p], typemarker,
-                                scenario, proposals[1, p])
+
+            g_length <- length(plot_list[[g]])
+            plot_list[[g]][[g_length + 1]] <- plot_targeted_split(
+              x_gp, g, p, proposals[2, p],
+              typemarker, scenario, proposals[1, p]
+            )
           }
         }
+      }
+    }
+  }
+
+  arranged <- list()
+  for (g in 1:path_num) {
+
+    arranged[[g]] <- ggpubr::ggarrange(plotlist = plot_list[[g]],
+                                       ncol = 2, nrow = 2)
+    if (is.ggplot(arranged[[g]])) {
+      plot(arranged[[g]])
+    } else {
+      for (j in seq_along(arranged[[g]])) {
+        plot(arranged[[g]][[j]])
       }
     }
   }
@@ -187,11 +212,11 @@ plot_targeted_split <- function(x_gp, g, p, depth, typemarker,
                   "boundary" = NA,
                   "nothing" = NA,
                   "undiscovered" = depth)
-  linetype <- switch(scenario,
-                     "valley" = "solid",
-                     "boundary" = "dashed",
-                     "nothing" = "blank",
-                     "undiscovered" = "dotted")
+  line_type <- switch(scenario,
+                      "valley" = "solid",
+                      "boundary" = "dashed",
+                      "nothing" = "blank",
+                      "undiscovered" = "dotted")
   is_negative <- switch(scenario,
                         "valley" = (typemarker[g, p] == -1),
                         "boundary" = (typemarker[g, p] == -1),
@@ -216,20 +241,27 @@ plot_targeted_split <- function(x_gp, g, p, depth, typemarker,
     size_after <- sum(x_gp > split_gp)
   }
 
-  dens_gp$y <- dens_gp$y / max(dens_gp$y) * 100
+  dens_gp_x <- dens_gp$x
+  dens_gp_y <- dens_gp$y / max(dens_gp$y) * 100
+  dens_gp_df <- data.frame(dens_gp_x, dens_gp_y)
 
-  plot(dens_gp,
-       main = paste0("g = ", g, ", p = ", p,
-                     ", depth = ", round(depth, 1), "%"),
-       sub = paste0(rownames(typemarker)[g], ", ", colnames(typemarker)[p]),
-       xlab = paste0("N before = ", size_before, ", ",
-                     "N after = ", size_after),
-       ylab = "Density %",
-       panel.first = graphics::rect(xleft, 0, xright, max(dens_gp$y),
-                                    col = rect_col, border =  NA))
-  graphics::abline(v = trans_split_gp, lty = linetype)
+  gg <- ggplot(dens_gp_df, aes(x = dens_gp_x, y = dens_gp_y)) +
+    geom_rect(aes(xmin = xleft, xmax = xright, ymin = 0, ymax = max(dens_gp_y)),
+              fill = rect_col) +
+    geom_line() +
+    geom_vline(xintercept = trans_split_gp, linetype = line_type,
+               na.rm = TRUE) +
+    labs(
+      title = paste0("g = ", g, ", p = ", p, ", ",
+                     "depth = ", round(depth, 1), "%"),
+      subtitle = paste0("Pathway: ", rownames(typemarker)[g], ", ",
+                        "Variable: ", colnames(typemarker)[p]),
+      x = paste0("N before = ", size_before, ", N after = ", size_after),
+      y = "Density %"
+    ) +
+    theme_bw()
 
-  return(NULL)
+  return(gg)
 }
 
 #===============================================================================
