@@ -109,12 +109,12 @@ targeted_split <- function(
   }
 
   is_a_duplicate <- check_duplicates(subsetter)
-  subsetter <- subsetter[, !is_a_duplicate]
-  progress <- progress[!is_a_duplicate, ]
-  splits <- splits[!is_a_duplicate, ]
-  scores <- scores[!is_a_duplicate, ]
-  paused <- paused[!is_a_duplicate, ]
-  typemarker <- typemarker[!is_a_duplicate, ]
+  subsetter <- subsetter[, !is_a_duplicate, drop = FALSE]
+  progress <- progress[!is_a_duplicate, , drop = FALSE]
+  splits <- splits[!is_a_duplicate, , drop = FALSE]
+  scores <- scores[!is_a_duplicate, , drop = FALSE]
+  paused <- paused[!is_a_duplicate, , drop = FALSE]
+  typemarker <- typemarker[!is_a_duplicate, , drop = FALSE]
   path_num <- path_num - sum(is_a_duplicate)
 
   typemarker <- typemarker * !is.na(splits)
