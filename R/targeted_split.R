@@ -29,6 +29,7 @@ targeted_split <- function(
   splits <- scores <- array(dim = dim(typemarker))
 
   subsetter <- matrix(TRUE, nrow = obs_num, ncol = path_num)
+  colnames(subsetter) <- rownames(typemarker)
   paused <- array(FALSE, dim = dim(typemarker))
   progress <- typemarker == 0
 
