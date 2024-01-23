@@ -215,12 +215,15 @@ plot_targeted_split <- function(x_gp, g, p, depth, typemarker,
     size_after <- sum(x_gp > split_gp)
   }
 
+  dens_gp$y <- dens_gp$y / max(dens_gp$y) * 100
+
   plot(dens_gp,
        main = paste0("g = ", g, ", p = ", p,
-                     ", depth = ", round(depth, 3)),
+                     ", depth = ", round(depth, 1), "%"),
        sub = paste0(rownames(typemarker)[g], ", ", colnames(typemarker)[p]),
        xlab = paste0("N before = ", size_before, ", ",
                      "N after = ", size_after),
+       ylab = "Density %",
        panel.first = graphics::rect(xleft, 0, xright, max(dens_gp$y),
                                     col = rect_col, border =  NA))
   graphics::abline(v = trans_split_gp, lty = linetype)

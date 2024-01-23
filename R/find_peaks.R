@@ -1,5 +1,7 @@
 find_peaks <- function(dens, width_percent = 0.01, min_height = 0.01) {
 
+  dens$y <- dens$y / max(dens$y) * 100
+
   # w is the number of density points in width_percent of the range
   w <- round(length(dens$x) * width_percent)
 

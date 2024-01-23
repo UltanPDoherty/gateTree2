@@ -17,6 +17,9 @@ find_valley <- function(dens, is_peak = NULL, depth = FALSE,
   maxpeak <- data.frame(x = dens$x[maxpeak_ind],
                         y = dens$y[maxpeak_ind])
 
+  dens$y <- dens$y / maxpeak$y * 100
+  maxpeak$y <- 100.0
+
   otherpeaks_ind <- which(is_peak & dens$y != max(dens$y))
   otherpeaks <- data.frame(x = dens$x[otherpeaks_ind],
                            y = dens$y[otherpeaks_ind])

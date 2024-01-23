@@ -183,6 +183,8 @@ exploratory_plot <- function(
   scale01_gp <- scale01(x_gp)
   dens_gp <- stats::density(scale01_gp$y)
 
+  dens_gp$y <- dens_gp$y / max(dens_gp$y) * 100
+
   trans_split_gp <- scale01(splits[g, p_choice],
                             scale01_gp$min, scale01_gp$max)$y
 
@@ -205,8 +207,8 @@ exploratory_plot <- function(
     ggplot2::labs(x = paste0("N before = ", size_before, ", ",
                              "N after = ", size_after),
                   title = paste0("g = ", g, ", p = ", p_choice, ", ",
-                                 "depth = ", round(scores[g, p_choice], 3)),
                   subtitle = var_name)
+                        "depth = ", round(scores[g, p_choice], 1), "%"),
 }
 
 merge_subsets <- function(signs, typemarker, subsetter) {
