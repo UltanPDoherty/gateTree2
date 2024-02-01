@@ -36,11 +36,6 @@ targeted_tree <- function(
   splits      <- scores <- matrix(NA, nrow = path_num, ncol = var_num)
   split_order <- signs  <- matrix(NA, nrow = path_num, ncol = var_num)
 
-  inside_cutoffs <- find_inside_cutoffs(x, min_val_cutoff, max_val_cutoff)
-  inside_all <- apply(inside_cutoffs, 1, all)
-
-  subsetter <- matrix(inside_all, nrow = obs_num, ncol = path_num)
-
   already_split <- matrix(FALSE, nrow = path_num, ncol = var_num)
 
   plot_list <- list(list())
@@ -62,6 +57,10 @@ targeted_tree <- function(
   common_variables <- matrix(nrow = path_num, ncol = var_num)
   colnames(common_variables) <- colnames(x)
   common_variables[1, ] <- apply(plusminus_table == 0, 2, function(x) !any(x))
+
+  inside_cutoffs <- find_inside_cutoffs(x, min_val_cutoff, max_val_cutoff)
+  inside_common <- apply(inside_cutoffs[, common_variables[1, ]], 1, all)
+  subsetter <- matrix(inside_common, nrow = obs_num, ncol = path_num)
 
   pop_to_path <- rep(1, pop_num)
   path_num <- 1
@@ -173,13 +172,18 @@ targeted_tree <- function(
       node_num <- node_num + 1 + !no_new_branch
     } else {
       g <- g + 1
-      k <- match(g, pop_to_path)
-      current_node[g] <- start_node[g]
-      common_variables <- rbind(
-        common_variables,
-        apply(plusminus_table[pop_to_path == g, , drop = FALSE], 2,
-              function(x) all(x != 0))
-      )
+
+      if (any(pop_to_path == g)) {
+        k <- match(g, pop_to_path)
+        current_node[g] <- start_node[g]
+        common_variables <- rbind(
+          common_variables,
+          apply(plusminus_table[pop_to_path == g, , drop = FALSE], 2,
+                function(x) all(x != 0))
+        )
+        inside_common <- apply(inside_cutoffs[, common_variables[1, ]], 1, all)
+        subsetter[, g] <- subsetter[, g] & inside_common
+      }
     }
   }
 
@@ -197,10 +201,13 @@ targeted_tree <- function(
 
   labels <- c()
   unassigned <- rowSums(subsetter) == 0
-  labels[inside_all & !unassigned] <- apply(
-    subsetter[inside_all & !unassigned, , drop = FALSE], 1, which
+  # labels[inside_all & !unassigned] <- apply(
+  #   subsetter[inside_all & !unassigned, , drop = FALSE], 1, which
+  # )
+  # labels[!inside_all] <- 0
+  labels[!unassigned] <- apply(
+    subsetter[!unassigned, , drop = FALSE], 1, which
   )
-  labels[!inside_all] <- 0
   labels[unassigned] <- 0
 
   signs[is.na(signs)] <- 0
