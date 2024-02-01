@@ -9,7 +9,7 @@
 #' @param max_val_cutoff Maximum value for an observation to be included.
 #' @param show_plot Logical value.
 #'
-#' @return splits, typemarker, subsetter
+#' @return List: splits, split_order, subsetter, edge_df, labels, signs.
 #' @import ggplot2
 #' @import ggraph
 #' @importFrom ggpubr ggarrange

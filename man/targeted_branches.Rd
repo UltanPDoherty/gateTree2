@@ -37,7 +37,7 @@ density maximum, for a split to be returned by find_valley.}
 \item{explore}{Logical value.}
 }
 \value{
-splits, plusminus_table, subsetter, plot_list
+List: splits, plusminus_table, subsetter, plot_list
 }
 \description{
 Partition data set based on marginal splits described by +/- table.

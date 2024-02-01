@@ -1,20 +1,19 @@
 #' Partition data set based on unsupervised marginal splits.
 #'
 #' @param x Dataset in matrix or data.frame form.
+#' @param plusminus_table Table indicated whether each group (row) is positive
+#'                        (+1), negative (-1), or neutral / unknown (0) for each
+#'                        variable (column).
 #' @param min_height Minimum height, as a percentage of the height of the global
 #'                   density maximum, for a peak to be recognised by find_peaks.
 #' @param min_depth Minimum depth, as a percentage of the height of the global
 #'                   density maximum, for a split to be returned by find_valley.
 #' @param min_val_cutoff Minimum value for an observation to be included.
 #' @param max_val_cutoff Maximum value for an observation to be included.
-#' @param show_plot Logical value.
-#' @param plusminus_table Table indicated whether each group (row) is positive
-#'                        (+1), negative (-1), or neutral / unknown (0) for each
-#'                        variable (column).
 #' @param use_boundaries Logical value.
+#' @param show_plot Logical value.
 #'
-#'
-#' @return splits, typemarker, subsetter
+#' @return List: splits, split_order, subsetter, edge_df, labels, signs.
 #' @import ggplot2
 #' @import ggraph
 #' @importFrom ggpubr ggarrange
@@ -22,13 +21,13 @@
 #' @export
 targeted_tree <- function(
     x,
+    plusminus_table,
     min_height = 0.5,
     min_depth = 0.5,
     min_val_cutoff = NULL,
     max_val_cutoff = NULL,
-    show_plot = FALSE,
-    plusminus_table,
-    use_boundaries = TRUE
+    use_boundaries = TRUE,
+    show_plot = FALSE
 ) {
   var_num <- ncol(x)
   obs_num <- nrow(x)

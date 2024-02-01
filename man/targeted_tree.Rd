@@ -6,17 +6,21 @@
 \usage{
 targeted_tree(
   x,
+  plusminus_table,
   min_height = 0.5,
   min_depth = 0.5,
   min_val_cutoff = NULL,
   max_val_cutoff = NULL,
-  show_plot = FALSE,
-  plusminus_table,
-  use_boundaries = TRUE
+  use_boundaries = TRUE,
+  show_plot = FALSE
 )
 }
 \arguments{
 \item{x}{Dataset in matrix or data.frame form.}
+
+\item{plusminus_table}{Table indicated whether each group (row) is positive
+(+1), negative (-1), or neutral / unknown (0) for each
+variable (column).}
 
 \item{min_height}{Minimum height, as a percentage of the height of the global
 density maximum, for a peak to be recognised by find_peaks.}
@@ -28,16 +32,12 @@ density maximum, for a split to be returned by find_valley.}
 
 \item{max_val_cutoff}{Maximum value for an observation to be included.}
 
-\item{show_plot}{Logical value.}
-
-\item{plusminus_table}{Table indicated whether each group (row) is positive
-(+1), negative (-1), or neutral / unknown (0) for each
-variable (column).}
-
 \item{use_boundaries}{Logical value.}
+
+\item{show_plot}{Logical value.}
 }
 \value{
-splits, typemarker, subsetter
+List: splits, split_order, subsetter, edge_df, labels, signs.
 }
 \description{
 Partition data set based on unsupervised marginal splits.

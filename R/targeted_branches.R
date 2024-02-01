@@ -13,7 +13,7 @@
 #' @param use_boundaries Logical value.
 #' @param explore Logical value.
 #'
-#' @return splits, plusminus_table, subsetter, plot_list
+#' @return List: splits, plusminus_table, subsetter, plot_list
 #' @importFrom ggpubr ggarrange
 #' @export
 targeted_branches <- function(

@@ -29,7 +29,7 @@ density maximum, for a split to be returned by find_valley.}
 \item{show_plot}{Logical value.}
 }
 \value{
-splits, typemarker, subsetter
+List: splits, split_order, subsetter, edge_df, labels, signs.
 }
 \description{
 Partition data set based on unsupervised marginal splits.
