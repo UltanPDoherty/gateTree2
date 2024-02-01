@@ -16,9 +16,11 @@ exploratory_split(
 \arguments{
 \item{x}{Dataset in matrix or data.frame form.}
 
-\item{min_height}{Minimum height for a peak to be recognised by find_peaks.}
+\item{min_height}{Minimum height, as a percentage of the height of the global
+density maximum, for a peak to be recognised by find_peaks.}
 
-\item{min_depth}{Minimum depth for a split to be returned by find_valley.}
+\item{min_depth}{Minimum depth, as a percentage of the height of the global
+density maximum, for a split to be returned by find_valley.}
 
 \item{min_val_cutoff}{Minimum value for an observation to be included.}
 
