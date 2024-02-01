@@ -15,7 +15,7 @@
 #' @importFrom ggpubr ggarrange
 #' @importFrom utils tail
 #' @export
-exploratory_split <- function(
+exploratory_tree <- function(
   x,
   min_height = 0.5,
   min_depth = 0.5,

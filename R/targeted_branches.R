@@ -16,7 +16,7 @@
 #' @return splits, plusminus_table, subsetter, plot_list
 #' @importFrom ggpubr ggarrange
 #' @export
-targeted_split <- function(
+targeted_branches <- function(
   x,
   plusminus_table,
   min_height = 0.5,
