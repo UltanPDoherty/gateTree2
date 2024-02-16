@@ -9,11 +9,9 @@
 #'
 #' @return List of mean f1, mean precision, mean recall, and f1 matrix.
 #' @export
-
 compute_f1 <- function(clust_labels,
                        true_labels,
                        exclude_from_true = NULL,
-                       do_not_assign_to = NULL,
                        prec_rec = FALSE) {
 
   clust_nas <- is.na(clust_labels)
