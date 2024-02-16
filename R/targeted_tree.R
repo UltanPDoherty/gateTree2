@@ -212,8 +212,12 @@ targeted_tree <- function(
 
   signs[is.na(signs)] <- 0
 
-  return(list(splits = splits, split_order = split_order, subsetter = subsetter,
-              edge_df = tree_plot$df, labels = labels, signs = signs))
+  return(list(splits = splits,
+              split_order = split_order,
+              subsetter = subsetter,
+              edge_df = tree_plot$df,
+              labels = labels,
+              signs = signs))
 }
 
 
