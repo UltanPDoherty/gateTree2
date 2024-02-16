@@ -3,27 +3,31 @@
 #' @param clust_labels Vector of cluster labels to evaluate.
 #' @param true_labels Vector of true / reference labels to compare to.
 #' @param exclude_from_true Vector of true labels to be excluded.
-#'                           Ignored if NULL.
+#'                          Ignored if NULL.
 #' @param prec_rec Logical: Should vectors of precision and recall values,
 #'                 with assignment based on f1, be returned?
 #'
 #' @return List of mean f1, mean precision, mean recall, and f1 matrix.
 #' @export
 
-compute_f1 <- function(clust_labels, true_labels,
+compute_f1 <- function(clust_labels,
+                       true_labels,
                        exclude_from_true = NULL,
+                       do_not_assign_to = NULL,
                        prec_rec = FALSE) {
 
   clust_nas <- is.na(clust_labels)
   clust_labels[clust_nas] <- max(clust_labels[!clust_nas]) + 1
 
   if (!is.null(exclude_from_true)) {
-    excluded   <- true_labels %in% exclude_from_true
+    excluded     <- true_labels %in% exclude_from_true
     true_labels  <- true_labels[!excluded]
     clust_labels <- clust_labels[!excluded]
+
     if (is.factor(true_labels)) {
       true_labels <- droplevels(true_labels)
     }
+
     if (is.factor(clust_labels)) {
       clust_labels <- droplevels(clust_labels)
     }
@@ -31,7 +35,6 @@ compute_f1 <- function(clust_labels, true_labels,
 
   true_num  <- length(unique(true_labels))
   clust_num <- length(unique(clust_labels))
-
 
   tab <- table(true_labels, clust_labels)
 
@@ -42,13 +45,15 @@ compute_f1 <- function(clust_labels, true_labels,
   f1_mat[f1_mat == "NaN"] <- 0
 
   if (true_num <= clust_num) {
-    true_to_clust <- as.numeric(clue::solve_LSAP(f1_mat[1:true_num, ],
-                                                 maximum = TRUE))
+    true_to_clust <- as.numeric(
+      clue::solve_LSAP(f1_mat[1:true_num, ], maximum = TRUE)
+    )
     other_clust   <- setdiff(1:clust_num, true_to_clust)
     true_to_clust <- c(true_to_clust, other_clust)
   } else {
-    clust_to_true <- as.numeric(clue::solve_LSAP(t(f1_mat[1:true_num, ]),
-                                                 maximum = TRUE))
+    clust_to_true <- as.numeric(
+      clue::solve_LSAP(t(f1_mat[1:true_num, ]), maximum = TRUE)
+    )
     other_true    <- setdiff(1:true_num, clust_to_true)
     true_to_clust <- (1:true_num)[order(c(clust_to_true, other_true))]
     true_to_clust[true_to_clust > clust_num] <- NA
