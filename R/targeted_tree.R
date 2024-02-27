@@ -134,8 +134,6 @@ targeted_tree <- function(
         subsetter[, path_num + 1] <- subsetter[, path_num + 1] & !refine_current
       }
 
-      split_num[g] <- split_num[g] + 1
-
       signs[g, p_choice] <- plusminus_table[k, p_choice]
       colnames(signs) <- colnames(plusminus_table)
 
