@@ -385,42 +385,32 @@ make_tree_plot <- function(parent_node, node_number, edge_name, node_name,
     parent = parent_node,
     node = 1:node_number,
     edge_name = edge_name,
-    node_name = node_name,
+    node_name = gsub("All/", "", node_name),
     is_leaf = is_leaf,
-    leaf_name = leaf_name
+    leaf_name = gsub("All/", "", leaf_name),
+    ggraph_order = rep(NA, node_number)
   )
 
   path_order <- unique(Reduce(c, path_nodes))
+  edge_df$ggraph_order[is_leaf] <- (sum(!is_leaf) + 1):node_number
+  edge_df$ggraph_order[!is_leaf] <- order(path_order[!is_leaf[path_order]])
 
-  ggraph_order <- rep(NA, node_number)
-  ggraph_order[is_leaf] <- (sum(!is_leaf) + 1):node_number
-  ggraph_order[!is_leaf] <- order(path_order[!is_leaf[path_order]])
-
-  node_name <- gsub("All/", "", node_name)
-  leaf_name <- gsub("All/", "", leaf_name)
-
-  my_ggraph <- ggraph::ggraph(edge_df, layout = "tree") +
-    ggraph::geom_edge_elbow2(aes(label = edge_name),
-                             show.legend = FALSE,
-                            # strength = 0.25,
-                            angle_calc = "across",
-                            label_push = grid::unit(0.075, "npc"),
-                            label_dodge = grid::unit(0.075, "npc")) +
-    ggraph::geom_node_label(aes(label = leaf_name[order(ggraph_order)]),
-                            show.legend = FALSE) +
+  my_ggraph <- edge_df |>
+    ggraph::ggraph(
+      layout = "tree"
+    ) +
+    ggraph::geom_edge_elbow2(
+      aes(label = edge_name),
+      show.legend = FALSE,
+      angle_calc = "across",
+      label_push = grid::unit(0.075, "npc"),
+      label_dodge = grid::unit(0.075, "npc")
+    ) +
+    ggraph::geom_node_label(
+      aes(label = leaf_name[edge_df$ggraph_order]),
+      show.legend = FALSE
+    ) +
     ggraph::theme_graph()
-  # my_ggraph <- ggraph::ggraph(edge_df, layout = "tree") +
-  #   ggraph::geom_edge_elbow2(aes(label = edge_name),
-  #                            show.legend = FALSE,
-  #                            # strength = 0.25,
-  #                            angle_calc = "across",
-  #                            label_push = grid::unit(0.075, "npc"),
-  #                            label_dodge = grid::unit(0.075, "npc")) +
-  #   ggraph::geom_node_label(aes(label = leaf_name[order(ggraph_order)],
-  #                               colour = leaf_name[order(ggraph_order)]),
-  #                           show.legend = FALSE) +
-  #   ggraph::theme_graph() +
-  #   ggokabeito::scale_colour_okabe_ito(order = c(9, 1, 3, 2))
 
   return(list(graph = my_ggraph, df = edge_df))
 }
