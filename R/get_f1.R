@@ -11,8 +11,8 @@
 #'         vector and recall vector.
 #' @export
 get_f1 <- function(
-    clust_labels,
     class_labels,
+    clust_labels,
     remove_class = NULL,
     no_match_class = NULL,
     prec_rec = FALSE
