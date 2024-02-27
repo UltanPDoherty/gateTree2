@@ -245,7 +245,8 @@ targeted_tree <- function(
               subsetter = subsetter,
               edge_df = tree_plot$df,
               labels = labels,
-              signs = signs))
+              signs = signs,
+              tree_plot = tree_plot$graph))
 }
 
 
