@@ -12,7 +12,7 @@ find_peaks <- function(dens, width_percent = 0.01, min_height = 0.01) {
     is_peak[i - w] <- peak_left[i - w] & peak_right[i - w]
   }
 
-  is_peak <- c(rep(FALSE, w), is_peak, rep(FALSE, w)) & dens$y > min_height
+  is_peak <- c(rep(FALSE, w), is_peak, rep(FALSE, w)) & dens$y >= min_height
 
   return(is_peak)
 }
