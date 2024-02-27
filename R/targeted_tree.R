@@ -59,7 +59,9 @@ targeted_tree <- function(
   common_variables[1, ] <- apply(plusminus_table == 0, 2, function(x) !any(x))
 
   inside_cutoffs <- find_inside_cutoffs(x, min_val_cutoff, max_val_cutoff)
-  inside_common <- apply(inside_cutoffs[, common_variables[1, ]], 1, all)
+  inside_common <- apply(
+    inside_cutoffs[, common_variables[1, ], drop = FALSE], 1, all
+  )
   subsetter <- matrix(inside_common, nrow = obs_num, ncol = path_num)
 
   pop_to_path <- rep(1, pop_num)
