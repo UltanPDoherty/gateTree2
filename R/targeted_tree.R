@@ -173,6 +173,21 @@ targeted_tree <- function(
       is_leaf[node_num + 1] <- TRUE
 
       node_num <- node_num + 1 + !no_new_branch
+
+      if (any(pop_to_path == g)) {
+        k <- match(g, pop_to_path)
+        current_node[g] <- start_node[g]
+        common_variables[g, ] <- apply(
+          plusminus_table[pop_to_path == g, , drop = FALSE],
+          2,
+          function(x) all(x != 0)
+        )
+        inside_common <- apply(
+          inside_cutoffs[, common_variables[1, ], drop = FALSE], 1, all
+        )
+        subsetter[, g] <- subsetter[, g] & inside_common
+      }
+
     } else {
       for (p in which(!(plusminus_table[g, ] == 0) & !already_split[g, ])) {
         plot_list[[g]][[split_num[g] + 1]] <- plot_targeted_split(
