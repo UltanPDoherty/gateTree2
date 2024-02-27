@@ -174,6 +174,13 @@ targeted_tree <- function(
 
       node_num <- node_num + 1 + !no_new_branch
     } else {
+      for (p in which(!(plusminus_table[g, ] == 0) & !already_split[g, ])) {
+        plot_list[[g]][[split_num[g] + 1]] <- plot_targeted_split(
+          x[subsetter[, g], p], g, p, depth = NA,
+          signs, scenario = "nothing", split_gp = NA
+        )
+      }
+
       g <- g + 1
 
       if (any(pop_to_path == g)) {
