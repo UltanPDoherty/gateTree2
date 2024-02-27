@@ -117,8 +117,11 @@ targeted_tree <- function(
         refine_current <- !less_gp
       }
 
+      split_num[g] <- split_num[g] + 1
+      split_order[g, p_choice] <- split_num[g]
+
       if (!no_new_branch) {
-        split_num[path_num + 1] <- split_num[g] + 1
+        split_num[path_num + 1] <- split_num[g]
         plot_list[[path_num + 1]] <- plot_list[[g]]
         start_node[path_num + 1] <- node_num
         splits <- rbind(splits, splits[g, ])
