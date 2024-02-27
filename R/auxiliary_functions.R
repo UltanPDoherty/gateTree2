@@ -337,6 +337,11 @@ plot_targeted_split <- function(x_gp, g, p, depth, plusminus_table,
   xleft <- ifelse(is_negative, 0, trans_split_gp)
   xright <- ifelse(is_negative, trans_split_gp, 1)
 
+  if (scenario == "nothing") {
+    xleft <- 0
+    xright <- 1
+  }
+
   size_before <- length(x_gp)
   if (is.na(is_negative)) {
     size_after <- NA
