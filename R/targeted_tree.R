@@ -22,8 +22,8 @@
 targeted_tree <- function(
     x,
     plusminus_table,
-    min_height = 0.5,
-    min_depth = 0.5,
+    min_height = min_depth,
+    min_depth = 1,
     min_val_cutoff = NULL,
     max_val_cutoff = NULL,
     use_boundaries = TRUE,
