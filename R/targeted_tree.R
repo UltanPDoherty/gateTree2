@@ -183,7 +183,9 @@ targeted_tree <- function(
           apply(plusminus_table[pop_to_path == g, , drop = FALSE], 2,
                 function(x) all(x != 0))
         )
-        inside_common <- apply(inside_cutoffs[, common_variables[1, ]], 1, all)
+        inside_common <- apply(
+          inside_cutoffs[, common_variables[1, ], drop = FALSE], 1, all
+        )
         subsetter[, g] <- subsetter[, g] & inside_common
       }
     }
