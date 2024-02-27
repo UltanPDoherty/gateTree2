@@ -77,6 +77,7 @@ targeted_tree <- function(
       proposals <- propose_valleys(x, g, var_num, subsetter, already_split,
                                    min_depth, min_height, common_variables)
       found_valley <- any(!is.na(proposals[1, ]))
+      found_boundary <- FALSE
 
       if (!found_valley && use_boundaries) {
         proposals <- propose_boundaries(x, g, var_num, subsetter, already_split,
