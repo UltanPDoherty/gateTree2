@@ -400,11 +400,27 @@ make_tree_plot <- function(parent_node, node_number, edge_name, node_name,
   leaf_name <- gsub("All/", "", leaf_name)
 
   my_ggraph <- ggraph::ggraph(edge_df, layout = "tree") +
-    ggraph::geom_edge_elbow(aes(label = edge_name),
+    ggraph::geom_edge_elbow2(aes(label = edge_name),
+                             show.legend = FALSE,
+                            # strength = 0.25,
                             angle_calc = "across",
-                            label_dodge = grid::unit(-0.03, "npc")) +
-    ggraph::geom_node_label(aes(label = leaf_name[order(ggraph_order)])) +
+                            label_push = grid::unit(0.075, "npc"),
+                            label_dodge = grid::unit(0.075, "npc")) +
+    ggraph::geom_node_label(aes(label = leaf_name[order(ggraph_order)]),
+                            show.legend = FALSE) +
     ggraph::theme_graph()
+  # my_ggraph <- ggraph::ggraph(edge_df, layout = "tree") +
+  #   ggraph::geom_edge_elbow2(aes(label = edge_name),
+  #                            show.legend = FALSE,
+  #                            # strength = 0.25,
+  #                            angle_calc = "across",
+  #                            label_push = grid::unit(0.075, "npc"),
+  #                            label_dodge = grid::unit(0.075, "npc")) +
+  #   ggraph::geom_node_label(aes(label = leaf_name[order(ggraph_order)],
+  #                               colour = leaf_name[order(ggraph_order)]),
+  #                           show.legend = FALSE) +
+  #   ggraph::theme_graph() +
+  #   ggokabeito::scale_colour_okabe_ito(order = c(9, 1, 3, 2))
 
   return(list(graph = my_ggraph, df = edge_df))
 }
