@@ -1,6 +1,6 @@
 #' @importFrom mvtnorm dmvnorm
 #' @importFrom abind abind
-gmm_e_step <- function(x, labels, exclude_index = NULL) {
+gmm_estep <- function(x, labels, exclude_index = NULL) {
   obs_num <- nrow(x)
   var_num <- ncol(x)
   label_num <- length(unique(labels))
