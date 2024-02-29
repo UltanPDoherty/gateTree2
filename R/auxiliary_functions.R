@@ -447,7 +447,6 @@ make_edge_df <- function(parent_node, node_number, edge_name, node_name,
 #' @import ggraph
 #' @importFrom igraph graph_from_data_frame
 #' @importFrom tidygraph as_tbl_graph
-#' @importFrom ggokabeito scale_colour_okabe_ito
 make_tree_plot <- function(edge_df) {
 
   tree_graph <- igraph::graph_from_data_frame(d = edge_df[, 1:3],
