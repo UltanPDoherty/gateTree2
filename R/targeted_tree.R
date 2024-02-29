@@ -29,6 +29,7 @@ targeted_tree <- function(
 
   splits      <- scores <- matrix(NA, nrow = path_num, ncol = var_num)
   split_order <- signs  <- matrix(NA, nrow = path_num, ncol = var_num)
+  splittable_vars <- matrix(NA, nrow = path_num, ncol = var_num)
 
   already_split <- matrix(FALSE, nrow = path_num, ncol = var_num)
 
@@ -60,6 +61,8 @@ targeted_tree <- function(
   pop_to_path <- rep(1, pop_num)
   path_num <- 1
 
+  splittable_vars[1, ] <- !already_split[1, ] & common_variables[1, ]
+
   g <- 1
   k <- 1
   while (g <= path_num) {
@@ -67,8 +70,10 @@ targeted_tree <- function(
       found_valley <- FALSE
       found_boundary <- FALSE
     } else {
-      proposals <- propose_valleys(x, g, var_num, subsetter, already_split,
-                                   min_depth, min_height, common_variables)
+      proposals <- propose_valleys2(
+        x, subsetter[, g], splittable_vars[g, ],
+        min_depth, min_height
+      )
       found_valley <- any(!is.na(proposals[1, ]))
       found_boundary <- FALSE
 
@@ -141,6 +146,7 @@ targeted_tree <- function(
       colnames(signs) <- colnames(plusminus_table)
 
       subsetter[, g] <- subsetter[, g] & refine_current
+        splittable_vars <- rbind(splittable_vars, splittable_vars[g, ])
 
       plot_list[[g]][[split_num[g]]] <- plot_targeted_split(
         x_gp, g, p_choice, scores[g, p_choice],
@@ -198,7 +204,7 @@ targeted_tree <- function(
       }
 
     } else {
-      for (p in which(!(plusminus_table[g, ] == 0) & !already_split[g, ])) {
+      for (p in which(splittable_vars[g, ])) {
         plot_list[[g]][[split_num[g] + 1]] <- plot_targeted_split(
           x[subsetter[, g], p], g, p, depth = NA,
           signs, scenario = "nothing", split_gp = NA
@@ -220,6 +226,7 @@ targeted_tree <- function(
         )
         subsetter[, g] <- subsetter[, g] & inside_common
       }
+      splittable_vars[g, ] <- !already_split[g, ] & common_variables[g, ]
     }
   }
 
