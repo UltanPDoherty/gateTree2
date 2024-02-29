@@ -79,7 +79,7 @@ targeted_tree <- function(
       found_valley <- FALSE
       found_boundary <- FALSE
     } else {
-      proposals <- propose_valleys2(
+      proposals <- propose_valleys(
         x, subsetter[, g], splittable_vars[g, ],
         min_depth, min_height
       )
@@ -98,7 +98,7 @@ targeted_tree <- function(
                        "valley",
                        ifelse(found_boundary, "boundary", "nothing"))
 
-    if (found_valley || found_boundary) {
+    if (scenario %in% c("valley", "boundary")) {
 
       p_choice <- which.max(proposals[2, ])
       splits[g, p_choice] <- proposals[1, p_choice]
@@ -201,7 +201,7 @@ targeted_tree <- function(
         }
 
         scenario <- "undiscovered"
-        extra_valleys <- propose_valleys2(
+        extra_valleys <- propose_valleys(
           x, subsetter[, g], !splittable_vars[g, ],
           5 * min_depth, 5 * min_height
         )

@@ -6,31 +6,22 @@
 \usage{
 propose_valleys(
   x,
-  g,
-  var_num,
-  subsetter,
-  already_split,
+  subsetter_g,
+  splittable_vars_g = rep(TRUE, ncol(x)),
   min_depth,
-  min_height,
-  common_variables = NULL
+  min_height
 )
 }
 \arguments{
 \item{x}{Data.}
 
-\item{g}{The pathway number.}
+\item{subsetter_g}{Column g of the subsetting matrix.}
 
-\item{var_num}{Total number of variables.}
-
-\item{subsetter}{The subsetting matrix.}
-
-\item{already_split}{The already_split matrix.}
+\item{splittable_vars_g}{Row g of the splittable_vars matrix.}
 
 \item{min_depth}{\code{min_depth} for \code{find_valley} function.}
 
 \item{min_height}{\code{min_height} for \code{find_valley} function.}
-
-\item{common_variables}{Matrix}
 }
 \value{
 valleys
