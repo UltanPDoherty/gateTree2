@@ -190,19 +190,19 @@ targeted_tree <- function(
         }
 
         scenario <- "explore"
-        extra_valleys <- propose_valleys(
+        explore_valleys <- propose_valleys(
           x, subsetter[, g], !splittable_vars[g, ],
           5 * min_depth, 5 * min_height
         )
-        extra_splits <- 0
-        extra_check <- !is.na(extra_valleys[1, ])
-        extra_check <- extra_check & sum(subsetter[, g]) >= min_size
-        for (p in which(extra_check)) {
-          extra_splits <- extra_splits + 1
-          plot_list[[g]][[split_num[g] + missed_splits + extra_splits]] <-
+        explore_splits <- 0
+        explore_check <- !is.na(explore_valleys[1, ])
+        explore_check <- explore_check & sum(subsetter[, g]) >= min_size
+        for (p in which(explore_check)) {
+          explore_splits <- explore_splits + 1
+          plot_list[[g]][[split_num[g] + missed_splits + explore_splits]] <-
             plot_targeted_split(
-              x[subsetter[, g], p], g, p, depth = extra_valleys[2, p],
-              signs, scenario, split_gp = extra_valleys[1, p]
+              x[subsetter[, g], p], g, p, depth = explore_valleys[2, p],
+              signs, scenario, split_gp = explore_valleys[1, p]
             )
         }
       }
