@@ -75,33 +75,18 @@ targeted_tree <- function(
   k <- 1
   while (g <= path_num) {
 
-    if (sum(subsetter[, g]) < min_size) {
-      found_valley <- FALSE
-      found_boundary <- FALSE
-    } else {
-      proposals <- propose_valleys(
-        x, subsetter[, g], splittable_vars[g, ],
-        min_depth, min_height
-      )
-      found_valley <- any(!is.na(proposals[1, ]))
-      found_boundary <- FALSE
-
-      if (!found_valley && use_boundaries) {
-        proposals <- propose_boundaries(x, subsetter[, g], splittable_vars[g, ])
-
-        found_boundary <- any(!is.na(proposals[1, ]))
-      }
-    }
-
-    scenario <- ifelse(found_valley,
-                       "valley",
-                       ifelse(found_boundary, "boundary", "nothing"))
+    proposals <- propose_splits(
+      x, subsetter[, g], splittable_vars[g, ],
+      min_size, min_depth, min_height,
+      use_boundaries
+    )
+    scenario <- proposals$scenario
 
     if (scenario %in% c("valley", "boundary")) {
 
-      p_choice <- which.max(proposals[2, ])
-      splits[g, p_choice] <- proposals[1, p_choice]
-      scores[g, p_choice] <- proposals[2, p_choice]
+      p_choice <- which.max(proposals$matrix[2, ])
+      splits[g, p_choice] <- proposals$matrix[1, p_choice]
+      scores[g, p_choice] <- proposals$matrix[2, p_choice]
       already_split[g, p_choice] <- TRUE
 
       for (j in which(pop_to_path == g)) {
