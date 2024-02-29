@@ -346,11 +346,12 @@ find_inside_cutoffs <- function(x, min_val_cutoff, max_val_cutoff) {
 plot_targeted_split <- function(x_gp, g, p, depth, plusminus_table,
                                 scenario, split_gp) {
 
+  # colours from ggokabeito package
   rect_col <- switch(scenario,
-                     "valley" = "lightgreen",
-                     "boundary" = "lightblue",
+                     "valley" = "#F0E442",
+                     "boundary" = "#56B4E9",
                      "nothing" = NA,
-                     "undiscovered" = "lightcoral")
+                     "undiscovered" = "#CC79A7")
   depth <- switch(scenario,
                   "valley" = depth,
                   "boundary" = NA,
