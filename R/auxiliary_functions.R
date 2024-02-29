@@ -162,14 +162,14 @@ check_duplicates <- function(subsetter) {
 #' @importFrom stats density
 #' @export
 exploratory_plot <- function(
-    x_gp,
-    splits,
-    g,
-    p_choice,
-    subsetter,
-    scores,
-    is_negative,
-    var_name
+  x_gp,
+  splits,
+  g,
+  p_choice,
+  subsetter,
+  scores,
+  is_negative,
+  var_name
 ) {
   scale01_gp <- scale01(x_gp)
   dens_gp <- stats::density(scale01_gp$y)
@@ -285,7 +285,7 @@ find_inside_cutoffs <- function(x, min_val_cutoff, max_val_cutoff) {
 
 #' Plotting function for `targeted_split`.
 #'
-#' @param x_gp The data to be displayed, should be only pathway g and variable p.
+#' @param x_gp The data to be displayed, should be only pathway g & variable p.
 #' @param g The pathway number.
 #' @param p The variable number.
 #' @param depth The depth of the split.

@@ -35,7 +35,6 @@ targeted_tree <- function(
   plot_list <- list(list())
 
   split_num <- c(0)
-  start_layer <- c(1)
   node_num <- 1
   start_node <- c(1)
   current_node <- c(1)
@@ -76,6 +75,7 @@ targeted_tree <- function(
       if (!found_valley && use_boundaries) {
         proposals <- propose_boundaries(x, g, var_num, subsetter, already_split,
                                         common_variables)
+
         found_boundary <- any(!is.na(proposals[1, ]))
         if (found_boundary) {
           scenario <- "boundary"
@@ -117,14 +117,22 @@ targeted_tree <- function(
 
       if (!no_new_branch) {
         split_num[path_num + 1] <- split_num[g]
+
         plot_list[[path_num + 1]] <- plot_list[[g]]
+
         start_node[path_num + 1] <- node_num
+
         splits <- rbind(splits, splits[g, ])
+
         scores <- rbind(scores, scores[g, ])
+
         already_split <- rbind(already_split, already_split[g, ])
+
         signs <- rbind(signs, signs[g, ])
         signs[path_num + 1, p_choice] <- - plusminus_table[k, p_choice]
+
         split_order <- rbind(split_order, split_order[g, ])
+
         subsetter <- cbind(subsetter, subsetter[, g])
         subsetter[, path_num + 1] <- subsetter[, path_num + 1] & !refine_current
       }
@@ -148,14 +156,20 @@ targeted_tree <- function(
 
       if (!no_new_branch) {
         parent_node[node_num + 2] <- utils::tail(path_nodes[[g]], 1)
+
         path_nodes[[path_num + 1]] <- append(path_nodes[[g]], node_num + 2)
+
         edge_name[node_num + 2] <- paste0(colnames(x)[p_choice],
                                           ifelse(is_negative, "+", "-"))
+
         node_name[node_num + 2] <- paste(edge_name[path_nodes[[path_num + 1]]],
                                          collapse = "/")
+
         is_leaf[node_num + 2] <- TRUE
+
         path_num <- path_num + 1
       }
+
 
       parent_node[node_num + 1] <- utils::tail(path_nodes[[g]], 1)
       path_nodes[[g]] <- append(path_nodes[[g]], node_num + 1)
@@ -221,10 +235,6 @@ targeted_tree <- function(
 
   labels <- c()
   unassigned <- rowSums(subsetter) == 0
-  # labels[inside_all & !unassigned] <- apply(
-  #   subsetter[inside_all & !unassigned, , drop = FALSE], 1, which
-  # )
-  # labels[!inside_all] <- 0
   labels[!unassigned] <- apply(
     subsetter[!unassigned, , drop = FALSE], 1, which
   )
@@ -240,6 +250,3 @@ targeted_tree <- function(
               signs = signs,
               tree_plot = tree_plot))
 }
-
-
-
