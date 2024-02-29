@@ -185,7 +185,7 @@ targeted_tree <- function(
           )
         }
 
-        scenario <- "undiscovered"
+        scenario <- "explore"
         extra_valleys <- propose_valleys(
           x, subsetter[, g], !splittable_vars[g, ],
           5 * min_depth, 5 * min_height

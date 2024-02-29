@@ -7,7 +7,7 @@
 #' @param p The variable number.
 #' @param depth The depth of the split.
 #' @param plusminus_table The cell-type variable table.
-#' @param scenario "valley", "boundary", "nothing", or "undiscovered".
+#' @param scenario "valley", "boundary", "nothing", or "explore".
 #' @param split_gp The split value.
 #'
 #' @return NULL
@@ -20,22 +20,22 @@ plot_targeted_split <- function(x_gp, g, p, depth, plusminus_table,
                      "valley" = "#F0E442",
                      "boundary" = "#56B4E9",
                      "nothing" = NA,
-                     "undiscovered" = "#CC79A7")
+                     "explore" = "#CC79A7")
   depth <- switch(scenario,
                   "valley" = depth,
                   "boundary" = NA,
                   "nothing" = NA,
-                  "undiscovered" = depth)
+                  "explore" = depth)
   line_type <- switch(scenario,
                       "valley" = "solid",
                       "boundary" = "dashed",
                       "nothing" = "blank",
-                      "undiscovered" = "dotted")
+                      "explore" = "dotted")
   is_negative <- switch(scenario,
                         "valley" = (plusminus_table[g, p] == -1),
                         "boundary" = (plusminus_table[g, p] == -1),
                         "nothing" = NA,
-                        "undiscovered" = FALSE)
+                        "explore" = FALSE)
 
   scale01_gp <- scale01(x_gp)
   dens_gp <- stats::density(scale01_gp$y)
