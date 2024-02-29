@@ -41,10 +41,10 @@ propose_splits <- function(x, subsetter_g, splittable_vars_g,
 #' @return valleys
 #' @export
 propose_valleys <- function(
-    x,
-    subsetter_g,
-    splittable_vars_g = rep(TRUE, ncol(x)),
-    min_depth, min_height
+  x,
+  subsetter_g,
+  splittable_vars_g = rep(TRUE, ncol(x)),
+  min_depth, min_height
 ) {
   valleys <- matrix(nrow = 2, ncol = ncol(x))
 
@@ -77,9 +77,9 @@ propose_valleys <- function(
 #' @return valleys
 #' @export
 propose_boundaries <- function(
-    x,
-    subsetter_g,
-    splittable_vars_g = rep(TRUE, ncol(x))
+  x,
+  subsetter_g,
+  splittable_vars_g = rep(TRUE, ncol(x))
 ) {
   boundaries <- matrix(nrow = 2, ncol = ncol(x))
 
@@ -90,4 +90,3 @@ propose_boundaries <- function(
 
   return(boundaries)
 }
-

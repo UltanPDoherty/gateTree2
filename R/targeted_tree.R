@@ -190,15 +190,15 @@ targeted_tree <- function(
           5 * min_depth, 5 * min_height
         )
         extra_splits <- 0
-        for (p in which(!splittable_vars[g, ])) {
-          if (!is.na(extra_valleys[1, p]) && length(subsetter[, g]) >= min_size) {
-            extra_splits <- extra_splits + 1
-            plot_list[[g]][[split_num[g] + missed_splits + extra_splits]] <-
-              plot_targeted_split(
-                x[subsetter[, g], p], g, p, depth = extra_valleys[2, p],
-                signs, scenario, split_gp = extra_valleys[1, p]
-              )
-          }
+        extra_check <- !is.na(extra_valleys[1, ])
+        extra_check <- extra_check & sum(subsetter[, g]) >= min_size
+        for (p in which(extra_check)) {
+          extra_splits <- extra_splits + 1
+          plot_list[[g]][[split_num[g] + missed_splits + extra_splits]] <-
+            plot_targeted_split(
+              x[subsetter[, g], p], g, p, depth = extra_valleys[2, p],
+              signs, scenario, split_gp = extra_valleys[1, p]
+            )
         }
       }
 

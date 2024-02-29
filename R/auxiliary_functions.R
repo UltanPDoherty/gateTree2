@@ -149,4 +149,3 @@ find_inside_cutoffs <- function(x, min_val_cutoff, max_val_cutoff) {
 
   return(inside_cutoffs)
 }
-
