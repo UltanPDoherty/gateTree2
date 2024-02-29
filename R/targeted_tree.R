@@ -109,6 +109,8 @@ targeted_tree <- function(
       split_order[g, p_choice] <- split_num[g]
 
       signs[g, p_choice] <- plusminus_table[k, p_choice]
+      rownames(signs)[g] <-
+        rownames(plusminus_table)[which(pop_to_path == g)[1]]
 
       plot_list[[g]][[split_num[g]]] <- plot_targeted_split(
         x_gp, g, p_choice, scores[g, p_choice],
@@ -130,6 +132,8 @@ targeted_tree <- function(
 
         signs <- rbind(signs, signs[g, ])
         signs[path_num + 1, p_choice] <- - plusminus_table[k, p_choice]
+        rownames(signs)[path_num + 1] <-
+          rownames(plusminus_table)[which(pop_to_path == path_num + 1)[1]]
 
         split_order <- rbind(split_order, split_order[g, ])
 

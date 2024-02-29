@@ -73,8 +73,9 @@ plot_targeted_split <- function(x_gp, g, p, depth, plusminus_table,
     labs(
       title = paste0("g = ", g, ", p = ", p, ", ",
                      "depth = ", round(depth, 1), "%"),
-      subtitle = paste0("Variable: ", colnames(plusminus_table)[p], ", ",
-                        "Scenario: ", scenario),
+      subtitle = paste0("Path: ", rownames(plusminus_table)[g], ", ",
+                        "Var: ", colnames(plusminus_table)[p], ", ",
+                        "\"", scenario, "\""),
       x = paste0("N before = ", size_before, ", N after = ", size_after),
       y = "Density %"
     ) +
