@@ -6,7 +6,7 @@
 \usage{
 targeted_tree(
   x,
-  plusminus_table,
+  plusminus_table = expand.grid(rep(list(c(-1, 1)), nrow(x))),
   min_height = min_depth,
   min_depth = 1,
   min_val_cutoff = NULL,
