@@ -22,6 +22,11 @@ targeted_tree <- function(
   x,
   plusminus_table,
   min_height = min_depth,
+  min_depth = 1,
+  min_val_cutoff = NULL,
+  max_val_cutoff = NULL,
+  use_boundaries = TRUE,
+  show_plot = FALSE
 ) {
   var_num <- ncol(x)
   obs_num <- nrow(x)
@@ -30,6 +35,7 @@ targeted_tree <- function(
   splits      <- scores <- matrix(NA, nrow = path_num, ncol = var_num)
   split_order <- signs  <- matrix(NA, nrow = path_num, ncol = var_num)
   splittable_vars <- matrix(NA, nrow = path_num, ncol = var_num)
+  colnames(signs) <- colnames(plusminus_table)
 
   already_split <- matrix(FALSE, nrow = path_num, ncol = var_num)
 
@@ -82,14 +88,12 @@ targeted_tree <- function(
                                         common_variables)
 
         found_boundary <- any(!is.na(proposals[1, ]))
-        if (found_boundary) {
-          scenario <- "boundary"
-        }
-      } else if (found_valley) {
-        found_boundary <- NA
-        scenario <- "valley"
       }
     }
+
+    scenario <- ifelse(found_valley,
+                       "valley",
+                       ifelse(found_boundary, "boundary", "nothing"))
 
     if (found_valley || found_boundary) {
 
@@ -108,17 +112,20 @@ targeted_tree <- function(
       pop_to_path[pop_to_path == g & !same_sign] <- path_num + 1
 
       x_gp <- x[subsetter[, g], p_choice]
-      less_gp <- x[, p_choice] < splits[g, p_choice]
+      more_gp <- x[, p_choice] > splits[g, p_choice]
 
       is_negative <- plusminus_table[g, p_choice] == -1
-      if (is_negative) {
-        refine_current <- less_gp
-      } else {
-        refine_current <- !less_gp
-      }
+      refine_current <- if (is_negative) !more_gp else more_gp
 
       split_num[g] <- split_num[g] + 1
       split_order[g, p_choice] <- split_num[g]
+
+      signs[g, p_choice] <- plusminus_table[k, p_choice]
+
+      plot_list[[g]][[split_num[g]]] <- plot_targeted_split(
+        x_gp, g, p_choice, scores[g, p_choice],
+        signs, scenario, splits[g, p_choice]
+      )
 
       if (!no_new_branch) {
         split_num[path_num + 1] <- split_num[g]
@@ -140,27 +147,15 @@ targeted_tree <- function(
 
         subsetter <- cbind(subsetter, subsetter[, g])
         subsetter[, path_num + 1] <- subsetter[, path_num + 1] & !refine_current
-      }
 
-      signs[g, p_choice] <- plusminus_table[k, p_choice]
-      colnames(signs) <- colnames(plusminus_table)
-
-      subsetter[, g] <- subsetter[, g] & refine_current
         splittable_vars <- rbind(splittable_vars, splittable_vars[g, ])
 
-      plot_list[[g]][[split_num[g]]] <- plot_targeted_split(
-        x_gp, g, p_choice, scores[g, p_choice],
-        signs, scenario, splits[g, p_choice]
-      )
+        plot_list[[path_num + 1]][[split_num[path_num + 1]]] <-
+          plot_targeted_split(
+            x_gp, path_num + 1, p_choice, scores[g, p_choice],
+            signs, scenario, splits[g, p_choice]
+          )
 
-      if (!no_new_branch) {
-        plot_list[[path_num + 1]][[split_num[path_num + 1]]] <- plot_targeted_split(
-          x_gp, path_num + 1, p_choice, scores[g, p_choice],
-          signs, scenario, splits[g, p_choice]
-        )
-      }
-
-      if (!no_new_branch) {
         parent_node[node_num + 2] <- utils::tail(path_nodes[[g]], 1)
 
         path_nodes[[path_num + 1]] <- append(path_nodes[[g]], node_num + 2)
@@ -176,6 +171,7 @@ targeted_tree <- function(
         path_num <- path_num + 1
       }
 
+      subsetter[, g] <- subsetter[, g] & refine_current
 
       parent_node[node_num + 1] <- utils::tail(path_nodes[[g]], 1)
       path_nodes[[g]] <- append(path_nodes[[g]], node_num + 1)
@@ -189,43 +185,34 @@ targeted_tree <- function(
 
       node_num <- node_num + 1 + !no_new_branch
 
-      if (any(pop_to_path == g)) {
-        k <- match(g, pop_to_path)
-        current_node[g] <- start_node[g]
-        common_variables[g, ] <- apply(
-          plusminus_table[pop_to_path == g, , drop = FALSE],
-          2,
-          function(x) all(x != 0)
-        )
-        inside_common <- apply(
-          inside_cutoffs[, common_variables[1, ], drop = FALSE], 1, all
-        )
-        subsetter[, g] <- subsetter[, g] & inside_common
-      }
-
     } else {
       for (p in which(splittable_vars[g, ])) {
         plot_list[[g]][[split_num[g] + 1]] <- plot_targeted_split(
           x[subsetter[, g], p], g, p, depth = NA,
-          signs, scenario = "nothing", split_gp = NA
+          signs, scenario, split_gp = NA
         )
       }
 
       g <- g + 1
+      common_variables <- rbind(common_variables, NA)
+    }
 
-      if (any(pop_to_path == g)) {
-        k <- match(g, pop_to_path)
-        current_node[g] <- start_node[g]
-        common_variables <- rbind(
-          common_variables,
-          apply(plusminus_table[pop_to_path == g, , drop = FALSE], 2,
-                function(x) all(x != 0))
-        )
-        inside_common <- apply(
-          inside_cutoffs[, common_variables[1, ], drop = FALSE], 1, all
-        )
-        subsetter[, g] <- subsetter[, g] & inside_common
-      }
+    if (any(pop_to_path == g)) {
+      k <- match(g, pop_to_path)
+      current_node[g] <- start_node[g]
+
+      common_variables[g, ] <- apply(
+        plusminus_table[pop_to_path == g, , drop = FALSE],
+        2,
+        function(x) all(x != 0)
+      )
+
+      inside_common <- apply(
+        inside_cutoffs[, common_variables[1, ], drop = FALSE], 1, all
+      )
+
+      subsetter[, g] <- subsetter[, g] & inside_common
+
       splittable_vars[g, ] <- !already_split[g, ] & common_variables[g, ]
     }
   }
