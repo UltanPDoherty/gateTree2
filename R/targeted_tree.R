@@ -72,6 +72,7 @@ targeted_tree <- function(
   g <- 1
   k <- 1
   while (g <= path_num) {
+
     if (sum(subsetter[, g]) < 100) {
       found_valley <- FALSE
       found_boundary <- FALSE
@@ -185,7 +186,7 @@ targeted_tree <- function(
 
       node_num <- node_num + 1 + !no_new_branch
 
-    } else {
+    } else if (sum(subsetter[, g]) > 1) {
       for (p in which(splittable_vars[g, ])) {
         plot_list[[g]][[split_num[g] + 1]] <- plot_targeted_split(
           x[subsetter[, g], p], g, p, depth = NA,
@@ -193,6 +194,9 @@ targeted_tree <- function(
         )
       }
 
+      g <- g + 1
+      common_variables <- rbind(common_variables, NA)
+    } else {
       g <- g + 1
       common_variables <- rbind(common_variables, NA)
     }

@@ -141,6 +141,7 @@ scale01 <- function(x, other_min = NULL, other_max = NULL) {
     maximum <- other_max
   }
 
+  stopifnot("Maximum and minimum are equal" = maximum != minimum)
   y <- (x - minimum) / (maximum - minimum)
 
   return(list(y = y, min = minimum, max = maximum))
