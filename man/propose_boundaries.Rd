@@ -2,33 +2,20 @@
 % Please edit documentation in R/propose_splits.R
 \name{propose_boundaries}
 \alias{propose_boundaries}
-\title{Wrapper for \code{find_boundary}.}
+\title{Wrapper for \code{find_valley}.}
 \usage{
-propose_boundaries(
-  x,
-  g,
-  var_num,
-  subsetter,
-  already_split,
-  common_variables = NULL
-)
+propose_boundaries(x, subsetter_g, splittable_vars_g = rep(TRUE, ncol(x)))
 }
 \arguments{
 \item{x}{Data.}
 
-\item{g}{The pathway number.}
+\item{subsetter_g}{Column g of the subsetting matrix.}
 
-\item{var_num}{Total number of variables.}
-
-\item{subsetter}{The subsetting matrix.}
-
-\item{already_split}{The already_split matrix.}
-
-\item{common_variables}{Matrix}
+\item{splittable_vars_g}{Row g of the splittable_vars matrix.}
 }
 \value{
-boundaries
+valleys
 }
 \description{
-Wrapper for \code{find_boundary}.
+Wrapper for \code{find_valley}.
 }
