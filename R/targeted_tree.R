@@ -28,6 +28,8 @@ targeted_tree <- function(
   use_boundaries = TRUE,
   show_plot = FALSE
 ) {
+  min_size <- 100
+
   var_num <- ncol(x)
   obs_num <- nrow(x)
   path_num <- 1
@@ -73,7 +75,7 @@ targeted_tree <- function(
   k <- 1
   while (g <= path_num) {
 
-    if (sum(subsetter[, g]) < 100) {
+    if (sum(subsetter[, g]) < min_size) {
       found_valley <- FALSE
       found_boundary <- FALSE
     } else {
