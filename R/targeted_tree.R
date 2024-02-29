@@ -188,17 +188,36 @@ targeted_tree <- function(
 
       node_num <- node_num + 1 + !no_new_branch
 
-    } else if (sum(subsetter[, g]) > 1) {
-      for (p in which(splittable_vars[g, ])) {
-        plot_list[[g]][[split_num[g] + 1]] <- plot_targeted_split(
-          x[subsetter[, g], p], g, p, depth = NA,
-          signs, scenario, split_gp = NA
+    } else {
+
+      if (sum(subsetter[, g]) > 1) {
+        missed_splits <- 0
+        for (p in which(splittable_vars[g, ])) {
+          missed_splits <- missed_splits + 1
+          plot_list[[g]][[split_num[g] + missed_splits]] <- plot_targeted_split(
+            x[subsetter[, g], p], g, p, depth = NA,
+            signs, scenario, split_gp = NA
+          )
+        }
+
+        scenario <- "undiscovered"
+        extra_valleys <- propose_valleys2(
+          x, subsetter[, g], !splittable_vars[g, ],
+          5 * min_depth, 5 * min_height
         )
+        extra_splits <- 0
+        for (p in which(!splittable_vars[g, ])) {
+          if (!is.na(extra_valleys[1, p]) && length(subsetter[, g]) >= min_size) {
+            extra_splits <- extra_splits + 1
+            plot_list[[g]][[split_num[g] + missed_splits + extra_splits]] <-
+              plot_targeted_split(
+                x[subsetter[, g], p], g, p, depth = extra_valleys[2, p],
+                signs, scenario, split_gp = extra_valleys[1, p]
+              )
+          }
+        }
       }
 
-      g <- g + 1
-      common_variables <- rbind(common_variables, NA)
-    } else {
       g <- g + 1
       common_variables <- rbind(common_variables, NA)
     }
