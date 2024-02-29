@@ -80,6 +80,7 @@ targeted_tree <- function(
       min_size, min_depth, min_height,
       use_boundaries
     )
+
     scenario <- proposals$scenario
 
     if (scenario %in% c("valley", "boundary")) {
@@ -214,6 +215,10 @@ targeted_tree <- function(
       # correspond to population 3, and so on.
       # Would it be easier to create duplicate paths in this case, so that g
       # and k are identical?
+      #
+      # Hang on, the second population does not necessarily lie on the second
+      # path. E.g. if the first and second populations are distinguished by the
+      # second split on path 1, path 2 starts at the first split.
       k <- match(g, pop_to_path)
       current_node[g] <- start_node[g]
 
