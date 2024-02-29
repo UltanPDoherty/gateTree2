@@ -11,11 +11,11 @@
 #'         vector and recall vector.
 #' @export
 get_f1 <- function(
-    class_labels,
-    clust_labels,
-    remove_class = NULL,
-    no_match_class = NULL,
-    prec_rec = FALSE
+  class_labels,
+  clust_labels,
+  remove_class = NULL,
+  no_match_class = NULL,
+  prec_rec = FALSE
 ) {
   clust_labels[is.na(clust_labels)] <- max(clust_labels, na.rm = TRUE) + 1
   class_labels[is.na(class_labels)] <- max(class_labels, na.rm = TRUE) + 1
@@ -55,7 +55,6 @@ get_f1 <- function(
     class_to_clust_match <- as.numeric(
       clue::solve_LSAP(f1_mat[matchable_class_rows, ], maximum = TRUE)
     )
-    other_clust   <- setdiff(1:clust_num, class_to_clust_match)
     class_to_clust[matchable_class_rows] <- class_to_clust_match
   } else {
     clust_to_class <- as.numeric(

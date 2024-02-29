@@ -49,8 +49,8 @@ targeted_branches <- function(
     # this gating pathway
     subsetter[, g] <- apply(inside_cutoffs[, plusminus_table[g, ] != 0], 1, all)
 
-    # continue inner loop until this pathway's row of the already_split & no_valleys
-    # matrices do not contain any FALSE values.
+    # continue inner loop until this pathway's row of the already_split &
+    # no_valleys matrices do not contain any FALSE values.
     # that is, move onto the next pathway only when every required variable for
     # this pathway is TRUE
     while (any(!already_split[g, ] & !no_valleys[g, ], na.rm = TRUE)) {
@@ -107,7 +107,8 @@ targeted_branches <- function(
     if (explore) {
       false_already_split <- array(FALSE, dim = dim(plusminus_table))
 
-      proposals <- propose_valleys(x, g, var_num, subsetter, false_already_split,
+      proposals <- propose_valleys(x, g, var_num, subsetter,
+                                   false_already_split,
                                    2 * min_depth, 2 * min_height)
       for (p in 1:var_num) {
         if (!is.na(proposals[1, p])) {
@@ -144,4 +145,3 @@ targeted_branches <- function(
               subsetter = subsetter,
               plot_list = plot_list))
 }
-

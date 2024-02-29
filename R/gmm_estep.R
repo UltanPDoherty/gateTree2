@@ -20,19 +20,21 @@ gmm_estep <- function(x, labels, exclude_index = NULL) {
 
   clust_num <- length(include_index)
 
-  lpdf <- vapply(1:clust_num, FUN.VALUE = double(obs_num),
-                 FUN = function(k) {
-                   mvtnorm::dmvnorm(x, log = TRUE,
-                                    mean = params$mu[k, ],
-                                    sigma = params$sigma[, , k])
-                   }
+  lpdf <- vapply(
+    1:clust_num,
+    FUN.VALUE = double(obs_num),
+    function(k) {
+      mvtnorm::dmvnorm(x, log = TRUE,
+                       mean = params$mu[k, ],
+                       sigma = params$sigma[, , k])
+    }
   )
 
 
   # for loop computes the block posterior probability matrix, postprob_block
   unnorm <- postprob <- matrix(nrow = obs_num, ncol = clust_num)
   log_maxes <- loglike_vec <- unnorm_sums <- vector(mode = "numeric",
-                                                          length = obs_num)
+                                                    length = obs_num)
 
   for (l in 1:obs_num) {
     # Add the log mixing proportions and then un-log this sum with exp.

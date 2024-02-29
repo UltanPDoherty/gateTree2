@@ -15,19 +15,13 @@
 #'
 #' @return List: splits, split_order, subsetter, edge_df, labels, signs.
 #' @import ggplot2
-#' @import ggraph
 #' @importFrom ggpubr ggarrange
 #' @importFrom utils tail
 #' @export
 targeted_tree <- function(
-    x,
-    plusminus_table,
-    min_height = min_depth,
-    min_depth = 1,
-    min_val_cutoff = NULL,
-    max_val_cutoff = NULL,
-    use_boundaries = TRUE,
-    show_plot = FALSE
+  x,
+  plusminus_table,
+  min_height = min_depth,
 ) {
   var_num <- ncol(x)
   obs_num <- nrow(x)

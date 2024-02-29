@@ -21,4 +21,7 @@ Imports:
     ggraph,
     ggpubr,
     mvtnorm,
-    abind
+    abind,
+    igraph,
+    tidygraph,
+    ggokabeito

@@ -110,9 +110,9 @@ exploratory_tree <- function(
       edge_name[node_num + 2] <- paste0(colnames(x)[p_choice], "+")
 
       node_name[node_num + 1] <- paste(edge_name[path_nodes[[g]]],
-                                          collapse = "/")
+                                       collapse = "/")
       node_name[node_num + 2] <- paste(edge_name[path_nodes[[path_num + 1]]],
-                                          collapse = "/")
+                                       collapse = "/")
 
       is_leaf[parent_node[node_num + 1]] <- FALSE
       is_leaf[node_num + 1] <- TRUE

@@ -1,8 +1,8 @@
 targeted_splits <- function(
-    x,
-    plusminus_table,
-    min_depth = 1,
-    min_height = 1
+  x,
+  plusminus_table,
+  min_depth = 1,
+  min_height = 1
 ) {
   to_be_split <- apply(plusminus_table, 2, function(column) any(column != 0))
 
@@ -68,4 +68,3 @@ targeted_splits <- function(
               subsetter = subsetter,
               labels = labels))
 }
-

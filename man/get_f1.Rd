@@ -5,17 +5,17 @@
 \title{Compute F1 given two vectors of labels}
 \usage{
 get_f1(
-  clust_labels,
   class_labels,
+  clust_labels,
   remove_class = NULL,
   no_match_class = NULL,
   prec_rec = FALSE
 )
 }
 \arguments{
-\item{clust_labels}{Vector of cluster labels to evaluate.}
-
 \item{class_labels}{Vector of true / reference labels to compare to.}
+
+\item{clust_labels}{Vector of cluster labels to evaluate.}
 
 \item{remove_class}{Vector of class labels to be removed from the data.}
 

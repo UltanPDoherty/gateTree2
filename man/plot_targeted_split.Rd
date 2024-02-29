@@ -7,7 +7,7 @@
 plot_targeted_split(x_gp, g, p, depth, plusminus_table, scenario, split_gp)
 }
 \arguments{
-\item{x_gp}{The data to be displayed, should be only pathway g and variable p.}
+\item{x_gp}{The data to be displayed, should be only pathway g & variable p.}
 
 \item{g}{The pathway number.}
 
