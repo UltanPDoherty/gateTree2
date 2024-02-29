@@ -223,6 +223,13 @@ targeted_tree <- function(
     }
 
     if (any(pop_to_path == g)) {
+      # if a path terminates without fully isolating a single population, then
+      # the final number of paths and populations will be different because
+      # there will be a path with multiple populations on it.
+      # If population 1 and 2 are on path 1 when it terminates, then path 2 will
+      # correspond to population 3, and so on.
+      # Would it be easier to create duplicate paths in this case, so that g
+      # and k are identical?
       k <- match(g, pop_to_path)
       current_node[g] <- start_node[g]
 
