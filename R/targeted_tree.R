@@ -20,7 +20,7 @@
 #' @export
 targeted_tree <- function(
   x,
-  plusminus_table,
+  plusminus_table = expand.grid(rep(list(c(-1, 1)), nrow(9))),
   min_height = min_depth,
   min_depth = 1,
   min_val_cutoff = NULL,
