@@ -209,17 +209,15 @@ targeted_tree <- function(
     }
   }
 
-  leaf_name <- rep("", node_num)
-  leaf_name[is_leaf] <- node_name[is_leaf]
-
   if (show_plot) {
     plot_paths(plot_list)
   }
 
-  tree_plot <- make_tree_plot(parent_node, node_num, edge_name, node_name,
-                              is_leaf, leaf_name, path_nodes)
+  edge_df <- make_edge_df(parent_node, node_num, edge_name, node_name,
+                          is_leaf, path_nodes)
+  tree_plot <- make_tree_plot(edge_df)
 
-  plot(tree_plot$graph)
+  plot(tree_plot)
 
   labels <- c()
   unassigned <- rowSums(subsetter) == 0
@@ -237,10 +235,10 @@ targeted_tree <- function(
   return(list(splits = splits,
               split_order = split_order,
               subsetter = subsetter,
-              edge_df = tree_plot$df,
+              edge_df = edge_df,
               labels = labels,
               signs = signs,
-              tree_plot = tree_plot$graph))
+              tree_plot = tree_plot))
 }
 
 

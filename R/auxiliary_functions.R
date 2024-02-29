@@ -369,8 +369,18 @@ plot_targeted_split <- function(x_gp, g, p, depth, plusminus_table,
 
 #===============================================================================
 
-make_tree_plot <- function(parent_node, node_number, edge_name, node_name,
-                           is_leaf, leaf_name, path_nodes) {
+make_edge_df <- function(parent_node, node_number, edge_name, node_name,
+                         is_leaf, path_nodes) {
+
+  leaf_name <- rep("", node_number)
+  leaf_name[is_leaf] <- node_name[is_leaf]
+  leaf_name <- gsub("All/", "", leaf_name)
+
+  path_order <- unique(Reduce(c, path_nodes))
+
+  ggraph_order <- rep(NA, node_number)
+  ggraph_order[is_leaf] <- (sum(!is_leaf) + 1):node_number
+  ggraph_order[!is_leaf] <- order(path_order[!is_leaf[path_order]])
 
   edge_df <- data.frame(
     parent = parent_node,
@@ -378,18 +388,29 @@ make_tree_plot <- function(parent_node, node_number, edge_name, node_name,
     edge_name = edge_name,
     node_name = gsub("All/", "", node_name),
     is_leaf = is_leaf,
-    leaf_name = gsub("All/", "", leaf_name),
-    ggraph_order = rep(NA, node_number)
+    leaf_name = leaf_name,
+    ggraph_order = ggraph_order
   )
 
-  path_order <- unique(Reduce(c, path_nodes))
-  edge_df$ggraph_order[is_leaf] <- (sum(!is_leaf) + 1):node_number
-  edge_df$ggraph_order[!is_leaf] <- order(path_order[!is_leaf[path_order]])
+  return(edge_df)
+}
 
-  my_ggraph <- edge_df |>
-    ggraph::ggraph(
-      layout = "tree"
-    ) +
+#===============================================================================
+
+#' @import ggraph
+#' @importFrom igraph graph_from_data_frame
+#' @importFrom tidygraph as_tbl_graph
+#' @importFrom ggokabeito scale_colour_okabe_ito
+make_tree_plot <- function(edge_df) {
+
+  tree_graph <- igraph::graph_from_data_frame(d = edge_df[, 1:3],
+                                              v = edge_df[, c(2, 4:7)])
+
+  tree_tbl_graph <- tidygraph::as_tbl_graph(tree_graph)
+
+  edge_name <- leaf_name <- NULL # to silence "no visible binding" check
+  tree_plot <- tree_tbl_graph |>
+    ggraph::ggraph(layout = "tree") +
     ggraph::geom_edge_elbow2(
       aes(label = edge_name),
       show.legend = FALSE,
@@ -398,14 +419,18 @@ make_tree_plot <- function(parent_node, node_number, edge_name, node_name,
       label_dodge = grid::unit(0.075, "npc")
     ) +
     ggraph::geom_node_label(
-      aes(label = leaf_name[edge_df$ggraph_order]),
+      aes(label = leaf_name,
+          colour = leaf_name),
       show.legend = FALSE
     ) +
-    ggraph::theme_graph()
+    ggraph::theme_graph() +
+    ggokabeito::scale_colour_okabe_ito(order = c(9, 1:8))
 
-  return(list(graph = my_ggraph, df = edge_df))
+  return(tree_plot)
 }
 
+
+#===============================================================================
 
 
 plot_paths <- function(plot_list) {
