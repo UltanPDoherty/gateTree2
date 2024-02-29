@@ -23,5 +23,4 @@ Imports:
     mvtnorm,
     abind,
     igraph,
-    tidygraph,
-    ggokabeito
+    tidygraph

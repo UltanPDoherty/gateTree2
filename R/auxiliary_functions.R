@@ -471,7 +471,7 @@ make_tree_plot <- function(edge_df) {
       show.legend = FALSE
     ) +
     ggraph::theme_graph() +
-    ggokabeito::scale_colour_okabe_ito(order = c(9, 1:8))
+    scale_colour_manual(values = rep("black", nrow(edge_df)))
 
   return(tree_plot)
 }
