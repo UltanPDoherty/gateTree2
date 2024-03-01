@@ -50,7 +50,6 @@ targeted_tree <- function(
   split_num <- c(0)
   node_num <- 1
   start_node <- c(1)
-  current_node <- c(1)
   parent_node <- c(1)
   edge_name <- c("All")
   path_nodes <- list(c(1))
@@ -232,7 +231,6 @@ targeted_tree <- function(
       # path. E.g. if the first and second populations are distinguished by the
       # second split on path 1, path 2 starts at the first split.
       k <- match(g, pop_to_path)
-      current_node[g] <- start_node[g]
 
       common_variables[g, ] <- apply(
         plusminus_table[pop_to_path == g, , drop = FALSE],
