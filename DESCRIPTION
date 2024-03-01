@@ -1,10 +1,10 @@
-Package: marginalSplit
-Title: Marginal Splitting of Multivariate Data
+Package: gateTree
+Title: Tree-based gating for cytometry data
 Version: 0.0.0.0001
 Authors@R: 
     person("Ultán", "Doherty", , "dohertyu@tcd.ie", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0003-1791-395X"))
-Description: Marginal Splitting of Multivariate Data.
+Description: User-informed clustering tree algorithm.
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)

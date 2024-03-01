@@ -38,7 +38,6 @@ targeted_tree <- function(
   explore_min_depth <- min(c(100, 5 * min_depth))
   explore_min_size <- min_size
 
-
   var_num <- ncol(x)
   obs_num <- nrow(x)
   path_num <- 1
