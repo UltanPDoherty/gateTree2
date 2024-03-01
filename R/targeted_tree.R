@@ -49,7 +49,6 @@ targeted_tree <- function(
 
   split_num <- c(0)
   node_num <- 1
-  start_node <- c(1)
   parent_node <- c(1)
   edge_name <- c("All")
   path_nodes <- list(c(1))
@@ -127,8 +126,6 @@ targeted_tree <- function(
         split_num[path_num + 1] <- split_num[g]
 
         plot_list[[path_num + 1]] <- plot_list[[g]]
-
-        start_node[path_num + 1] <- node_num
 
         splits <- rbind(splits, splits[g, ])
 
