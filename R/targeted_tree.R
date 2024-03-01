@@ -4,6 +4,7 @@
 #' @param plusminus_table Table indicated whether each group (row) is positive
 #'                        (+1), negative (-1), or neutral / unknown (0) for each
 #'                        variable (column).
+#' @param order_table Table influencing the order of splits.
 #' @param min_height Minimum height, as a percentage of the height of the global
 #'                   density maximum, for a peak to be recognised by find_peaks.
 #' @param min_depth Minimum depth, as a percentage of the height of the global
@@ -21,6 +22,7 @@
 targeted_tree <- function(
   x,
   plusminus_table = expand.grid(rep(list(c(-1, 1)), nrow(x))),
+  order_table = array(0, dim = dim(plusminus_table)),
   min_height = min_depth,
   min_depth = 1,
   min_val_cutoff = NULL,
@@ -37,6 +39,8 @@ targeted_tree <- function(
   splits      <- scores <- matrix(NA, nrow = path_num, ncol = var_num)
   split_order <- signs  <- matrix(NA, nrow = path_num, ncol = var_num)
   splittable_vars <- matrix(NA, nrow = path_num, ncol = var_num)
+  order_vars <- matrix(NA, nrow = path_num, ncol = var_num)
+
   colnames(signs) <- colnames(plusminus_table)
 
   already_split <- matrix(FALSE, nrow = path_num, ncol = var_num)
@@ -70,6 +74,9 @@ targeted_tree <- function(
   path_num <- 1
 
   splittable_vars[1, ] <- !already_split[1, ] & common_variables[1, ]
+
+  order_vars[1, ] <- split_num[1] >= order_table[1, ]
+  splittable_vars[1, ] <- splittable_vars[1, ] & order_vars[1, ]
 
   g <- 1
   k <- 1
@@ -239,6 +246,9 @@ targeted_tree <- function(
       subsetter[, g] <- subsetter[, g] & inside_common
 
       splittable_vars[g, ] <- !already_split[g, ] & common_variables[g, ]
+
+      order_vars[g, ] <- split_num[g] >= order_table[k, ]
+      splittable_vars[g, ] <- splittable_vars[g, ] & order_vars[g, ]
     }
   }
 
