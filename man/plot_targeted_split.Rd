@@ -17,7 +17,7 @@ plot_targeted_split(x_gp, g, p, depth, plusminus_table, scenario, split_gp)
 
 \item{plusminus_table}{The cell-type variable table.}
 
-\item{scenario}{"valley", "boundary", "nothing", or "undiscovered".}
+\item{scenario}{"valley", "boundary", "nothing", or "explore".}
 
 \item{split_gp}{The split value.}
 }
