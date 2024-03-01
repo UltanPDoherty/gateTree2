@@ -103,7 +103,7 @@ targeted_tree <- function(
       }
 
       same_sign <- plusminus_table[, p_choice] == plusminus_table[k, p_choice]
-      no_new_branch <- all(same_sign[pop_to_path == g])
+      new_branch_created <- !all(same_sign[pop_to_path == g])
       pop_to_path[pop_to_path == g & !same_sign] <- path_num + 1
 
       x_gp <- x[subsetter[, g], p_choice]
@@ -124,7 +124,7 @@ targeted_tree <- function(
         signs, scenario, splits[g, p_choice]
       )
 
-      if (!no_new_branch) {
+      if (new_branch_created) {
         split_num[path_num + 1] <- split_num[g]
 
         plot_list[[path_num + 1]] <- plot_list[[g]]
@@ -183,7 +183,7 @@ targeted_tree <- function(
       is_leaf[parent_node[node_num + 1]] <- FALSE
       is_leaf[node_num + 1] <- TRUE
 
-      node_num <- node_num + 1 + !no_new_branch
+      node_num <- node_num + 1 + new_branch_created
 
     } else {
 
