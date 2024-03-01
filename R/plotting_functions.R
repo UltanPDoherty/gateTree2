@@ -165,3 +165,32 @@ plot_paths <- function(plot_list, show_plot) {
     }
   }
 }
+
+#===============================================================================
+
+explore_plots <- function(x, g, subsetter, splittable_vars,
+                          explore_min_depth, explore_min_height,
+                          explore_min_size,
+                          plot_list, split_num, missed_splits, signs) {
+
+  explore_valleys <- propose_valleys(
+    x, subsetter[, g], !splittable_vars[g, ],
+    explore_min_depth, explore_min_height
+  )
+
+  explore_splits <- 0
+
+  explore_check <- !is.na(explore_valleys[1, ])
+  explore_check <- explore_check & sum(subsetter[, g]) >= explore_min_size
+
+  for (p in which(explore_check)) {
+    explore_splits <- explore_splits + 1
+    plot_list[[g]][[split_num[g] + missed_splits + explore_splits]] <-
+      plot_targeted_split(
+        x[subsetter[, g], p], g, p, depth = explore_valleys[2, p],
+        signs, scenario = "explore", split_gp = explore_valleys[1, p]
+      )
+  }
+
+  return(plot_list)
+}
