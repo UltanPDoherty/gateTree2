@@ -20,7 +20,7 @@
 #' @importFrom ggpubr ggarrange
 #' @importFrom utils tail
 #' @export
-targeted_tree <- function(
+gateTree <- function(
   x,
   plusminus_table = expand.grid(rep(list(c(-1, 1)), nrow(x))),
   order_table = array(0, dim = dim(plusminus_table)),
