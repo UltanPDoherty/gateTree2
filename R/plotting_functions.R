@@ -147,17 +147,20 @@ make_tree_plot <- function(edge_df) {
 
 #===============================================================================
 
-plot_paths <- function(plot_list) {
-  arranged <- list()
-  for (g in seq_along(plot_list)) {
+plot_paths <- function(plot_list, show_plot) {
 
-    arranged[[g]] <- ggpubr::ggarrange(plotlist = plot_list[[g]],
-                                       ncol = 2, nrow = 2)
-    if (is.ggplot(arranged[[g]])) {
-      plot(arranged[[g]])
-    } else {
-      for (j in seq_along(arranged[[g]])) {
-        plot(arranged[[g]][[j]])
+  if (show_plot) {
+    arranged <- list()
+    for (g in seq_along(plot_list)) {
+
+      arranged[[g]] <- ggpubr::ggarrange(plotlist = plot_list[[g]],
+                                         ncol = 2, nrow = 2)
+      if (is.ggplot(arranged[[g]])) {
+        plot(arranged[[g]])
+      } else {
+        for (j in seq_along(arranged[[g]])) {
+          plot(arranged[[g]][[j]])
+        }
       }
     }
   }

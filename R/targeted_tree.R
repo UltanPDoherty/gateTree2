@@ -253,9 +253,7 @@ targeted_tree <- function(
     }
   }
 
-  if (show_plot) {
-    plot_paths(plot_list)
-  }
+  plot_paths(plot_list, show_plot = show_plot)
 
   edge_df <- make_edge_df(parent_node, node_num, edge_name, node_name,
                           is_leaf, path_nodes)
