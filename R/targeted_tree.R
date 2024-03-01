@@ -13,6 +13,7 @@
 #' @param max_val_cutoff Maximum value for an observation to be included.
 #' @param use_boundaries Logical value.
 #' @param show_plot Logical value.
+#' @param explore Logical value.
 #'
 #' @return List: splits, split_order, subsetter, edge_df, labels, signs.
 #' @import ggplot2
@@ -28,7 +29,8 @@ targeted_tree <- function(
   min_val_cutoff = NULL,
   max_val_cutoff = NULL,
   use_boundaries = TRUE,
-  show_plot = FALSE
+  show_plot = FALSE,
+  explore = TRUE
 ) {
   min_size <- 100
 
@@ -199,6 +201,7 @@ targeted_tree <- function(
         }
 
         plot_list <- explore_plots(
+          explore,
           x, g, subsetter, splittable_vars,
           explore_min_depth, explore_min_height, explore_min_size,
           plot_list, split_num, missed_splits, signs

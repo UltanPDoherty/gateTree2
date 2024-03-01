@@ -13,7 +13,8 @@ targeted_tree(
   min_val_cutoff = NULL,
   max_val_cutoff = NULL,
   use_boundaries = TRUE,
-  show_plot = FALSE
+  show_plot = FALSE,
+  explore = TRUE
 )
 }
 \arguments{
@@ -38,6 +39,8 @@ density maximum, for a split to be returned by find_valley.}
 \item{use_boundaries}{Logical value.}
 
 \item{show_plot}{Logical value.}
+
+\item{explore}{Logical value.}
 }
 \value{
 List: splits, split_order, subsetter, edge_df, labels, signs.
