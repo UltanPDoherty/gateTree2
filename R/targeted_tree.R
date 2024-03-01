@@ -1,4 +1,4 @@
-#' Partition data set based on unsupervised marginal splits.
+#' Partition data set based on semi-supervised marginal splits.
 #'
 #' @param x Dataset in matrix or data.frame form.
 #' @param plusminus_table Table indicated whether each group (row) is positive
@@ -148,6 +148,7 @@ targeted_tree <- function(
         subsetter[, path_num + 1] <- subsetter[, path_num + 1] & !refine_current
 
         splittable_vars <- rbind(splittable_vars, splittable_vars[g, ])
+        order_vars <- rbind(order_vars, order_vars[g, ])
 
         plot_list[[path_num + 1]][[split_num[path_num + 1]]] <-
           plot_targeted_split(

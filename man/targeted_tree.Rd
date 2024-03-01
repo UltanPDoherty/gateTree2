@@ -2,11 +2,12 @@
 % Please edit documentation in R/targeted_tree.R
 \name{targeted_tree}
 \alias{targeted_tree}
-\title{Partition data set based on unsupervised marginal splits.}
+\title{Partition data set based on semi-supervised marginal splits.}
 \usage{
 targeted_tree(
   x,
   plusminus_table = expand.grid(rep(list(c(-1, 1)), nrow(x))),
+  order_table = array(0, dim = dim(plusminus_table)),
   min_height = min_depth,
   min_depth = 1,
   min_val_cutoff = NULL,
@@ -21,6 +22,8 @@ targeted_tree(
 \item{plusminus_table}{Table indicated whether each group (row) is positive
 (+1), negative (-1), or neutral / unknown (0) for each
 variable (column).}
+
+\item{order_table}{Table influencing the order of splits.}
 
 \item{min_height}{Minimum height, as a percentage of the height of the global
 density maximum, for a peak to be recognised by find_peaks.}
@@ -40,5 +43,5 @@ density maximum, for a split to be returned by find_valley.}
 List: splits, split_order, subsetter, edge_df, labels, signs.
 }
 \description{
-Partition data set based on unsupervised marginal splits.
+Partition data set based on semi-supervised marginal splits.
 }
