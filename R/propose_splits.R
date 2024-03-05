@@ -1,6 +1,6 @@
 
 propose_splits <- function(x, subsetter_g, splittable_vars_g,
-                           min_size, min_depth, min_height,
+                           min_size, min_depth, min_height = min_depth,
                            use_boundaries) {
   if (sum(subsetter_g) < min_size) {
     found_valley <- FALSE
