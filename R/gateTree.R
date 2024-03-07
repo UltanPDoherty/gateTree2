@@ -113,7 +113,7 @@ gateTree <- function(
       x_gp <- x[subsetter[, g], p_choice]
       more_gp <- x[, p_choice] > splits[g, p_choice]
 
-      is_negative <- plusminus_table[g, p_choice] == -1
+      is_negative <- plusminus_table[k, p_choice] == -1
       refine_current <- if (is_negative) !more_gp else more_gp
 
       split_num[g] <- split_num[g] + 1
