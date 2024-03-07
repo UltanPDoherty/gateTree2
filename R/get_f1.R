@@ -5,6 +5,8 @@
 #' @param remove_class Vector of class labels to be removed from the data.
 #' @param no_match_class Vector of class labels to which cluster labels should
 #'                       not be matched.
+#' @param no_match_cluster Vector of cluster labels which should not be matched
+#'                         to class labels.
 #' @param prec_rec Logical: whether precision and recall vectors are returned.
 #'
 #' @return List: F1 matrix & F1 vector, and if prec_rec is TRUE, precision
@@ -15,6 +17,7 @@ get_f1 <- function(
   clust_labels,
   remove_class = NULL,
   no_match_class = NULL,
+  no_match_clust = NULL,
   prec_rec = FALSE
 ) {
   clust_labels[is.na(clust_labels)] <- max(clust_labels, na.rm = TRUE) + 1
@@ -51,28 +54,42 @@ get_f1 <- function(
   match_class_num <- length(matchable_classes)
   class_to_clust <- rep(NA, class_num)
 
-  if (match_class_num <= clust_num) {
+  matchable_clusts <- setdiff(unique(clust_labels), no_match_clust)
+  matchable_clust_rows <- which(colnames(f1_mat) %in% matchable_clusts)
+  match_clust_num <- length(matchable_clusts)
+
+  if (match_class_num <= match_clust_num) {
     class_to_clust_match <- as.numeric(
-      clue::solve_LSAP(f1_mat[matchable_class_rows, ], maximum = TRUE)
+      clue::solve_LSAP(f1_mat[matchable_class_rows, matchable_clust_rows],
+                       maximum = TRUE)
     )
+    # clust_to_class gives column numbers of the selected f1_mat submatrix
     class_to_clust[matchable_class_rows] <- class_to_clust_match
   } else {
     clust_to_class <- as.numeric(
-      clue::solve_LSAP(t(f1_mat[matchable_class_rows, ]), maximum = TRUE)
+      clue::solve_LSAP(t(f1_mat[matchable_class_rows, matchable_clust_rows]),
+                       maximum = TRUE)
     )
+    # clust_to_class gives row numbers of the selected f1_mat submatrix
     other_class    <- setdiff(matchable_class_rows, clust_to_class)
     clust_to_class <- c(clust_to_class, other_class)
     class_to_clust[matchable_class_rows] <- order(clust_to_class)
-    class_to_clust[!is.na(class_to_clust) & class_to_clust > clust_num] <- NA
+    class_to_clust[!is.na(class_to_clust)
+                   & class_to_clust > match_clust_num] <- NA
+    # match_clust_num is the number of columns of the selected f1_mat submatrix
   }
 
-  pr_mat_ord <- pr_mat[, class_to_clust]
+  # we need to convert from column numbers of the f1_mat submatrix to column
+  # numbers of the full f1_mat matrix
+  class_to_clust2 <- (1:clust_num)[matchable_clust_rows][class_to_clust]
+
+  pr_mat_ord <- pr_mat[, class_to_clust2]
   pr_vec <- diag(pr_mat_ord)
 
-  re_mat_ord <- re_mat[, class_to_clust]
+  re_mat_ord <- re_mat[, class_to_clust2]
   re_vec <- diag(re_mat_ord)
 
-  f1_mat_ord <- f1_mat[, class_to_clust]
+  f1_mat_ord <- f1_mat[, class_to_clust2]
   f1_vec <- diag(f1_mat_ord)
 
   out <- list(f1_mat = f1_mat_ord,
