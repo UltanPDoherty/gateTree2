@@ -97,6 +97,7 @@ gateTree <- function(
     if (scenario %in% c("valley", "boundary")) {
 
       p_choice <- which.max(proposals$matrix[2, ])
+
       splits[g, p_choice] <- proposals$matrix[1, p_choice]
       scores[g, p_choice] <- proposals$matrix[2, p_choice]
       already_split[g, p_choice] <- TRUE
@@ -166,7 +167,7 @@ gateTree <- function(
                                           ifelse(is_negative, "+", "-"))
 
         node_name[node_num + 2] <- paste(edge_name[path_nodes[[path_num + 1]]],
-                                         collapse = "/")
+                                         collapse = "\n")
 
         is_leaf[node_num + 2] <- TRUE
 
@@ -180,7 +181,7 @@ gateTree <- function(
       edge_name[node_num + 1] <- paste0(colnames(x)[p_choice],
                                         ifelse(is_negative, "-", "+"))
       node_name[node_num + 1] <- paste(edge_name[path_nodes[[g]]],
-                                       collapse = "/")
+                                       collapse = "\n")
 
       is_leaf[parent_node[node_num + 1]] <- FALSE
       is_leaf[node_num + 1] <- TRUE

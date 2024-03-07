@@ -89,9 +89,10 @@ plot_targeted_split <- function(x_gp, g, p, depth, plusminus_table,
 make_edge_df <- function(parent_node, node_number, edge_name, node_name,
                          is_leaf, path_nodes) {
 
-  leaf_name <- rep("", node_number)
+  # leaf_name <- rep("", node_number)
+  leaf_name <- rep(NA, node_number)
   leaf_name[is_leaf] <- node_name[is_leaf]
-  leaf_name <- gsub("All/", "", leaf_name)
+  leaf_name <- gsub("All\n", "", leaf_name)
 
   path_order <- unique(Reduce(c, path_nodes))
 
@@ -128,7 +129,7 @@ make_tree_plot <- function(edge_df) {
   tree_plot <- tree_tbl_graph |>
     ggraph::ggraph(layout = "tree") +
     ggraph::geom_edge_elbow2(
-      aes(label = edge_name),
+      # aes(label = edge_name),
       show.legend = FALSE,
       angle_calc = "across",
       label_push = grid::unit(0.075, "npc"),
