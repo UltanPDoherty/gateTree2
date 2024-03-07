@@ -22,7 +22,7 @@
 #' @export
 gateTree <- function(
   x,
-  plusminus_table = expand.grid(rep(list(c(-1, 1)), nrow(x))),
+  plusminus_table = expand.grid(rep(list(c(-1, 1)), ncol(x))),
   order_table = array(0, dim = dim(plusminus_table)),
   min_height = min_depth,
   min_depth = 1,
