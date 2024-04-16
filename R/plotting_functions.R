@@ -5,14 +5,14 @@
 #' @param x_gp The data to be displayed, should be only pathway g & variable p.
 #' @param g The pathway number.
 #' @param p The variable number.
-#' @param depth The depth of the split.
+#' @param score The depth of the valley or the BIC score.
 #' @param plusminus_table The cell-type variable table.
 #' @param scenario "valley", "boundary", "nothing", or "explore".
 #' @param split_gp The split value.
 #'
 #' @return NULL
 #' @export
-plot_targeted_split <- function(x_gp, g, p, depth, plusminus_table,
+plot_targeted_split <- function(x_gp, g, p, score, plusminus_table,
                                 scenario, split_gp) {
 
   # colours from ggokabeito package
@@ -21,11 +21,16 @@ plot_targeted_split <- function(x_gp, g, p, depth, plusminus_table,
                      "boundary" = "#56B4E9",
                      "nothing" = NA,
                      "explore" = "#CC79A7")
-  depth <- switch(scenario,
-                  "valley" = depth,
-                  "boundary" = NA,
+  score <- switch(scenario,
+                  "valley" = score,
+                  "boundary" = score,
                   "nothing" = NA,
-                  "explore" = depth)
+                  "explore" = score)
+  score_title <- switch(scenario,
+                        "valley" = paste0("depth = ", round(score, 1), "%"),
+                        "boundary" = paste0("scaled_BIC_diff = ", round(score, 1)),
+                        "nothing" = NA,
+                        "explore" = paste0("depth = ", round(score, 1), "%"))
   line_type <- switch(scenario,
                       "valley" = "solid",
                       "boundary" = "dashed",
@@ -71,8 +76,7 @@ plot_targeted_split <- function(x_gp, g, p, depth, plusminus_table,
     geom_vline(xintercept = trans_split_gp, linetype = line_type,
                na.rm = TRUE) +
     labs(
-      title = paste0("g = ", g, ", p = ", p, ", ",
-                     "depth = ", round(depth, 1), "%"),
+      title = paste0("g = ", g, ", p = ", p, ", ", score_title),
       subtitle = paste0("Path: ", rownames(plusminus_table)[g], ", ",
                         "Var: ", colnames(plusminus_table)[p], ", ",
                         "\"", scenario, "\""),
@@ -118,7 +122,7 @@ make_edge_df <- function(parent_node, node_number, edge_name, node_name,
 #' @import ggraph
 #' @importFrom igraph graph_from_data_frame
 #' @importFrom tidygraph as_tbl_graph
-make_tree_plot <- function(edge_df) {
+make_tree_plot <- function(edge_df, show_plot = FALSE) {
 
   tree_graph <- igraph::graph_from_data_frame(d = edge_df[, 1:3],
                                               v = edge_df[, c(2, 4:7)])
@@ -142,6 +146,10 @@ make_tree_plot <- function(edge_df) {
     ) +
     ggraph::theme_graph() +
     scale_colour_manual(values = rep("black", nrow(edge_df)))
+
+  if (show_plot) {
+    plot(tree_plot)
+  }
 
   return(tree_plot)
 }
@@ -199,7 +207,7 @@ explore_plots <- function(
       explore_splits <- explore_splits + 1
       plot_list[[g]][[split_num[g] + missed_splits + explore_splits]] <-
         plot_targeted_split(
-          x[subsetter[, g], p], g, p, depth = explore_valleys[2, p],
+          x[subsetter[, g], p], g, p, score = explore_valleys[2, p],
           signs, scenario = "explore", split_gp = explore_valleys[1, p]
         )
     }
