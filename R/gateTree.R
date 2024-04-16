@@ -8,7 +8,11 @@
 #' @param min_height Minimum height, as a percentage of the height of the global
 #'                   density maximum, for a peak to be recognised by find_peaks.
 #' @param min_depth Minimum depth, as a percentage of the height of the global
-#'                   density maximum, for a split to be returned by find_valley.
+#'                  density maximum, for a split to be returned by find_valley.
+#' @param min_scaled_bic_diff Minimum value of difference between one-component
+#'                            and two-component BIC divided by
+#'                            2 $\times$ log(obs_num).
+#' @param min_size Minimum number of observations for a subset to be split.
 #' @param min_val_cutoff Minimum value for an observation to be included.
 #' @param max_val_cutoff Maximum value for an observation to be included.
 #' @param use_boundaries Logical value.
@@ -26,14 +30,14 @@ gateTree <- function(
   order_table = array(0, dim = dim(plusminus_table)),
   min_height = min_depth,
   min_depth = 1,
+  min_scaled_bic_diff = 0,
+  min_size = 50,
   min_val_cutoff = NULL,
   max_val_cutoff = NULL,
   use_boundaries = TRUE,
   show_plot = FALSE,
   explore = TRUE
 ) {
-  min_size <- 100
-
   explore_min_height <- min(c(100, 5 * min_height))
   explore_min_depth <- min(c(100, 5 * min_depth))
   explore_min_size <- min_size
@@ -89,7 +93,7 @@ gateTree <- function(
     proposals <- propose_splits(
       x, subsetter[, g], splittable_vars[g, ],
       min_size, min_depth, min_height,
-      use_boundaries
+      min_scaled_bic_diff, use_boundaries
     )
 
     scenario <- proposals$scenario
@@ -190,12 +194,12 @@ gateTree <- function(
 
     } else {
 
-      if (sum(subsetter[, g]) > 1) {
+      if (sum(subsetter[, g]) > min_size) {
         missed_splits <- 0
         for (p in which(splittable_vars[g, ])) {
           missed_splits <- missed_splits + 1
           plot_list[[g]][[split_num[g] + missed_splits]] <- plot_targeted_split(
-            x[subsetter[, g], p], g, p, depth = NA,
+            x[subsetter[, g], p], g, p, score = NA,
             signs, scenario, split_gp = NA
           )
         }
@@ -249,9 +253,7 @@ gateTree <- function(
 
   edge_df <- make_edge_df(parent_node, node_num, edge_name, node_name,
                           is_leaf, path_nodes)
-  tree_plot <- make_tree_plot(edge_df)
-
-  plot(tree_plot)
+  tree_plot <- make_tree_plot(edge_df, show_plot)
 
   labels <- c()
   unassigned <- rowSums(subsetter) == 0
