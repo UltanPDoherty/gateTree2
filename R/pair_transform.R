@@ -1,4 +1,6 @@
-pair_transform <- function(x, y, trans_type = TRUE, angle = NULL) {
+pair_transform <- function(x, y, trans_type, angle = NULL,
+                           min_depth = 1, use_boundaries = TRUE
+                           ) {
 
   if (is.null(angle)) {
     angle <- seq(0, 90, by = 7.5)
@@ -26,8 +28,8 @@ pair_transform <- function(x, y, trans_type = TRUE, angle = NULL) {
   proposals <- propose_splits(new_vars,
                               subsetter_g = rep(TRUE, nrow(new_vars)),
                               splittable_vars_g = rep(TRUE, ncol(new_vars)),
-                              min_size = 100, min_depth = 1,
-                              use_boundaries = TRUE)
+                              min_size = 100, min_depth = min_depth,
+                              use_boundaries = use_boundaries)
 
   if (proposals$scenario != "nothing") {
     trans_choice <- which.max(proposals$matrix[2, ])
