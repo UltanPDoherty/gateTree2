@@ -132,7 +132,7 @@ find_inside_cutoffs <- function(x, min_val_cutoff, max_val_cutoff) {
   } else {
     below_cutoff <- array(dim = dim(x))
     for (j in seq_len(ncol(x))) {
-      below_cutoff[, j] <- x[, j] < min_val_cutoff[j]
+      below_cutoff[, j] <- x[, j] <= min_val_cutoff[j]
     }
   }
   if (is.null(max_val_cutoff)) {
@@ -140,7 +140,7 @@ find_inside_cutoffs <- function(x, min_val_cutoff, max_val_cutoff) {
   } else {
     above_cutoff <- array(dim = dim(x))
     for (j in seq_len(ncol(x))) {
-      above_cutoff[, j] <- x[, j] > max_val_cutoff[j]
+      above_cutoff[, j] <- x[, j] >= max_val_cutoff[j]
     }
   }
   # inside_cutoffs is a matrix of the same dimensions as the data
