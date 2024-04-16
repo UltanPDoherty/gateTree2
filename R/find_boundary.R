@@ -1,4 +1,4 @@
-find_boundary <- function(x, return_all = FALSE) {
+find_boundary <- function(x, min_scaled_bic_diff = 0, return_all = FALSE) {
   obs_num <- length(x)
   sortx <- sort(x)
 
@@ -21,8 +21,8 @@ find_boundary <- function(x, return_all = FALSE) {
     sigma[1] <- stats::sd(x[neg])
     sigma[2] <- stats::sd(x[!neg])
 
-    comp_pdf[, 1] <- truncnorm::dtruncnorm(x, -Inf, xseq[j], mu[1], sigma[1])
-    comp_pdf[, 2] <- truncnorm::dtruncnorm(x, xseq[j], +Inf, mu[2], sigma[2])
+    comp_pdf[, 1] <- dnorm(x, mu[1], sigma[1])
+    comp_pdf[, 2] <- dnorm(x, mu[2], sigma[2])
 
     ll[j] <- sum(log(comp_pdf %*% prop))
   }
@@ -33,6 +33,8 @@ find_boundary <- function(x, return_all = FALSE) {
   bic_one <- 2 * log(obs_num) - 2 * ll_one
   bic_two <- 4 * log(obs_num) - 2 * ll_max
 
+  scaled_bic_diff <- (bic_one - bic_two) / (2 * log(obs_num))
+
   if (return_all) {
     return(list(ll_vec = ll,
                 ll_max = ll_max,
@@ -40,8 +42,8 @@ find_boundary <- function(x, return_all = FALSE) {
                 bic_one = bic_one,
                 bic_two = bic_two,
                 boundary = xseq[which.max(ll)]))
-  } else if (bic_two < bic_one) {
-    return(c(xseq[which.max(ll)], bic_two))
+  } else if (scaled_bic_diff > min_scaled_bic_diff) {
+    return(c(xseq[which.max(ll)], scaled_bic_diff))
   } else {
     return(c(NA, NA))
   }
