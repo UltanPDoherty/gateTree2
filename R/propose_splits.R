@@ -1,4 +1,11 @@
-
+#' Title
+#'
+#' @inheritParams gatetree
+#' @param subsetter_g Column g of the subsetting matrix.
+#' @param splittable_vars_g Row g of the splittable_vars matrix.
+#'
+#' @return List: matrix, scenario
+#' @export
 propose_splits <- function(x, subsetter_g, splittable_vars_g,
                            min_size, min_depth, min_height = min_depth,
                            min_scaled_bic_diff = 0,
@@ -35,14 +42,9 @@ propose_splits <- function(x, subsetter_g, splittable_vars_g,
 
 #' Wrapper for `find_valley`.
 #'
-#' @param x Data.
-#' @param subsetter_g Column g of the subsetting matrix.
-#' @param splittable_vars_g Row g of the splittable_vars matrix.
-#' @param min_depth `min_depth` for `find_valley` function.
-#' @param min_height `min_height` for `find_valley` function.
+#' @inheritParams propose_splits
 #'
 #' @return valleys
-#' @export
 propose_valleys <- function(
   x,
   subsetter_g,
@@ -58,7 +60,7 @@ propose_valleys <- function(
 
     valleys[, p] <- find_valley(
       dens01_gp,
-      depth = TRUE,
+      return_depth = TRUE,
       min_depth = min_depth,
       min_height = min_height
     )
@@ -73,15 +75,9 @@ propose_valleys <- function(
 
 #' Wrapper for `find_valley`.
 #'
-#' @param x Data.
-#' @param min_scaled_bic_diff Minimum value of difference between one-component
-#'                            and two-component BIC divided by
-#'                            2 log(obs_num).
-#' @param subsetter_g Column g of the subsetting matrix.
-#' @param splittable_vars_g Row g of the splittable_vars matrix.
+#' @inheritParams propose_splits
 #'
 #' @return valleys
-#' @export
 propose_boundaries <- function(
   x,
   min_scaled_bic_diff = 0,

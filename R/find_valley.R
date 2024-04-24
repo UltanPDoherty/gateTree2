@@ -1,4 +1,12 @@
-find_valley <- function(dens, is_peak = NULL, depth = FALSE,
+#' Title
+#'
+#' @inheritParams gatetree
+#' @param dens Output from `stats::density` function.
+#' @param is_peak Logical vector for peaks.
+#' @param return_depth Logical: should valley depth be outputted?
+#'
+#' @return
+find_valley <- function(dens, is_peak = NULL, return_depth = FALSE,
                         min_depth = 0.01, min_height = 0.01) {
 
   if (is.null(is_peak)) {
@@ -6,7 +14,7 @@ find_valley <- function(dens, is_peak = NULL, depth = FALSE,
   }
 
   if (sum(is_peak) == 1) {
-    if (depth) {
+    if (return_depth) {
       return(c(NA, NA))
     } else {
       return(NA)
@@ -36,13 +44,13 @@ find_valley <- function(dens, is_peak = NULL, depth = FALSE,
   }
 
   if (max(depths) < min_depth) {
-    if (depth) {
+    if (return_depth) {
       return(c(NA, NA))
     } else {
       return(NA)
     }
   } else {
-    if (depth) {
+    if (return_depth) {
       return(c(dens$x[valley_ind[which.max(depths)]], max(depths)))
     } else {
       return(dens$x[valley_ind[which.max(depths)]])

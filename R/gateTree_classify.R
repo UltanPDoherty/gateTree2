@@ -1,3 +1,10 @@
+#' Classify a data set based on splits outputted by the `gatetree` function.
+#'
+#' @inheritParams gatetree
+#' @param gatetree_output Output from the `gatetree` function.
+#'
+#' @return Vector of integer labels.
+#' @export
 gatetree_classify <- function(x, gatetree_output) {
 
   pop_num <- nrow(gatetree_output$splits)
