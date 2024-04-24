@@ -75,48 +75,6 @@ check_duplicates <- function(subsetter) {
 
 #===============================================================================
 
-#' Supervised merging.
-#'
-#' @param signs The signs matrix.
-#' @param typemarker The cell type - marker matrix.
-#' @param subsetter The subsetting matrix.
-#'
-#' @return A ggplot object.
-#' @export
-merge_subsets <- function(signs, typemarker, subsetter) {
-  match_array <- array(dim = c(nrow(signs), nrow(typemarker), ncol(signs)))
-  match_matrix <- matrix(nrow = nrow(signs), ncol = nrow(typemarker))
-  for (i in seq_len(nrow(signs))) {
-    for (j in seq_len(nrow(typemarker))) {
-      for (p in seq_len(ncol(signs))) {
-        match_array[i, j, p] <- ifelse(typemarker[j, p] != 0,
-                                       signs[i, p] == typemarker[j, p],
-                                       TRUE)
-      }
-      match_matrix[i, j] <- all(match_array[i, j, ])
-    }
-  }
-
-  merged_subsetter <- matrix(nrow = nrow(subsetter), ncol = ncol(typemarker))
-  match_count <- c()
-  for (j in seq_len(nrow(typemarker))) {
-    match_count[j] <- sum(match_matrix[, j])
-    if (match_count[j] == 0) {
-      merged_subsetter[, j] <- FALSE
-    } else if (match_count[j] == 1) {
-      merged_subsetter[, j] <- subsetter[, match_matrix[, j]]
-    } else {
-      merged_subsetter[, j] <- apply(subsetter[, match_matrix[, j]], 1, any)
-    }
-  }
-
-  return(list(match_matrix = match_matrix,
-              merged_subsetter = merged_subsetter))
-}
-
-
-#===============================================================================
-
 #' Find which observations are inside the cutoffs for each variable.
 #'
 #' @param x Dataset in matrix or data.frame form.
