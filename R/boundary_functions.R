@@ -49,3 +49,26 @@ find_boundary <- function(x, min_scaled_bic_diff = 0, return_all = FALSE) {
   }
 
 }
+
+#===============================================================================
+
+#' Wrapper for `find_boundary`.
+#'
+#' @inheritParams propose_splits
+#'
+#' @return boundaries
+propose_boundaries <- function(
+    x,
+    min_scaled_bic_diff = 0,
+    subsetter_g,
+    splittable_vars_g = rep(TRUE, ncol(x))
+) {
+  boundaries <- matrix(nrow = 2, ncol = ncol(x))
+
+  # loop over all variables to propose splits
+  for (p in which(splittable_vars_g)){
+    boundaries[, p] <- find_boundary(x[subsetter_g, p], min_scaled_bic_diff)
+  }
+
+  return(boundaries)
+}

@@ -38,25 +38,3 @@ propose_splits <- function(x, subsetter_g, splittable_vars_g,
               scenario = scenario))
 }
 
-#===============================================================================
-
-#' Wrapper for `find_valley`.
-#'
-#' @inheritParams propose_splits
-#'
-#' @return valleys
-propose_boundaries <- function(
-  x,
-  min_scaled_bic_diff = 0,
-  subsetter_g,
-  splittable_vars_g = rep(TRUE, ncol(x))
-) {
-  boundaries <- matrix(nrow = 2, ncol = ncol(x))
-
-  # loop over all variables to propose splits
-  for (p in which(splittable_vars_g)){
-    boundaries[, p] <- find_boundary(x[subsetter_g, p], min_scaled_bic_diff)
-  }
-
-  return(boundaries)
-}
