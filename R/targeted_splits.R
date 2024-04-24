@@ -17,7 +17,7 @@ targeted_splits <- function(
 
     valleys[p] <- find_valley(
       dens01_p,
-      depth = TRUE,
+      return_depth = TRUE,
       min_depth = min_depth,
       min_height = min_height
     )[1]
