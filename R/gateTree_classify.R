@@ -1,18 +1,18 @@
-gateTree_classify <- function(x, gateTree_output) {
+gatetree_classify <- function(x, gatetree_output) {
 
-  pop_num <- nrow(gateTree_output$splits)
+  pop_num <- nrow(gatetree_output$splits)
   var_num <- ncol(x)
   obs_num <- nrow(x)
 
   new_subsetter <- matrix(TRUE, nrow = obs_num, ncol = pop_num)
   for (k in seq_len(pop_num)) {
     for (p in seq_len(var_num)) {
-      if (gateTree_output$signs[k, p] == 1) {
+      if (gatetree_output$signs[k, p] == 1) {
         new_subsetter[, k] <- new_subsetter[, k] &
-          x[, p] > gateTree_output$splits[k, p]
-      } else if (gateTree_output$signs[k, p] == -1) {
+          x[, p] > gatetree_output$splits[k, p]
+      } else if (gatetree_output$signs[k, p] == -1) {
         new_subsetter[, k] <- new_subsetter[, k] &
-          x[, p] <= gateTree_output$splits[k, p]
+          x[, p] <= gatetree_output$splits[k, p]
       }
     }
   }

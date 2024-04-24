@@ -24,7 +24,7 @@
 #' @importFrom ggpubr ggarrange
 #' @importFrom utils tail
 #' @export
-gateTree <- function(
+gatetree <- function(
   x,
   plusminus_table = expand.grid(rep(list(c(-1, 1)), ncol(x))),
   order_table = array(0, dim = dim(plusminus_table)),
