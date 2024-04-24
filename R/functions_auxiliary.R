@@ -2,12 +2,11 @@
 
 #' 0-1 scaling.
 #'
-#' @param x Data.
+#' @inheritParams gatetree
 #' @param other_min Minimum to be used for 0-1 scaling.
 #' @param other_max Maximum to be used for 0-1 scaling.
 #'
 #' @return Scaled version of `x`.
-#' @export
 scale01 <- function(x, other_min = NULL, other_max = NULL) {
 
   if (is.null(other_min)) {
@@ -32,12 +31,11 @@ scale01 <- function(x, other_min = NULL, other_max = NULL) {
 
 #' Undo 0-1 scaling.
 #'
-#' @param x Data.
+#' @inheritParams gatetree
 #' @param unscaled_min Minimum used for 0-1 scaling.
 #' @param unscaled_max Maximum used for 0-1 scaling.
 #'
 #' @return Unscaled version of `x`.
-#' @export
 unscale01 <- function(x, unscaled_min, unscaled_max) {
   return(x * (unscaled_max - unscaled_min) + unscaled_min)
 }
@@ -49,7 +47,6 @@ unscale01 <- function(x, unscaled_min, unscaled_max) {
 #' @param subsetter The subsetting matrix.
 #'
 #' @return `is_a_duplicate`.
-#' @export
 check_duplicates <- function(subsetter) {
 
   path_num <- ncol(subsetter)
@@ -77,12 +74,9 @@ check_duplicates <- function(subsetter) {
 
 #' Find which observations are inside the cutoffs for each variable.
 #'
-#' @param x Dataset in matrix or data.frame form.
-#' @param min_val_cutoff Minimum value for an observation to be included.
-#' @param max_val_cutoff Maximum value for an observation to be included.
+#' @inheritParams gatetree
 #'
 #' @return inside_cutoffs
-#' @export
 find_inside_cutoffs <- function(x, min_val_cutoff, max_val_cutoff) {
   # find which observations are outside either of the cutoffs for each variable
   if (is.null(min_val_cutoff)) {

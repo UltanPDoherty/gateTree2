@@ -1,3 +1,9 @@
+#' Title
+#'
+#' @inheritParams gatetree
+#' @param return_all
+#'
+#' @return to be filled in
 find_boundary <- function(x, min_scaled_bic_diff = 0, return_all = FALSE) {
   obs_num <- length(x)
   sortx <- sort(x)
