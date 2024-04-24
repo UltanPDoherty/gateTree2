@@ -5,7 +5,7 @@
 #' @param is_peak Logical vector for peaks.
 #' @param return_depth Logical: should valley depth be outputted?
 #'
-#' @return
+#' @return Valley location or valley location and valley depth.
 find_valley <- function(dens, is_peak = NULL, return_depth = FALSE,
                         min_depth = 0.01, min_height = 0.01) {
 
