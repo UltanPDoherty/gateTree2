@@ -1,3 +1,24 @@
+find_peaks <- function(dens, width_percent = 0.01, min_height = 0.01) {
+
+  dens$y <- dens$y / max(dens$y) * 100
+
+  # w is the number of density points in width_percent of the range
+  w <- round(length(dens$x) * width_percent)
+
+  is_peak <- peak_left <- peak_right <- c()
+  for (i in seq(w + 1, length(dens$y) - w)) {
+    peak_left[i - w] <- all(dens$y[i] > dens$y[(i - w - 1):(i - 1)])
+    peak_right[i - w] <- all(dens$y[i] > dens$y[(i + 1):(i + w)])
+    is_peak[i - w] <- peak_left[i - w] & peak_right[i - w]
+  }
+
+  is_peak <- c(rep(FALSE, w), is_peak, rep(FALSE, w)) & dens$y >= min_height
+
+  return(is_peak)
+}
+
+#===============================================================================
+
 #' Title
 #'
 #' @inheritParams gatetree
@@ -56,4 +77,37 @@ find_valley <- function(dens, is_peak = NULL, return_depth = FALSE,
       return(dens$x[valley_ind[which.max(depths)]])
     }
   }
+}
+
+#===============================================================================
+
+#' Wrapper for `find_valley`.
+#'
+#' @inheritParams propose_splits
+#'
+#' @return valleys
+propose_valleys <- function(
+    x,
+    subsetter_g,
+    splittable_vars_g = rep(TRUE, ncol(x)),
+    min_depth, min_height
+) {
+  valleys <- matrix(nrow = 2, ncol = ncol(x))
+
+  # loop over all variables to propose splits
+  for (p in which(splittable_vars_g)){
+    scale01_gp <- scale01(x[subsetter_g, p])
+    dens01_gp <- stats::density(scale01_gp$y)
+
+    valleys[, p] <- find_valley(
+      dens01_gp,
+      return_depth = TRUE,
+      min_depth = min_depth,
+      min_height = min_height
+    )
+
+    valleys[1, p] <- unscale01(valleys[1, p], scale01_gp$min, scale01_gp$max)
+  }
+
+  return(valleys)
 }
