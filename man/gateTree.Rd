@@ -6,10 +6,12 @@
 \usage{
 gateTree(
   x,
-  plusminus_table = expand.grid(rep(list(c(-1, 1)), nrow(x))),
+  plusminus_table = expand.grid(rep(list(c(-1, 1)), ncol(x))),
   order_table = array(0, dim = dim(plusminus_table)),
   min_height = min_depth,
   min_depth = 1,
+  min_scaled_bic_diff = 0,
+  min_size = 50,
   min_val_cutoff = NULL,
   max_val_cutoff = NULL,
   use_boundaries = TRUE,
@@ -31,6 +33,12 @@ density maximum, for a peak to be recognised by find_peaks.}
 
 \item{min_depth}{Minimum depth, as a percentage of the height of the global
 density maximum, for a split to be returned by find_valley.}
+
+\item{min_scaled_bic_diff}{Minimum value of difference between one-component
+and two-component BIC divided by
+2 log(obs_num).}
+
+\item{min_size}{Minimum number of observations for a subset to be split.}
 
 \item{min_val_cutoff}{Minimum value for an observation to be included.}
 

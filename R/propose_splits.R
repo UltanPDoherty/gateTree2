@@ -76,7 +76,7 @@ propose_valleys <- function(
 #' @param x Data.
 #' @param min_scaled_bic_diff Minimum value of difference between one-component
 #'                            and two-component BIC divided by
-#'                            2 $\times$ log(obs_num).
+#'                            2 log(obs_num).
 #' @param subsetter_g Column g of the subsetting matrix.
 #' @param splittable_vars_g Row g of the splittable_vars matrix.
 #'
@@ -92,7 +92,7 @@ propose_boundaries <- function(
 
   # loop over all variables to propose splits
   for (p in which(splittable_vars_g)){
-    boundaries[, p] <- find_boundary2(x[subsetter_g, p], min_scaled_bic_diff)
+    boundaries[, p] <- find_boundary(x[subsetter_g, p], min_scaled_bic_diff)
   }
 
   return(boundaries)

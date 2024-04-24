@@ -4,7 +4,7 @@
 \alias{plot_targeted_split}
 \title{Plotting function for \code{targeted_split}.}
 \usage{
-plot_targeted_split(x_gp, g, p, depth, plusminus_table, scenario, split_gp)
+plot_targeted_split(x_gp, g, p, score, plusminus_table, scenario, split_gp)
 }
 \arguments{
 \item{x_gp}{The data to be displayed, should be only pathway g & variable p.}
@@ -13,7 +13,7 @@ plot_targeted_split(x_gp, g, p, depth, plusminus_table, scenario, split_gp)
 
 \item{p}{The variable number.}
 
-\item{depth}{The depth of the split.}
+\item{score}{The depth of the valley or the BIC score.}
 
 \item{plusminus_table}{The cell-type variable table.}
 

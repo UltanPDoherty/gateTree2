@@ -5,8 +5,8 @@
 #' @param remove_class Vector of class labels to be removed from the data.
 #' @param no_match_class Vector of class labels to which cluster labels should
 #'                       not be matched.
-#' @param no_match_cluster Vector of cluster labels which should not be matched
-#'                         to class labels.
+#' @param no_match_clust Vector of cluster labels which should not be matched
+#'                       to class labels.
 #' @param prec_rec Logical: whether precision and recall vectors are returned.
 #'
 #' @return List: F1 matrix & F1 vector, and if prec_rec is TRUE, precision

@@ -21,8 +21,8 @@ find_boundary <- function(x, min_scaled_bic_diff = 0, return_all = FALSE) {
     sigma[1] <- stats::sd(x[neg])
     sigma[2] <- stats::sd(x[!neg])
 
-    comp_pdf[, 1] <- dnorm(x, mu[1], sigma[1])
-    comp_pdf[, 2] <- dnorm(x, mu[2], sigma[2])
+    comp_pdf[, 1] <- stats::dnorm(x, mu[1], sigma[1])
+    comp_pdf[, 2] <- stats::dnorm(x, mu[2], sigma[2])
 
     ll[j] <- sum(log(comp_pdf %*% prop))
   }

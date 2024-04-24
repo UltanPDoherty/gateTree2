@@ -11,7 +11,7 @@
 #'                  density maximum, for a split to be returned by find_valley.
 #' @param min_scaled_bic_diff Minimum value of difference between one-component
 #'                            and two-component BIC divided by
-#'                            2 $\times$ log(obs_num).
+#'                            2 log(obs_num).
 #' @param min_size Minimum number of observations for a subset to be split.
 #' @param min_val_cutoff Minimum value for an observation to be included.
 #' @param max_val_cutoff Maximum value for an observation to be included.

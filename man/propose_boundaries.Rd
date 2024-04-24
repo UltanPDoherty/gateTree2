@@ -4,10 +4,19 @@
 \alias{propose_boundaries}
 \title{Wrapper for \code{find_valley}.}
 \usage{
-propose_boundaries(x, subsetter_g, splittable_vars_g = rep(TRUE, ncol(x)))
+propose_boundaries(
+  x,
+  min_scaled_bic_diff = 0,
+  subsetter_g,
+  splittable_vars_g = rep(TRUE, ncol(x))
+)
 }
 \arguments{
 \item{x}{Data.}
+
+\item{min_scaled_bic_diff}{Minimum value of difference between one-component
+and two-component BIC divided by
+2 log(obs_num).}
 
 \item{subsetter_g}{Column g of the subsetting matrix.}
 

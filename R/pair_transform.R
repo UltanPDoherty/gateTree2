@@ -1,6 +1,7 @@
-pair_transform <- function(x, y, trans_type, angle = NULL,
-                           min_depth = 1, use_boundaries = TRUE
-                           ) {
+pair_transform <- function(
+  x, y, trans_type, angle = NULL,
+  min_depth = 1, use_boundaries = TRUE
+) {
 
   if (is.null(angle)) {
     angle <- seq(0, 90, by = 7.5)
@@ -20,7 +21,7 @@ pair_transform <- function(x, y, trans_type, angle = NULL,
                   "diag_decreasing" = c(+1, +1))
 
   new_vars <- list()
-  for(i in seq_along(theta)) {
+  for (i in seq_along(theta)) {
     new_vars[[i]] <- signs[1] * alpha[i] * x + signs[2] * (1 - alpha[i]) * y
   }
   new_vars <- as.data.frame(new_vars)
@@ -46,7 +47,7 @@ pair_transform <- function(x, y, trans_type, angle = NULL,
     }
 
     return(new_vars[, trans_choice])
-  } else (
+  } else {
     stop("Failed to find a split after any of the proposed transformations.\n")
-  )
+  }
 }

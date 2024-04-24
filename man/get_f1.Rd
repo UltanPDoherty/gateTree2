@@ -9,6 +9,7 @@ get_f1(
   clust_labels,
   remove_class = NULL,
   no_match_class = NULL,
+  no_match_clust = NULL,
   prec_rec = FALSE
 )
 }
@@ -21,6 +22,9 @@ get_f1(
 
 \item{no_match_class}{Vector of class labels to which cluster labels should
 not be matched.}
+
+\item{no_match_clust}{Vector of cluster labels which should not be matched
+to class labels.}
 
 \item{prec_rec}{Logical: whether precision and recall vectors are returned.}
 }

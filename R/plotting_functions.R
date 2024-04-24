@@ -28,7 +28,8 @@ plot_targeted_split <- function(x_gp, g, p, score, plusminus_table,
                   "explore" = score)
   score_title <- switch(scenario,
                         "valley" = paste0("depth = ", round(score, 1), "%"),
-                        "boundary" = paste0("scaled_BIC_diff = ", round(score, 1)),
+                        "boundary" = paste0("scaled_BIC_diff = ",
+                                            round(score, 1)),
                         "nothing" = NA,
                         "explore" = paste0("depth = ", round(score, 1), "%"))
   line_type <- switch(scenario,
@@ -93,7 +94,6 @@ plot_targeted_split <- function(x_gp, g, p, score, plusminus_table,
 make_edge_df <- function(parent_node, node_number, edge_name, node_name,
                          is_leaf, path_nodes) {
 
-  # leaf_name <- rep("", node_number)
   leaf_name <- rep(NA, node_number)
   leaf_name[is_leaf] <- node_name[is_leaf]
   leaf_name <- gsub("All\n", "", leaf_name)
@@ -129,11 +129,10 @@ make_tree_plot <- function(edge_df, show_plot = FALSE) {
 
   tree_tbl_graph <- tidygraph::as_tbl_graph(tree_graph)
 
-  edge_name <- leaf_name <- NULL # to silence "no visible binding" check
+  leaf_name <- NULL # to silence "no visible binding" check
   tree_plot <- tree_tbl_graph |>
     ggraph::ggraph(layout = "tree") +
     ggraph::geom_edge_elbow2(
-      # aes(label = edge_name),
       show.legend = FALSE,
       angle_calc = "across",
       label_push = grid::unit(0.075, "npc"),
