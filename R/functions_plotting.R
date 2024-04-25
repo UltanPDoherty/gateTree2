@@ -36,10 +36,10 @@ plot_gatetree_split <- function(x_gp, g, p, score, plusminus_table,
   )
   score_title <- switch(
     scenario,
-    "valley"   = paste0("depth = ", round(score, 1), "%"),
-    "boundary" = paste0("scaled_BIC_diff = ", round(score, 1)),
+    "valley"   = paste0("depth % = ", round(score, 1)),
+    "boundary" = paste0("sc. BIC diff. = ", round(score, 1)),
     "nothing"  = NA,
-    "explore"  = paste0("depth = ", round(score, 1), "%")
+    "explore"  = paste0("depth % = ", round(score, 1))
   )
   line_type <- switch(
     scenario,
