@@ -1,47 +1,56 @@
 #===============================================================================
 
-#' Plotting function for `targeted_split`.
+#' Plotting function used in [gatetree].
 #'
+#' @inheritParams gatetree
 #' @param x_gp The data to be displayed, should be only pathway g & variable p.
 #' @param g The pathway number.
 #' @param p The variable number.
 #' @param score The depth of the valley or the BIC score.
-#' @param plusminus_table The cell-type variable table.
-#' @param scenario "valley", "boundary", "nothing", or "explore".
+#' @param scenario `"valley"`, `"boundary"`, `"nothing"`, or `"explore"`.
 #' @param split_gp The split value.
 #'
-#' @return NULL
+#' @return `ggplot` object.
 #' @export
 plot_targeted_split <- function(x_gp, g, p, score, plusminus_table,
                                 scenario, split_gp) {
 
   # colours from ggokabeito package
-  rect_col <- switch(scenario,
-                     "valley" = "#F0E442",
-                     "boundary" = "#56B4E9",
-                     "nothing" = NA,
-                     "explore" = "#CC79A7")
-  score <- switch(scenario,
-                  "valley" = score,
-                  "boundary" = score,
-                  "nothing" = NA,
-                  "explore" = score)
-  score_title <- switch(scenario,
-                        "valley" = paste0("depth = ", round(score, 1), "%"),
-                        "boundary" = paste0("scaled_BIC_diff = ",
-                                            round(score, 1)),
-                        "nothing" = NA,
-                        "explore" = paste0("depth = ", round(score, 1), "%"))
-  line_type <- switch(scenario,
-                      "valley" = "solid",
-                      "boundary" = "dashed",
-                      "nothing" = "blank",
-                      "explore" = "dotted")
-  is_negative <- switch(scenario,
-                        "valley" = (plusminus_table[g, p] == -1),
-                        "boundary" = (plusminus_table[g, p] == -1),
-                        "nothing" = NA,
-                        "explore" = FALSE)
+  rect_col <- switch(
+    scenario,
+    "valley" = "#F0E442",
+    "boundary" = "#56B4E9",
+    "nothing" = NA,
+    "explore" = "#CC79A7"
+  )
+  score <- switch(
+    scenario,
+    "valley"   = score,
+    "boundary" = score,
+    "nothing"  = NA,
+    "explore"  = score
+  )
+  score_title <- switch(
+    scenario,
+    "valley"   = paste0("depth = ", round(score, 1), "%"),
+    "boundary" = paste0("scaled_BIC_diff = ", round(score, 1)),
+    "nothing"  = NA,
+    "explore"  = paste0("depth = ", round(score, 1), "%")
+  )
+  line_type <- switch(
+    scenario,
+    "valley"   = "solid",
+    "boundary" = "dashed",
+    "nothing"  = "blank",
+    "explore"  = "dotted"
+  )
+  is_negative <- switch(
+    scenario,
+    "valley"   = (plusminus_table[g, p] == -1),
+    "boundary" = (plusminus_table[g, p] == -1),
+    "nothing"  = NA,
+    "explore"  = FALSE
+  )
 
   scale01_gp <- scale01(x_gp)
   dens_gp <- stats::density(scale01_gp$y)

@@ -2,7 +2,7 @@
 % Please edit documentation in R/functions_plotting.R
 \name{plot_targeted_split}
 \alias{plot_targeted_split}
-\title{Plotting function for \code{targeted_split}.}
+\title{Plotting function used in \link{gatetree}.}
 \usage{
 plot_targeted_split(x_gp, g, p, score, plusminus_table, scenario, split_gp)
 }
@@ -15,12 +15,17 @@ plot_targeted_split(x_gp, g, p, score, plusminus_table, scenario, split_gp)
 
 \item{score}{The depth of the valley or the BIC score.}
 
-\item{plusminus_table}{The cell-type variable table.}
+\item{plusminus_table}{Table indicated whether each group (row) is positive
+(+1), negative (-1), or neutral / unknown (0) for each
+variable (column).}
 
-\item{scenario}{"valley", "boundary", "nothing", or "explore".}
+\item{scenario}{\code{"valley"}, \code{"boundary"}, \code{"nothing"}, or \code{"explore"}.}
 
 \item{split_gp}{The split value.}
 }
+\value{
+\code{ggplot} object.
+}
 \description{
-Plotting function for \code{targeted_split}.
+Plotting function used in \link{gatetree}.
 }
