@@ -5,9 +5,7 @@ Ultán P. Doherty
 
 ``` r
 library(healthyFlowData)
-library(ggplot2)
-library(devtools)
-load_all()
+devtools::load_all()
 ```
 
 ``` r
