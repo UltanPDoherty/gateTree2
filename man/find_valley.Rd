@@ -2,7 +2,7 @@
 % Please edit documentation in R/functions_valley.R
 \name{find_valley}
 \alias{find_valley}
-\title{Title}
+\title{Find the optimal density valley.}
 \usage{
 find_valley(
   dens,
@@ -26,8 +26,10 @@ density maximum, for a split to be returned by find_valley.}
 density maximum, for a peak to be recognised by find_peaks.}
 }
 \value{
-Valley location or valley location and valley depth.
+Vector consisting of the valley and its depth percentage. The
+valley will be NA if its depth percentage is less than \code{min_depth}.
 }
 \description{
-Title
+Find the optimal kernel density valley and check if its depth percentage is
+greater than \code{min_depth}.
 }

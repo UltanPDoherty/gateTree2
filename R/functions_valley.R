@@ -19,14 +19,19 @@ find_peaks <- function(dens, width_percent = 0.01, min_height = 0.01) {
 
 #===============================================================================
 
-#' Title
+#' @title Find the optimal density valley.
+#'
+#' @description
+#' Find the optimal kernel density valley and check if its depth percentage is
+#' greater than `min_depth`.
 #'
 #' @inheritParams gatetree
 #' @param dens Output from `stats::density` function.
 #' @param is_peak Logical vector for peaks.
 #' @param return_depth Logical: should valley depth be outputted?
 #'
-#' @return Valley location or valley location and valley depth.
+#' @return Vector consisting of the valley and its depth percentage. The
+#' valley will be NA if its depth percentage is less than `min_depth`.
 find_valley <- function(dens, is_peak = NULL, return_depth = FALSE,
                         min_depth = 0.01, min_height = 0.01) {
 
