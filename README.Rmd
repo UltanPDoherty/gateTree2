@@ -9,19 +9,29 @@ output: github_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-
-```{r, message=FALSE, warning=FALSE}
-library(healthyFlowData)
-devtools::load_all()
+## Install and load `gateTree`.
+```{r, eval=FALSE}
+remotes::install_github("UltanPDoherty/gateTree")
 ```
 
+```{r, message=FALSE, warning=FALSE}
+library(gateTree)
+```
 
+## Load and plot data from `healthyFlowData`.
 ```{r hfd1_setup, message=FALSE, warning=FALSE}
+library(healthyFlowData)
 data(hd)
 hfd1 <- hd.flowSet[[1]]@exprs
 
-GGally::ggpairs(hfd1, progress = FALSE)
+GGally::ggpairs(hfd1, upper = list(continuous = "density"), progress = FALSE)
 ```
+
+## Prepare a plusminus table which describes three populations.
+
+* CD4+ T Cells (CD4+CD8-CD3+CD19-)
+* CD8+ T Cells (CD4-CD8+CD3+CD19-)
+* B Cells      (CD4-CD8-CD3-CD19+)
 
 ```{r plusminus, message=FALSE, warning=FALSE}
 plusminus <- rbind(
@@ -33,6 +43,7 @@ colnames(plusminus) <- colnames(hfd1)
 plusminus
 ```
 
+## Run the `gatetree` function.
 ```{r gatetree, message=FALSE, warning=FALSE}
 hfd1_gatetree <- gatetree(hfd1, plusminus, 
                           min_scaled_bic_diff = 50,
@@ -40,15 +51,18 @@ hfd1_gatetree <- gatetree(hfd1, plusminus,
                           show_plot = c(TRUE, FALSE))
 ```
 
+## Plot the tree diagram.
 ```{r tree_plot, message=FALSE, warning=FALSE}
 hfd1_gatetree$tree_plot + 
-  scale_y_continuous(expand = c(0.1, 0.1)) +
-  scale_x_continuous(expand = c(0.1, 0.1))
+  ggplot2::scale_y_continuous(expand = c(0.1, 0.1)) +
+  ggplot2::scale_x_continuous(expand = c(0.1, 0.1))
 ```
 
+## Plot the data, coloured according to the `gateTree` labels.
 ```{r ggpairs, message=FALSE, warning=FALSE}
 GGally::ggpairs(hfd1, progress = FALSE,
-                aes(colour = as.factor(1 + hfd1_gatetree$labels))) +
+                upper = list(continuous = "density"),
+                ggplot2::aes(colour = as.factor(1 + hfd1_gatetree$labels))) +
   ggokabeito::scale_colour_okabe_ito(order = c(9, 1, 2, 3)) +
   ggokabeito::scale_fill_okabe_ito(order = c(9, 1, 2, 3))
 ```

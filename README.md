@@ -3,19 +3,33 @@ gateTree
 Ultán P. Doherty
 2024-04-25
 
+## Install and load `gateTree`.
+
 ``` r
-library(healthyFlowData)
-devtools::load_all()
+remotes::install_github("UltanPDoherty/gateTree")
 ```
 
 ``` r
+library(gateTree)
+```
+
+## Load and plot data from `healthyFlowData`.
+
+``` r
+library(healthyFlowData)
 data(hd)
 hfd1 <- hd.flowSet[[1]]@exprs
 
-GGally::ggpairs(hfd1, progress = FALSE)
+GGally::ggpairs(hfd1, upper = list(continuous = "density"), progress = FALSE)
 ```
 
 ![](README_files/figure-gfm/hfd1_setup-1.png)<!-- -->
+
+## Prepare a plusminus table which describes three populations.
+
+- CD4+ T Cells (CD4+CD8-CD3+CD19-)
+- CD8+ T Cells (CD4-CD8+CD3+CD19-)
+- B Cells (CD4-CD8-CD3-CD19+)
 
 ``` r
 plusminus <- rbind(
@@ -32,6 +46,8 @@ plusminus
     ## CD8+_T  -1   1   1   -1
     ## B       -1  -1  -1    1
 
+## Run the `gatetree` function.
+
 ``` r
 hfd1_gatetree <- gatetree(hfd1, plusminus, 
                           min_scaled_bic_diff = 50,
@@ -41,17 +57,22 @@ hfd1_gatetree <- gatetree(hfd1, plusminus,
 
 ![](README_files/figure-gfm/gatetree-1.png)<!-- -->![](README_files/figure-gfm/gatetree-2.png)<!-- -->![](README_files/figure-gfm/gatetree-3.png)<!-- -->
 
+## Plot the tree diagram.
+
 ``` r
 hfd1_gatetree$tree_plot + 
-  scale_y_continuous(expand = c(0.1, 0.1)) +
-  scale_x_continuous(expand = c(0.1, 0.1))
+  ggplot2::scale_y_continuous(expand = c(0.1, 0.1)) +
+  ggplot2::scale_x_continuous(expand = c(0.1, 0.1))
 ```
 
 ![](README_files/figure-gfm/tree_plot-1.png)<!-- -->
 
+## Plot the data, coloured according to the `gateTree` labels.
+
 ``` r
 GGally::ggpairs(hfd1, progress = FALSE,
-                aes(colour = as.factor(1 + hfd1_gatetree$labels))) +
+                upper = list(continuous = "density"),
+                ggplot2::aes(colour = as.factor(1 + hfd1_gatetree$labels))) +
   ggokabeito::scale_colour_okabe_ito(order = c(9, 1, 2, 3)) +
   ggokabeito::scale_fill_okabe_ito(order = c(9, 1, 2, 3))
 ```
