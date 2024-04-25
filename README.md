@@ -33,8 +33,13 @@ plusminus
     ## B       -1  -1  -1    1
 
 ``` r
-hfd1_gatetree <- gatetree(hfd1, plusminus, min_scaled_bic_diff = 50)
+hfd1_gatetree <- gatetree(hfd1, plusminus, 
+                          min_scaled_bic_diff = 50,
+                          min_depth = 10,
+                          show_plot = c(TRUE, FALSE))
 ```
+
+![](README_files/figure-gfm/gatetree-1.png)<!-- -->![](README_files/figure-gfm/gatetree-2.png)<!-- -->![](README_files/figure-gfm/gatetree-3.png)<!-- -->
 
 ``` r
 hfd1_gatetree$tree_plot + 

@@ -33,8 +33,11 @@ colnames(plusminus) <- colnames(hfd1)
 plusminus
 ```
 
-```{r gatetree}
-hfd1_gatetree <- gatetree(hfd1, plusminus, min_scaled_bic_diff = 50)
+```{r gatetree, message=FALSE, warning=FALSE}
+hfd1_gatetree <- gatetree(hfd1, plusminus, 
+                          min_scaled_bic_diff = 50,
+                          min_depth = 10,
+                          show_plot = c(TRUE, FALSE))
 ```
 
 ```{r tree_plot, message=FALSE, warning=FALSE}
