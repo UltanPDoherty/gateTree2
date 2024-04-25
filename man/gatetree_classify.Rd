@@ -2,18 +2,20 @@
 % Please edit documentation in R/gatetree_classify.R
 \name{gatetree_classify}
 \alias{gatetree_classify}
-\title{Classify a data set based on splits outputted by the \code{gatetree} function.}
+\title{Classify observations using an existing tree.}
 \usage{
 gatetree_classify(x, gatetree_output)
 }
 \arguments{
 \item{x}{Dataset in matrix or data.frame form.}
 
-\item{gatetree_output}{Output from the \code{gatetree} function.}
+\item{gatetree_output}{Output from the \link{gatetree} function.}
 }
 \value{
 Vector of integer labels.
 }
 \description{
-Classify a data set based on splits outputted by the \code{gatetree} function.
+Classify a data set based on a tree produced by the \link{gatetree} function. This
+requires the new data to have the same set of variables as the data  used to
+construct the tree.
 }

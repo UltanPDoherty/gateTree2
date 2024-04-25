@@ -14,7 +14,12 @@ scale01(x, other_min = NULL, other_max = NULL)
 \item{other_max}{Maximum to be used for 0-1 scaling.}
 }
 \value{
-Scaled version of \code{x}.
+List:
+\itemize{
+\item y: scaled version of \code{x}.
+\item min: minimum used for scaling.
+\item max: maximum used for scaling.
+}
 }
 \description{
 0-1 scaling.

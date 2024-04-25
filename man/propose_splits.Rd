@@ -2,7 +2,7 @@
 % Please edit documentation in R/propose_splits.R
 \name{propose_splits}
 \alias{propose_splits}
-\title{Title}
+\title{Propose a density valley or GMM boundary.}
 \usage{
 propose_splits(
   x,
@@ -37,8 +37,16 @@ and two-component BIC divided by
 \item{use_boundaries}{Logical value.}
 }
 \value{
-List: matrix, scenario
+List
+\itemize{
+\item matrix: each column contains the split location for that variable and the
+valley depth percentage or scaled BIC difference of that split.
+\item scenario: a character string indicating the type of the split (\code{"valley"}
+or \code{"boundary"}), if no split was found (\code{"nothing"}), or if the split was
+identified in the context of the \code{explore} option (\code{"explore"}).
+}
 }
 \description{
-Title
+Find a density valley or GMM boundary given a subset of cells and a set of
+splittable variables.
 }

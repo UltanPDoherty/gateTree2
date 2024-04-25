@@ -6,7 +6,10 @@
 #' @param other_min Minimum to be used for 0-1 scaling.
 #' @param other_max Maximum to be used for 0-1 scaling.
 #'
-#' @return Scaled version of `x`.
+#' @return List:
+#' * y: scaled version of `x`.
+#' * min: minimum used for scaling.
+#' * max: maximum used for scaling.
 scale01 <- function(x, other_min = NULL, other_max = NULL) {
 
   if (is.null(other_min)) {
@@ -46,7 +49,9 @@ unscale01 <- function(x, unscaled_min, unscaled_max) {
 #'
 #' @param subsetter The subsetting matrix.
 #'
-#' @return `is_a_duplicate`.
+#' @return Vector indicating whether a cluster contains the same observations as
+#' an existing cluster. If a pair of clusters are identical, the second one is
+#' identified as a duplicate.
 check_duplicates <- function(subsetter) {
 
   path_num <- ncol(subsetter)
@@ -76,7 +81,9 @@ check_duplicates <- function(subsetter) {
 #'
 #' @inheritParams gatetree
 #'
-#' @return inside_cutoffs
+#' @return Matrix of the same dimensions as `x` containing logical values
+#' indicating whether that observation (row) is inside the cutoffs for that
+#' variable (column).
 find_inside_cutoffs <- function(x, min_val_cutoff, max_val_cutoff) {
   # find which observations are outside either of the cutoffs for each variable
   if (is.null(min_val_cutoff)) {

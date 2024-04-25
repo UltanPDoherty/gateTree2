@@ -1,4 +1,8 @@
-#' Partition data set based on semi-supervised marginal splits.
+#' @title User-informed clustering decision tree.
+#'
+#' @description
+#' Construct a semi-supervised clustering tree to identify user-described groups of
+#' observations.
 #'
 #' @param x Dataset in matrix or data.frame form.
 #' @param plusminus_table Table indicated whether each group (row) is positive
@@ -19,7 +23,16 @@
 #' @param show_plot Logical value.
 #' @param explore Logical value.
 #'
-#' @return List: splits, split_order, subsetter, edge_df, labels, signs.
+#' @return List:
+#' * splits: matrix of split locations for all variables and described
+#' populations.
+#' * split_order: matrix of split order for all variables and described
+#' populations.
+#' * edge_df: data.frame describing the tree's edges and nodes.
+#' * labels: vector of integer cluster labels. `0` represents "Unassigned".
+#' * signs: matrix of split signs for all variables and described populations.
+#' * tree_plot: the clustering tree as a `ggplot` object.
+#'
 #' @import ggplot2
 #' @importFrom ggpubr ggarrange
 #' @importFrom utils tail

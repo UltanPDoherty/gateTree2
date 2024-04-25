@@ -1,4 +1,10 @@
-#' Compute F1 given two vectors of labels
+#' @title Compute the F1 measure of a clustering solution.
+#'
+#' @description
+#' Compare a vector of cluster labels to another vector of class labels using
+#' the F1 measure with cluster - class matching carried out using the Hungarian
+#' algorithm. Particular classes or clusters may be excluded from this matching.
+#' Observations of a certain class may also be removed completely.
 #'
 #' @param class_labels Vector of true / reference labels to compare to.
 #' @param clust_labels Vector of cluster labels to evaluate.
@@ -9,8 +15,14 @@
 #'                       to class labels.
 #' @param prec_rec Logical: whether precision and recall vectors are returned.
 #'
-#' @return List: F1 matrix & F1 vector, and if prec_rec is TRUE, precision
-#'         vector and recall vector.
+#' @return List:
+#' * f1_mat: matrix of pairwise F1 measure values for every class and cluster
+#' with matched values on the diagonal.
+#' * f1_vec: vector of matched F1 measure values for each class.
+#' * pr_vec (if `prec_rec = TRUE`): vector of matched precision values for each
+#' class.
+#' * re_vec (if `prec_rec = TRUE`): vector of matched recall values for each
+#' class.
 #' @export
 get_f1 <- function(
   class_labels,

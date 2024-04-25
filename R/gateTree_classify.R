@@ -1,7 +1,12 @@
-#' Classify a data set based on splits outputted by the `gatetree` function.
+#' @title Classify observations using an existing tree.
+#'
+#' @description
+#' Classify a data set based on a tree produced by the [gatetree] function. This
+#' requires the new data to have the same set of variables as the data  used to
+#' construct the tree.
 #'
 #' @inheritParams gatetree
-#' @param gatetree_output Output from the `gatetree` function.
+#' @param gatetree_output Output from the [gatetree] function.
 #'
 #' @return Vector of integer labels.
 #' @export

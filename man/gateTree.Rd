@@ -2,7 +2,7 @@
 % Please edit documentation in R/gatetree.R
 \name{gatetree}
 \alias{gatetree}
-\title{Partition data set based on semi-supervised marginal splits.}
+\title{User-informed clustering decision tree.}
 \usage{
 gatetree(
   x,
@@ -51,8 +51,19 @@ and two-component BIC divided by
 \item{explore}{Logical value.}
 }
 \value{
-List: splits, split_order, subsetter, edge_df, labels, signs.
+List:
+\itemize{
+\item splits: matrix of split locations for all variables and described
+populations.
+\item split_order: matrix of split order for all variables and described
+populations.
+\item edge_df: data.frame describing the tree's edges and nodes.
+\item labels: vector of integer cluster labels. \code{0} represents "Unassigned".
+\item signs: matrix of split signs for all variables and described populations.
+\item tree_plot: the clustering tree as a \code{ggplot} object.
+}
 }
 \description{
-Partition data set based on semi-supervised marginal splits.
+Construct a semi-supervised clustering tree to identify user-described groups of
+observations.
 }

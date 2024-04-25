@@ -10,7 +10,9 @@ check_duplicates(subsetter)
 \item{subsetter}{The subsetting matrix.}
 }
 \value{
-\code{is_a_duplicate}.
+Vector indicating whether a cluster contains the same observations as
+an existing cluster. If a pair of clusters are identical, the second one is
+identified as a duplicate.
 }
 \description{
 Check if final subsets are identical.

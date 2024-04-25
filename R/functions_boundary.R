@@ -1,4 +1,4 @@
-#' Title
+#' Find the optimal univariate GMM boundary.
 #'
 #' @inheritParams gatetree
 #' @param return_all
@@ -53,7 +53,6 @@ find_boundary <- function(x, min_scaled_bic_diff = 0, return_all = FALSE) {
   } else {
     return(c(NA, NA))
   }
-
 }
 
 #===============================================================================

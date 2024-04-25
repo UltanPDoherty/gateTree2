@@ -1,10 +1,19 @@
-#' Title
+#' @title Propose a density valley or GMM boundary.
+#'
+#' @description
+#' Find a density valley or GMM boundary given a subset of cells and a set of
+#' splittable variables.
 #'
 #' @inheritParams gatetree
 #' @param subsetter_g Column g of the subsetting matrix.
 #' @param splittable_vars_g Row g of the splittable_vars matrix.
 #'
-#' @return List: matrix, scenario
+#' @return List
+#' * matrix: each column contains the split location for that variable and the
+#' valley depth percentage or scaled BIC difference of that split.
+#' * scenario: a character string indicating the type of the split (`"valley"`
+#' or `"boundary"`), if no split was found (`"nothing"`), or if the split was
+#' identified in the context of the `explore` option (`"explore"`).
 #' @export
 propose_splits <- function(x, subsetter_g, splittable_vars_g,
                            min_size, min_depth, min_height = min_depth,

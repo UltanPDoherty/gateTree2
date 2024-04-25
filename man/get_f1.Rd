@@ -2,7 +2,7 @@
 % Please edit documentation in R/get_f1.R
 \name{get_f1}
 \alias{get_f1}
-\title{Compute F1 given two vectors of labels}
+\title{Compute the F1 measure of a clustering solution.}
 \usage{
 get_f1(
   class_labels,
@@ -29,9 +29,20 @@ to class labels.}
 \item{prec_rec}{Logical: whether precision and recall vectors are returned.}
 }
 \value{
-List: F1 matrix & F1 vector, and if prec_rec is TRUE, precision
-vector and recall vector.
+List:
+\itemize{
+\item f1_mat: matrix of pairwise F1 measure values for every class and cluster
+with matched values on the diagonal.
+\item f1_vec: vector of matched F1 measure values for each class.
+\item pr_vec (if \code{prec_rec = TRUE}): vector of matched precision values for each
+class.
+\item re_vec (if \code{prec_rec = TRUE}): vector of matched recall values for each
+class.
+}
 }
 \description{
-Compute F1 given two vectors of labels
+Compare a vector of cluster labels to another vector of class labels using
+the F1 measure with cluster - class matching carried out using the Hungarian
+algorithm. Particular classes or clusters may be excluded from this matching.
+Observations of a certain class may also be removed completely.
 }

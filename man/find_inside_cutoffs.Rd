@@ -14,7 +14,9 @@ find_inside_cutoffs(x, min_val_cutoff, max_val_cutoff)
 \item{max_val_cutoff}{Maximum value for an observation to be included.}
 }
 \value{
-inside_cutoffs
+Matrix of the same dimensions as \code{x} containing logical values
+indicating whether that observation (row) is inside the cutoffs for that
+variable (column).
 }
 \description{
 Find which observations are inside the cutoffs for each variable.
