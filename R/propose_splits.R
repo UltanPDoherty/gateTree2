@@ -46,4 +46,3 @@ propose_splits <- function(x, subsetter_g, splittable_vars_g,
   return(list(matrix = proposals,
               scenario = scenario))
 }
-

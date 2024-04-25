@@ -94,10 +94,10 @@ find_valley <- function(dens, min_depth = 0.01, min_height = 0.01) {
 #' @return  Matrix in which the columns contain each variable's valley and its
 #' depth percentage.
 propose_valleys <- function(
-    x,
-    subsetter_g,
-    splittable_vars_g = rep(TRUE, ncol(x)),
-    min_depth, min_height
+  x,
+  subsetter_g,
+  splittable_vars_g = rep(TRUE, ncol(x)),
+  min_depth, min_height
 ) {
   valleys <- matrix(nrow = 2, ncol = ncol(x))
 

@@ -87,8 +87,8 @@ unassigned_labelling <- function(z, pdf, z_threshold, pdf_threshold) {
 #===============================================================================
 
 pair_transform <- function(
-    x, y, trans_type, angle = NULL,
-    min_depth = 1, use_boundaries = TRUE
+  x, y, trans_type, angle = NULL,
+  min_depth = 1, use_boundaries = TRUE
 ) {
 
   if (is.null(angle)) {
@@ -159,10 +159,10 @@ trim_extreme <- function(data, alpha = 0.01) {
 #===============================================================================
 
 targeted_splits <- function(
-    x,
-    plusminus_table,
-    min_depth = 1,
-    min_height = 1
+  x,
+  plusminus_table,
+  min_depth = 1,
+  min_height = 1
 ) {
   to_be_split <- apply(plusminus_table, 2, function(column) any(column != 0))
 

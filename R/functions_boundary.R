@@ -68,10 +68,10 @@ find_boundary <- function(x, min_scaled_bic_diff = 0) {
 #' @return Matrix in which the columns contain each variable's boundary and its
 #' scaled BIC difference.
 propose_boundaries <- function(
-    x,
-    min_scaled_bic_diff = 0,
-    subsetter_g,
-    splittable_vars_g = rep(TRUE, ncol(x))
+  x,
+  min_scaled_bic_diff = 0,
+  subsetter_g,
+  splittable_vars_g = rep(TRUE, ncol(x))
 ) {
   boundaries <- matrix(nrow = 2, ncol = ncol(x))
 

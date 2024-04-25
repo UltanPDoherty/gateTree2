@@ -1,8 +1,8 @@
 #' @title User-informed clustering decision tree.
 #'
 #' @description
-#' Construct a semi-supervised clustering tree to identify user-described groups of
-#' observations.
+#' Construct a semi-supervised decision tree to identify user-described
+#' clusters.
 #'
 #' @param x Dataset in matrix or data.frame form.
 #' @param plusminus_table Table indicated whether each group (row) is positive
