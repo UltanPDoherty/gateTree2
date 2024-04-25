@@ -20,7 +20,8 @@
 #' @param min_val_cutoff Minimum value for an observation to be included.
 #' @param max_val_cutoff Maximum value for an observation to be included.
 #' @param use_boundaries Logical value.
-#' @param show_plot Logical value.
+#' @param show_plot Logical vector of length 2. Indicating whether the split
+#' plots (`[1]`) and the tree plot (`[2]`) should be plotted.
 #' @param explore Logical value.
 #'
 #' @return List:
@@ -48,7 +49,7 @@ gatetree <- function(
   min_val_cutoff = NULL,
   max_val_cutoff = NULL,
   use_boundaries = TRUE,
-  show_plot = FALSE,
+  show_plot = c(FALSE, FALSE),
   explore = TRUE
 ) {
   explore_min_height <- min(c(100, 5 * min_height))
@@ -251,11 +252,11 @@ gatetree <- function(
     }
   }
 
-  plot_paths(plot_list, show_plot = show_plot)
+  plot_paths(plot_list, show_plot = show_plot[1])
 
   edge_df <- make_edge_df(parent_node, node_num, edge_name, node_name,
                           is_leaf, path_nodes)
-  tree_plot <- make_tree_plot(edge_df, show_plot)
+  tree_plot <- make_tree_plot(edge_df, show_plot[2])
 
   labels <- c()
   unassigned <- rowSums(subsetter) == 0

@@ -15,7 +15,7 @@ gatetree(
   min_val_cutoff = NULL,
   max_val_cutoff = NULL,
   use_boundaries = TRUE,
-  show_plot = FALSE,
+  show_plot = c(FALSE, FALSE),
   explore = TRUE
 )
 }
@@ -46,7 +46,8 @@ and two-component BIC divided by
 
 \item{use_boundaries}{Logical value.}
 
-\item{show_plot}{Logical value.}
+\item{show_plot}{Logical vector of length 2. Indicating whether the split
+plots (\verb{[1]}) and the tree plot (\verb{[2]}) should be plotted.}
 
 \item{explore}{Logical value.}
 }
