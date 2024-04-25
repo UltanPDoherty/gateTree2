@@ -61,7 +61,7 @@ find_valley <- function(dens, min_depth = 0.01, min_height = 0.01) {
     }
 
     best_depth <- max(depths)
-    if (best_depth < min_depth) {
+    if (best_depth > min_depth) {
       best_valley <- dens$x[valley_ind[which.max(depths)]]
     } else {
       best_valley <- NA
