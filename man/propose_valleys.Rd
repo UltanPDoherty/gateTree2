@@ -2,7 +2,7 @@
 % Please edit documentation in R/functions_valley.R
 \name{propose_valleys}
 \alias{propose_valleys}
-\title{Wrapper for \code{find_valley}.}
+\title{Apply \link{find_valley} across a set of variables.}
 \usage{
 propose_valleys(
   x,
@@ -26,8 +26,10 @@ density maximum, for a split to be returned by find_valley.}
 density maximum, for a peak to be recognised by find_peaks.}
 }
 \value{
-valleys
+Matrix in which the columns contain each variable's valley and its
+depth percentage.
 }
 \description{
-Wrapper for \code{find_valley}.
+Apply \link{find_valley} to each variable in a set of splittable
+variables for a subset of observations.
 }

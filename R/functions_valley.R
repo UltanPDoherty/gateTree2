@@ -1,9 +1,19 @@
-find_peaks <- function(dens, width_percent = 0.01, min_height = 0.01) {
+#' @title Find local maxima of a univariate kernel density estimate.
+#'
+#' @description Find points whose kernel density is greater than the points in a
+#' surrounding region. The size of this region is controlled by `width_percent`.
+#'
+#' @inheritParams gatetree
+#' @inheritParams find_valley
+#' @param width_percent Radius of local window as a percentage of the range.
+#'
+#' @return Logical vector indicating which points in `dens$x` are local maxima.
+find_peaks <- function(dens, width_percent = 1, min_height = 0.01) {
 
   dens$y <- dens$y / max(dens$y) * 100
 
   # w is the number of density points in width_percent of the range
-  w <- round(length(dens$x) * width_percent)
+  w <- round(length(dens$x) * width_percent / 100)
 
   is_peak <- peak_left <- peak_right <- c()
   for (i in seq(w + 1, length(dens$y) - w)) {
@@ -73,11 +83,16 @@ find_valley <- function(dens, min_depth = 0.01, min_height = 0.01) {
 
 #===============================================================================
 
-#' Wrapper for `find_valley`.
+#' @title Apply [find_valley] across a set of variables.
+#'
+#' @description
+#' Apply [find_valley] to each variable in a set of splittable
+#' variables for a subset of observations.
 #'
 #' @inheritParams propose_splits
 #'
-#' @return valleys
+#' @return  Matrix in which the columns contain each variable's valley and its
+#' depth percentage.
 propose_valleys <- function(
     x,
     subsetter_g,
