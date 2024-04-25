@@ -64,6 +64,6 @@ populations.
 }
 }
 \description{
-Construct a semi-supervised clustering tree to identify user-described groups of
-observations.
+Construct a semi-supervised decision tree to identify user-described
+clusters.
 }
