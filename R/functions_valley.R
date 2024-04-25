@@ -27,24 +27,15 @@ find_peaks <- function(dens, width_percent = 0.01, min_height = 0.01) {
 #'
 #' @inheritParams gatetree
 #' @param dens Output from `stats::density` function.
-#' @param is_peak Logical vector for peaks.
-#' @param return_depth Logical: should valley depth be outputted?
 #'
 #' @return Vector consisting of the valley and its depth percentage. The
 #' valley will be NA if its depth percentage is less than `min_depth`.
-find_valley <- function(dens, is_peak = NULL, return_depth = FALSE,
-                        min_depth = 0.01, min_height = 0.01) {
+find_valley <- function(dens, min_depth = 0.01, min_height = 0.01) {
 
-  if (is.null(is_peak)) {
-    is_peak <- find_peaks(dens, min_height = min_height)
-  }
+  is_peak <- find_peaks(dens, min_height = min_height)
 
   if (sum(is_peak) == 1) {
-    if (return_depth) {
-      return(c(NA, NA))
-    } else {
-      return(NA)
-    }
+    return(c(NA, NA))
   }
 
   maxpeak_ind <- which.max(dens$y)
@@ -70,17 +61,9 @@ find_valley <- function(dens, is_peak = NULL, return_depth = FALSE,
   }
 
   if (max(depths) < min_depth) {
-    if (return_depth) {
-      return(c(NA, NA))
-    } else {
-      return(NA)
-    }
+    return(c(NA, NA))
   } else {
-    if (return_depth) {
-      return(c(dens$x[valley_ind[which.max(depths)]], max(depths)))
-    } else {
-      return(dens$x[valley_ind[which.max(depths)]])
-    }
+    return(c(dens$x[valley_ind[which.max(depths)]], max(depths)))
   }
 }
 
@@ -106,7 +89,6 @@ propose_valleys <- function(
 
     valleys[, p] <- find_valley(
       dens01_gp,
-      return_depth = TRUE,
       min_depth = min_depth,
       min_height = min_height
     )

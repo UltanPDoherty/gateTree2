@@ -4,20 +4,10 @@
 \alias{find_valley}
 \title{Find the optimal density valley.}
 \usage{
-find_valley(
-  dens,
-  is_peak = NULL,
-  return_depth = FALSE,
-  min_depth = 0.01,
-  min_height = 0.01
-)
+find_valley(dens, min_depth = 0.01, min_height = 0.01)
 }
 \arguments{
 \item{dens}{Output from \code{stats::density} function.}
-
-\item{is_peak}{Logical vector for peaks.}
-
-\item{return_depth}{Logical: should valley depth be outputted?}
 
 \item{min_depth}{Minimum depth, as a percentage of the height of the global
 density maximum, for a split to be returned by find_valley.}
