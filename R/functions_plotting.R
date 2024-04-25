@@ -1,6 +1,11 @@
 #===============================================================================
 
-#' Plotting function used in [gatetree].
+#' @title Density plot with a `gateTree` split.
+#'
+#' @description
+#' Plot a univariate kernel density estimate of the data with the `gateTree`
+#' split illustrated, and information about the split in the title and subtitle.
+#'
 #'
 #' @inheritParams gatetree
 #' @param x_gp The data to be displayed, should be only pathway g & variable p.
@@ -99,6 +104,26 @@ plot_gatetree_split <- function(x_gp, g, p, score, plusminus_table,
 
 #===============================================================================
 
+#' @title Compile edge and node information.
+#'
+#' @description
+#' Compile edge and node information into a `data.frame` for [make_tree_plot].
+#'
+#'
+#' @param parent_node Integer vector: The number of each node's parent node.
+#' @param node_number Integer: The total number of nodes.
+#' @param edge_name Character vector: The name of each edge.
+#' @param node_name Character vector: The name of each node.
+#' @param is_leaf Logical vector: whether each node is a leaf / terminal node.
+#' @param path_nodes List of nodes on each path.
+#'
+#' @return `data.frame` with columns:
+#' * parent
+#' * node
+#' * edge_name
+#' * node_name
+#' * is_leaf
+#' * ggraph_order
 make_edge_df <- function(parent_node, node_number, edge_name, node_name,
                          is_leaf, path_nodes) {
 
@@ -127,9 +152,19 @@ make_edge_df <- function(parent_node, node_number, edge_name, node_name,
 
 #===============================================================================
 
+#' @title Construct tree diagram for `gateTree`.
+#'
+#' @description
+#' Construct a tree diagram from the information contained in `edge_df`.
+#'
+#' @param edge_df Output from [make_edge_df].
+#' @param show_plot Logical: should the tree diagram be plotted?
+#'
 #' @import ggraph
 #' @importFrom igraph graph_from_data_frame
 #' @importFrom tidygraph as_tbl_graph
+#'
+#' @return `ggraph` object.
 make_tree_plot <- function(edge_df, show_plot = FALSE) {
 
   tree_graph <- igraph::graph_from_data_frame(d = edge_df[, 1:3],

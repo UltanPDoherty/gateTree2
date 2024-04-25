@@ -2,7 +2,7 @@
 % Please edit documentation in R/functions_plotting.R
 \name{plot_gatetree_split}
 \alias{plot_gatetree_split}
-\title{Plotting function used in \link{gatetree}.}
+\title{Density plot with a \code{gateTree} split.}
 \usage{
 plot_gatetree_split(x_gp, g, p, score, plusminus_table, scenario, split_gp)
 }
@@ -27,5 +27,6 @@ variable (column).}
 \code{ggplot} object.
 }
 \description{
-Plotting function used in \link{gatetree}.
+Plot a univariate kernel density estimate of the data with the \code{gateTree}
+split illustrated, and information about the split in the title and subtitle.
 }

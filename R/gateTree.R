@@ -230,17 +230,6 @@ gatetree <- function(
     }
 
     if (any(pop_to_path == g)) {
-      # if a path terminates without fully isolating a single population, then
-      # the final number of paths and populations will be different because
-      # there will be a path with multiple populations on it.
-      # If population 1 and 2 are on path 1 when it terminates, then path 2 will
-      # correspond to population 3, and so on.
-      # Would it be easier to create duplicate paths in this case, so that g
-      # and k are identical?
-      #
-      # Hang on, the second population does not necessarily lie on the second
-      # path. E.g. if the first and second populations are distinguished by the
-      # second split on path 1, path 2 starts at the first split.
       k <- match(g, pop_to_path)
 
       common_variables[g, ] <- apply(
