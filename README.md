@@ -1,27 +1,73 @@
-
-# gateTree
-
-<!-- badges: start -->
-<!-- badges: end -->
-
-
-
-## Installation
-
-You can install the development version of gateTree from [GitHub](https://github.com/) with:
+gateTree
+================
+Ultán P. Doherty
+2024-04-25
 
 ``` r
-# install.packages("devtools")
-devtools::install_github("UltanPDoherty/gateTree")
+library(healthyFlowData)
 ```
 
-## Example
-
-This is a basic example which shows you how to solve a common problem:
+    ## Loading required package: flowCore
 
 ``` r
-library(gateTree)
-
-## basic example code
+library(ggplot2)
+library(devtools)
 ```
 
+    ## Loading required package: usethis
+
+``` r
+load_all()
+```
+
+    ## ℹ Loading gateTree
+
+``` r
+data(hd)
+hfd1 <- hd.flowSet[[1]]@exprs
+
+GGally::ggpairs(hfd1, progress = FALSE)
+```
+
+    ## Registered S3 method overwritten by 'GGally':
+    ##   method from   
+    ##   +.gg   ggplot2
+
+![](README_files/figure-gfm/hfd1_setup-1.png)<!-- -->
+
+``` r
+plusminus <- rbind(
+  "CD4+_T" = c(+1, -1, +1, -1),
+  "CD8+_T" = c(-1, +1, +1, -1),
+  "B"      = c(-1, -1, -1, +1)
+)
+colnames(plusminus) <- colnames(hfd1)
+plusminus
+```
+
+    ##        CD4 CD8 CD3 CD19
+    ## CD4+_T   1  -1   1   -1
+    ## CD8+_T  -1   1   1   -1
+    ## B       -1  -1  -1    1
+
+``` r
+hfd1_gatetree <- gatetree(hfd1, plusminus, min_scaled_bic_diff = 50)
+```
+
+``` r
+hfd1_gatetree$tree_plot + scale_y_continuous(expand = c(0.1, 0.1))
+```
+
+    ## Warning: Removed 6 rows containing missing values or values outside the scale range
+    ## (`geom_label()`).
+
+![](README_files/figure-gfm/tree_plot-1.png)<!-- -->
+
+``` r
+GGally::ggpairs(hfd1, progress = FALSE,
+                aes(colour = as.factor(1 + hfd1_gatetree$labels))) +
+  ggokabeito::scale_colour_okabe_ito(order = c(9, 1, 2, 3)) +
+  ggokabeito::scale_fill_okabe_ito(order = c(9, 1, 2, 3))
+```
+
+![](README_files/figure-gfm/ggpairs-1.png)<!-- -->
