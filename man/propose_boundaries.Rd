@@ -2,7 +2,7 @@
 % Please edit documentation in R/functions_boundary.R
 \name{propose_boundaries}
 \alias{propose_boundaries}
-\title{Wrapper for \code{find_boundary}.}
+\title{Apply \link{find_boundary} across a set of variables.}
 \usage{
 propose_boundaries(
   x,
@@ -23,8 +23,10 @@ and two-component BIC divided by
 \item{splittable_vars_g}{Row g of the splittable_vars matrix.}
 }
 \value{
-boundaries
+Matrix in which the columns contain each variable's boundary and its
+scaled BIC difference.
 }
 \description{
-Wrapper for \code{find_boundary}.
+Apply \link{find_boundary} to each variable in a set of splittable
+variables for a subset of observations.
 }

@@ -2,9 +2,9 @@
 % Please edit documentation in R/functions_boundary.R
 \name{find_boundary}
 \alias{find_boundary}
-\title{Title}
+\title{Find the optimal univariate GMM boundary.}
 \usage{
-find_boundary(x, min_scaled_bic_diff = 0, return_all = FALSE)
+find_boundary(x, min_scaled_bic_diff = 0)
 }
 \arguments{
 \item{x}{Dataset in matrix or data.frame form.}
@@ -12,12 +12,13 @@ find_boundary(x, min_scaled_bic_diff = 0, return_all = FALSE)
 \item{min_scaled_bic_diff}{Minimum value of difference between one-component
 and two-component BIC divided by
 2 log(obs_num).}
-
-\item{return_all}{}
 }
 \value{
-to be filled in
+Vector consisting of the boundary and its scaled BIC difference. The
+boundary will be NA if its scaled BIC difference is less than
+\code{min_scaled_bic_diff}.
 }
 \description{
-Title
+Find the optimal two-component univariate GMM boundary and check if its
+scaled BIC difference is greater than \code{min_scaled_bic_diff}.
 }

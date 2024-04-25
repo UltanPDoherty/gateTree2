@@ -1,10 +1,15 @@
-#' Find the optimal univariate GMM boundary.
+#' @title Find the optimal univariate GMM boundary.
+#'
+#' @description
+#' Find the optimal two-component univariate GMM boundary and check if its
+#' scaled BIC difference is greater than `min_scaled_bic_diff`.
 #'
 #' @inheritParams gatetree
-#' @param return_all
 #'
-#' @return to be filled in
-find_boundary <- function(x, min_scaled_bic_diff = 0, return_all = FALSE) {
+#' @return Vector consisting of the boundary and its scaled BIC difference. The
+#' boundary will be NA if its scaled BIC difference is less than
+#' `min_scaled_bic_diff`.
+find_boundary <- function(x, min_scaled_bic_diff = 0) {
   obs_num <- length(x)
   sortx <- sort(x)
 
@@ -41,27 +46,27 @@ find_boundary <- function(x, min_scaled_bic_diff = 0, return_all = FALSE) {
 
   scaled_bic_diff <- (bic_one - bic_two) / (2 * log(obs_num))
 
-  if (return_all) {
-    return(list(ll_vec = ll,
-                ll_max = ll_max,
-                ll_one = ll_one,
-                bic_one = bic_one,
-                bic_two = bic_two,
-                boundary = xseq[which.max(ll)]))
-  } else if (scaled_bic_diff > min_scaled_bic_diff) {
-    return(c(xseq[which.max(ll)], scaled_bic_diff))
+  if (scaled_bic_diff > min_scaled_bic_diff) {
+    boundary <- xseq[which.max(ll)]
   } else {
-    return(c(NA, NA))
+    boundary <- NA
   }
+
+  return(c(boundary, scaled_bic_diff))
 }
 
 #===============================================================================
 
-#' Wrapper for `find_boundary`.
+#' @title Apply [find_boundary] across a set of variables.
+#'
+#' @description
+#' Apply [find_boundary] to each variable in a set of splittable
+#' variables for a subset of observations.
 #'
 #' @inheritParams propose_splits
 #'
-#' @return boundaries
+#' @return Matrix in which the columns contain each variable's boundary and its
+#' scaled BIC difference.
 propose_boundaries <- function(
     x,
     min_scaled_bic_diff = 0,
