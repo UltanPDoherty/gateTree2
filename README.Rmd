@@ -10,7 +10,7 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 
-```{r}
+```{r, message=FALSE, warning=FALSE}
 library(healthyFlowData)
 library(ggplot2)
 library(devtools)
@@ -18,14 +18,14 @@ load_all()
 ```
 
 
-```{r hfd1_setup}
+```{r hfd1_setup, message=FALSE, warning=FALSE}
 data(hd)
 hfd1 <- hd.flowSet[[1]]@exprs
 
 GGally::ggpairs(hfd1, progress = FALSE)
 ```
 
-```{r plusminus}
+```{r plusminus, message=FALSE, warning=FALSE}
 plusminus <- rbind(
   "CD4+_T" = c(+1, -1, +1, -1),
   "CD8+_T" = c(-1, +1, +1, -1),
@@ -34,15 +34,18 @@ plusminus <- rbind(
 colnames(plusminus) <- colnames(hfd1)
 plusminus
 ```
+
 ```{r gatetree}
 hfd1_gatetree <- gatetree(hfd1, plusminus, min_scaled_bic_diff = 50)
 ```
 
-```{r tree_plot}
-hfd1_gatetree$tree_plot + scale_y_continuous(expand = c(0.1, 0.1))
+```{r tree_plot, message=FALSE, warning=FALSE}
+hfd1_gatetree$tree_plot + 
+  scale_y_continuous(expand = c(0.1, 0.1)) +
+  scale_x_continuous(expand = c(0.1, 0.1))
 ```
 
-```{r ggpairs}
+```{r ggpairs, message=FALSE, warning=FALSE}
 GGally::ggpairs(hfd1, progress = FALSE,
                 aes(colour = as.factor(1 + hfd1_gatetree$labels))) +
   ggokabeito::scale_colour_okabe_ito(order = c(9, 1, 2, 3)) +

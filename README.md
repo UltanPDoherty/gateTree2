@@ -5,22 +5,10 @@ Ultán P. Doherty
 
 ``` r
 library(healthyFlowData)
-```
-
-    ## Loading required package: flowCore
-
-``` r
 library(ggplot2)
 library(devtools)
-```
-
-    ## Loading required package: usethis
-
-``` r
 load_all()
 ```
-
-    ## ℹ Loading gateTree
 
 ``` r
 data(hd)
@@ -28,10 +16,6 @@ hfd1 <- hd.flowSet[[1]]@exprs
 
 GGally::ggpairs(hfd1, progress = FALSE)
 ```
-
-    ## Registered S3 method overwritten by 'GGally':
-    ##   method from   
-    ##   +.gg   ggplot2
 
 ![](README_files/figure-gfm/hfd1_setup-1.png)<!-- -->
 
@@ -55,11 +39,10 @@ hfd1_gatetree <- gatetree(hfd1, plusminus, min_scaled_bic_diff = 50)
 ```
 
 ``` r
-hfd1_gatetree$tree_plot + scale_y_continuous(expand = c(0.1, 0.1))
+hfd1_gatetree$tree_plot + 
+  scale_y_continuous(expand = c(0.1, 0.1)) +
+  scale_x_continuous(expand = c(0.1, 0.1))
 ```
-
-    ## Warning: Removed 6 rows containing missing values or values outside the scale range
-    ## (`geom_label()`).
 
 ![](README_files/figure-gfm/tree_plot-1.png)<!-- -->
 
