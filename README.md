@@ -4,7 +4,7 @@
 <!-- badges: start -->
 <!-- badges: end -->
 
-The goal of table_to_label is to ...
+
 
 ## Installation
 
@@ -21,6 +21,7 @@ This is a basic example which shows you how to solve a common problem:
 
 ``` r
 library(gateTree)
+
 ## basic example code
 ```
 
