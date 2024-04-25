@@ -6,13 +6,12 @@
 #' @param x_gp The data to be displayed, should be only pathway g & variable p.
 #' @param g The pathway number.
 #' @param p The variable number.
-#' @param score The depth of the valley or the BIC score.
+#' @param score The valley depth percentage or the scaled BIC difference.
 #' @param scenario `"valley"`, `"boundary"`, `"nothing"`, or `"explore"`.
 #' @param split_gp The split value.
 #'
 #' @return `ggplot` object.
-#' @export
-plot_targeted_split <- function(x_gp, g, p, score, plusminus_table,
+plot_gatetree_split <- function(x_gp, g, p, score, plusminus_table,
                                 scenario, split_gp) {
 
   # colours from ggokabeito package
@@ -165,7 +164,6 @@ make_tree_plot <- function(edge_df, show_plot = FALSE) {
 #===============================================================================
 
 plot_paths <- function(plot_list, show_plot) {
-
   if (show_plot) {
     arranged <- list()
     for (g in seq_along(plot_list)) {
@@ -214,7 +212,7 @@ explore_plots <- function(
     for (p in which(explore_check)) {
       explore_splits <- explore_splits + 1
       plot_list[[g]][[split_num[g] + missed_splits + explore_splits]] <-
-        plot_targeted_split(
+        plot_gatetree_split(
           x[subsetter[, g], p], g, p, score = explore_valleys[2, p],
           signs, scenario = "explore", split_gp = explore_valleys[1, p]
         )

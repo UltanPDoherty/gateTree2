@@ -141,7 +141,7 @@ gatetree <- function(
       rownames(signs)[g] <-
         rownames(plusminus_table)[which(pop_to_path == g)[1]]
 
-      plot_list[[g]][[split_num[g]]] <- plot_targeted_split(
+      plot_list[[g]][[split_num[g]]] <- plot_gatetree_split(
         x_gp, g, p_choice, scores[g, p_choice],
         signs, scenario, splits[g, p_choice]
       )
@@ -171,7 +171,7 @@ gatetree <- function(
         order_vars <- rbind(order_vars, order_vars[g, ])
 
         plot_list[[path_num + 1]][[split_num[path_num + 1]]] <-
-          plot_targeted_split(
+          plot_gatetree_split(
             x_gp, path_num + 1, p_choice, scores[g, p_choice],
             signs, scenario, splits[g, p_choice]
           )
@@ -211,7 +211,7 @@ gatetree <- function(
         missed_splits <- 0
         for (p in which(splittable_vars[g, ])) {
           missed_splits <- missed_splits + 1
-          plot_list[[g]][[split_num[g] + missed_splits]] <- plot_targeted_split(
+          plot_list[[g]][[split_num[g] + missed_splits]] <- plot_gatetree_split(
             x[subsetter[, g], p], g, p, score = NA,
             signs, scenario, split_gp = NA
           )
