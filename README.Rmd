@@ -39,18 +39,15 @@ colnames(plusminus1) <- colnames(hfd1)
 plusminus1
 ```
 
-## This table can be saved as an Excel file using the `openxlsx` package.
-```{r write.xlsx}
+## Excel can be used to save or create tables (`openxlsx` package).
+```{r openxlsx}
 openxlsx::write.xlsx(
   plusminus1,
   "~/plusminus.xlsx",
   rowNames = TRUE,
   colNames = TRUE
 )
-```
 
-## Tables can also be created in Excel, then read into R using the `openxlsx` package.
-```{r read.xlsx}
 plusminus2 <- openxlsx::read.xlsx(
   "~/plusminus.xlsx",
   rowNames = TRUE,

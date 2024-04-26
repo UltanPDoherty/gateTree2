@@ -42,7 +42,7 @@ plusminus1
     ## CD8+_T  -1   1   1   -1
     ## B       -1  -1  -1    1
 
-## This table can be saved as an Excel file using the `openxlsx` package.
+## Excel can be used to save or create tables (`openxlsx` package).
 
 ``` r
 openxlsx::write.xlsx(
@@ -51,11 +51,7 @@ openxlsx::write.xlsx(
   rowNames = TRUE,
   colNames = TRUE
 )
-```
 
-## Tables can also be created in Excel, then read into R using the `openxlsx` package.
-
-``` r
 plusminus2 <- openxlsx::read.xlsx(
   "~/plusminus.xlsx",
   rowNames = TRUE,
