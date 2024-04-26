@@ -9,7 +9,7 @@ Ultán P. Doherty
 remotes::install_github("UltanPDoherty/gateTree")
 ```
 
-## Load and plot data from `healthyFlowData`.
+## Load and plot data from the `healthyFlowData` package.
 
 ``` r
 library(healthyFlowData)
@@ -42,18 +42,18 @@ plusminus1
     ## CD8+_T  -1   1   1   -1
     ## B       -1  -1  -1    1
 
-## This plusminus table can be saved as an Excel file.
+## This table can be saved as an Excel file using the `openxlsx` package.
 
 ``` r
 openxlsx::write.xlsx(
-  plusminus1, 
+  plusminus1,
   "~/plusminus.xlsx",
-  rowNames = TRUE, 
+  rowNames = TRUE,
   colNames = TRUE
 )
 ```
 
-## plusminus tables can also be created in Excel, then read into R.
+## Tables can also be created in Excel, then read into R using the `openxlsx` package.
 
 ``` r
 plusminus2 <- openxlsx::read.xlsx(
