@@ -12,7 +12,8 @@ find_peaks(dens, width_percent = 1, min_height = 0.01)
 \item{width_percent}{Radius of local window as a percentage of the range.}
 
 \item{min_height}{Minimum height, as a percentage of the height of the global
-density maximum, for a peak to be recognised by find_peaks.}
+density maximum, for a peak to be recognised by
+\link{find_peaks}.}
 }
 \value{
 Logical vector indicating which points in \code{dens$x} are local maxima.

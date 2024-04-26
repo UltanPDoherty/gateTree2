@@ -10,10 +10,12 @@ find_valley(dens, min_depth = 0.01, min_height = 0.01)
 \item{dens}{Output from \code{stats::density} function.}
 
 \item{min_depth}{Minimum depth, as a percentage of the height of the global
-density maximum, for a split to be returned by find_valley.}
+density maximum, for a split to be returned by
+\link{find_valley}.}
 
 \item{min_height}{Minimum height, as a percentage of the height of the global
-density maximum, for a peak to be recognised by find_peaks.}
+density maximum, for a peak to be recognised by
+\link{find_peaks}.}
 }
 \value{
 Vector consisting of the valley and its depth percentage. The

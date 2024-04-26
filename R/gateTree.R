@@ -4,35 +4,39 @@
 #' Construct a semi-supervised decision tree to identify user-described
 #' clusters.
 #'
-#' @param x Dataset in matrix or data.frame form.
+#' @param x Dataset in `matrix` or `data.frame` form.
 #' @param plusminus_table Table indicated whether each group (row) is positive
 #'                        (+1), negative (-1), or neutral / unknown (0) for each
 #'                        variable (column).
 #' @param order_table Table influencing the order of splits.
 #' @param min_height Minimum height, as a percentage of the height of the global
-#'                   density maximum, for a peak to be recognised by find_peaks.
+#'                   density maximum, for a peak to be recognised by
+#'                   [find_peaks].
 #' @param min_depth Minimum depth, as a percentage of the height of the global
-#'                  density maximum, for a split to be returned by find_valley.
+#'                  density maximum, for a split to be returned by
+#'                  [find_valley].
 #' @param min_scaled_bic_diff Minimum value of difference between one-component
 #'                            and two-component BIC divided by
 #'                            2 log(obs_num).
 #' @param min_size Minimum number of observations for a subset to be split.
-#' @param min_val_cutoff Minimum value for an observation to be included.
-#' @param max_val_cutoff Maximum value for an observation to be included.
+#' @param min_val_cutoff Minimum values per variable for observations to be
+#'                       included.
+#' @param max_val_cutoff Maximum values per variable for observations to be
+#'                       included.
 #' @param use_boundaries Logical value.
 #' @param show_plot Logical vector of length 2. Indicating whether the split
-#' plots (`[1]`) and the tree plot (`[2]`) should be plotted.
+#'                  plots (`[1]`) and the tree plot (`[2]`) should be plotted.
 #' @param explore Logical value.
 #'
-#' @return List:
-#' * splits: matrix of split locations for all variables and described
+#' @return A `list` object:
+#' * `splits`: matrix of split locations for all variables and described
 #' populations.
-#' * split_order: matrix of split order for all variables and described
+#' * `split_order`: matrix of split order for all variables and described
 #' populations.
-#' * edge_df: data.frame describing the tree's edges and nodes.
-#' * labels: vector of integer cluster labels. `0` represents "Unassigned".
-#' * signs: matrix of split signs for all variables and described populations.
-#' * tree_plot: the clustering tree as a `ggplot` object.
+#' * `edge_df`: data.frame describing the tree's edges and nodes.
+#' * `labels`: vector of integer cluster labels. `0` represents "Unassigned".
+#' * `signs`: matrix of split signs for all variables and described populations.
+#' * `tree_plot`: the clustering tree as a `ggplot` object.
 #'
 #' @import ggplot2
 #' @importFrom ggpubr ggarrange

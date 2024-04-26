@@ -7,7 +7,7 @@
 scale01(x, other_min = NULL, other_max = NULL)
 }
 \arguments{
-\item{x}{Dataset in matrix or data.frame form.}
+\item{x}{Dataset in \code{matrix} or \code{data.frame} form.}
 
 \item{other_min}{Minimum to be used for 0-1 scaling.}
 

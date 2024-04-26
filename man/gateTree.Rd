@@ -20,7 +20,7 @@ gatetree(
 )
 }
 \arguments{
-\item{x}{Dataset in matrix or data.frame form.}
+\item{x}{Dataset in \code{matrix} or \code{data.frame} form.}
 
 \item{plusminus_table}{Table indicated whether each group (row) is positive
 (+1), negative (-1), or neutral / unknown (0) for each
@@ -29,10 +29,12 @@ variable (column).}
 \item{order_table}{Table influencing the order of splits.}
 
 \item{min_height}{Minimum height, as a percentage of the height of the global
-density maximum, for a peak to be recognised by find_peaks.}
+density maximum, for a peak to be recognised by
+\link{find_peaks}.}
 
 \item{min_depth}{Minimum depth, as a percentage of the height of the global
-density maximum, for a split to be returned by find_valley.}
+density maximum, for a split to be returned by
+\link{find_valley}.}
 
 \item{min_scaled_bic_diff}{Minimum value of difference between one-component
 and two-component BIC divided by
@@ -40,9 +42,11 @@ and two-component BIC divided by
 
 \item{min_size}{Minimum number of observations for a subset to be split.}
 
-\item{min_val_cutoff}{Minimum value for an observation to be included.}
+\item{min_val_cutoff}{Minimum values per variable for observations to be
+included.}
 
-\item{max_val_cutoff}{Maximum value for an observation to be included.}
+\item{max_val_cutoff}{Maximum values per variable for observations to be
+included.}
 
 \item{use_boundaries}{Logical value.}
 
@@ -52,16 +56,16 @@ plots (\verb{[1]}) and the tree plot (\verb{[2]}) should be plotted.}
 \item{explore}{Logical value.}
 }
 \value{
-List:
+A \code{list} object:
 \itemize{
-\item splits: matrix of split locations for all variables and described
+\item \code{splits}: matrix of split locations for all variables and described
 populations.
-\item split_order: matrix of split order for all variables and described
+\item \code{split_order}: matrix of split order for all variables and described
 populations.
-\item edge_df: data.frame describing the tree's edges and nodes.
-\item labels: vector of integer cluster labels. \code{0} represents "Unassigned".
-\item signs: matrix of split signs for all variables and described populations.
-\item tree_plot: the clustering tree as a \code{ggplot} object.
+\item \code{edge_df}: data.frame describing the tree's edges and nodes.
+\item \code{labels}: vector of integer cluster labels. \code{0} represents "Unassigned".
+\item \code{signs}: matrix of split signs for all variables and described populations.
+\item \code{tree_plot}: the clustering tree as a \code{ggplot} object.
 }
 }
 \description{

@@ -7,7 +7,7 @@
 expand_table(x, plusminus_subtable)
 }
 \arguments{
-\item{x}{Dataset in matrix or data.frame form.}
+\item{x}{Dataset in \code{matrix} or \code{data.frame} form.}
 
 \item{plusminus_subtable}{A \code{matrix} or \code{data.frame} whose column names are a
 subset of the column names of \code{x}.}

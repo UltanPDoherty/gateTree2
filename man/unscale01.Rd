@@ -7,7 +7,7 @@
 unscale01(x, unscaled_min, unscaled_max)
 }
 \arguments{
-\item{x}{Dataset in matrix or data.frame form.}
+\item{x}{Dataset in \code{matrix} or \code{data.frame} form.}
 
 \item{unscaled_min}{Minimum used for 0-1 scaling.}
 

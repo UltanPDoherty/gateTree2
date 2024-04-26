@@ -16,7 +16,7 @@ propose_splits(
 )
 }
 \arguments{
-\item{x}{Dataset in matrix or data.frame form.}
+\item{x}{Dataset in \code{matrix} or \code{data.frame} form.}
 
 \item{subsetter_g}{Column g of the subsetting matrix.}
 
@@ -25,10 +25,12 @@ propose_splits(
 \item{min_size}{Minimum number of observations for a subset to be split.}
 
 \item{min_depth}{Minimum depth, as a percentage of the height of the global
-density maximum, for a split to be returned by find_valley.}
+density maximum, for a split to be returned by
+\link{find_valley}.}
 
 \item{min_height}{Minimum height, as a percentage of the height of the global
-density maximum, for a peak to be recognised by find_peaks.}
+density maximum, for a peak to be recognised by
+\link{find_peaks}.}
 
 \item{min_scaled_bic_diff}{Minimum value of difference between one-component
 and two-component BIC divided by

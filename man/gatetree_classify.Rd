@@ -7,7 +7,7 @@
 gatetree_classify(x, gatetree_output)
 }
 \arguments{
-\item{x}{Dataset in matrix or data.frame form.}
+\item{x}{Dataset in \code{matrix} or \code{data.frame} form.}
 
 \item{gatetree_output}{Output from the \link{gatetree} function.}
 }

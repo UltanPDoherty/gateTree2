@@ -13,17 +13,19 @@ propose_valleys(
 )
 }
 \arguments{
-\item{x}{Dataset in matrix or data.frame form.}
+\item{x}{Dataset in \code{matrix} or \code{data.frame} form.}
 
 \item{subsetter_g}{Column g of the subsetting matrix.}
 
 \item{splittable_vars_g}{Row g of the splittable_vars matrix.}
 
 \item{min_depth}{Minimum depth, as a percentage of the height of the global
-density maximum, for a split to be returned by find_valley.}
+density maximum, for a split to be returned by
+\link{find_valley}.}
 
 \item{min_height}{Minimum height, as a percentage of the height of the global
-density maximum, for a peak to be recognised by find_peaks.}
+density maximum, for a peak to be recognised by
+\link{find_peaks}.}
 }
 \value{
 Matrix in which the columns contain each variable's valley and its
