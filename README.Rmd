@@ -34,18 +34,34 @@ GGally::ggpairs(hfd1, upper = list(continuous = "density"), progress = FALSE)
 * B Cells      (CD4-CD8-CD3-CD19+)
 
 ```{r plusminus, message=FALSE, warning=FALSE}
-plusminus <- rbind(
+plusminus1 <- as.data.frame(rbind(
   "CD4+_T" = c(+1, -1, +1, -1),
   "CD8+_T" = c(-1, +1, +1, -1),
   "B"      = c(-1, -1, -1, +1)
-)
-colnames(plusminus) <- colnames(hfd1)
-plusminus
+))
+colnames(plusminus1) <- colnames(hfd1)
+plusminus1
+```
+
+## This plusminus table can be saved as an Excel file.
+```{r write.xlsx}
+
+openxlsx::write.xlsx(plusminus1, "~/plusminus.xlsx",
+                     rowNames = TRUE, colNames = TRUE)
+
+```
+
+## plusminus tables can also be created in Excel, then read into R.
+```{r read.xlsx}
+
+plusminus2 <- openxlsx::read.xlsx("~/plusminus.xlsx",
+                                  rowNames = TRUE, colNames = TRUE)
+
 ```
 
 ## Run the `gatetree` function.
 ```{r gatetree, message=FALSE, warning=FALSE}
-hfd1_gatetree <- gatetree(hfd1, plusminus,
+hfd1_gatetree <- gatetree(hfd1, plusminus2,
   min_scaled_bic_diff = 50,
   min_depth = 10,
   show_plot = c(TRUE, FALSE)
