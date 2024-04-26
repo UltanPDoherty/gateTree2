@@ -12,6 +12,8 @@
 #' @export
 check_table <- function(plusminus_table) {
 
+  check_table_inner(plusminus_table, initial = TRUE)
+
   pm_list <- list(plusminus_table)
   new_pm_list <- list()
 
@@ -42,38 +44,67 @@ check_table <- function(plusminus_table) {
     new_pm_list <- list()
   }
 
-  final_check <- any(new_result == "fail")
+  final_check <- all(new_result == "success")
   indistinct_pops <- lapply(pm_list[new_result == "fail"], rownames)
+  names(indistinct_pops) <- NULL
+
+  indistinct_subtables <- pm_list[new_result == "fail"]
+  names(indistinct_subtables) <- NULL
 
   if (final_check) {
-    cat("The following groups of populations were indistinguishable:\n")
-    lapply(indistinct_pops, function(x) cat(x, "\n"))
-  } else {
     cat("All populations are theoretically distinguishable.")
+  } else {
+    cat("The following groups of populations are indistinguishable:\n")
+    lapply(
+      seq_along(indistinct_pops),
+      function(x) {
+        cat(paste0(x, ". ",
+                   paste0(indistinct_pops[[x]], collapse = ", "),
+                   ".\n"))
+      }
+    )
+    cat("\n")
+    lapply(
+      seq_along(indistinct_subtables),
+      function(x) print(indistinct_subtables[[x]])
+    )
+    cat("\n")
   }
 
-  return(list(pass = final_check, indistinct_pops = indistinct_pops))
+  return(list(pass = final_check,
+              indistinct_pops = indistinct_pops,
+              indistinct_subtables = indistinct_subtables))
 }
 
 #===============================================================================
 
-
 #' @title Inner function used by [check_table].
 #'
 #' @description
-#' Top-level check of a single plusminus_table sub-table.
+#' Non-recursive / non-iterative check of a single `plusminus_table` sub-table.
 #'
 #' @inheritParams gatetree
+#' @param initial Logical: whether this is the initial check before the loop.
 #'
-#' @return List
+#' @return If `initial = FALSE`, then `check_table_inner` returns a list:
 #' * pop_group_label: integer vector of population group labels
 #' * result: `"success"`, `"continue"`, or `"fail"`.
-check_table_inner <- function(plusminus_table) {
+#'
+#' If `initial = TRUE`, `check_table_inner` returns `NULL`.
+check_table_inner <- function(plusminus_table, initial = FALSE) {
 
   pop_num <- nrow(plusminus_table)
 
   common_variables <- apply(plusminus_table, 2, function(x) all(x != 0))
   common_num <- sum(common_variables)
+
+  if (initial && common_num == 0) {
+    cat(paste0(
+      "gateTree requires at least one variable for which each of the ",
+      "populations in the table are described as positive or negative.\n",
+      "This table does not satisfy this requirement."
+    ))
+  }
 
   pop_group_binary <- rep(0, pop_num)
   for (j in seq_len(common_num)) {
@@ -93,5 +124,22 @@ check_table_inner <- function(plusminus_table) {
     result <- "fail"
   }
 
-  return(list(pop_group_label = pop_group_label, result = result))
+  if (initial && common_num != 0 && result == "fail") {
+    cat(paste0(
+      "gateTree requires at least one variable for which each of the ",
+      "populations in the table are described as positive or negative.\n",
+      "This table does satisfy this requirement."
+    ))
+    cat(paste0(
+      "However, for these variables, either all populations are defined to be ",
+      "positive or all populations are defined to be negative.\n",
+      "Therefore, it is not possible to differentiate between the populations."
+    ))
+  }
+
+  if (initial) {
+    return(NULL)
+  } else {
+    return(list(pop_group_label = pop_group_label, result = result))
+  }
 }
