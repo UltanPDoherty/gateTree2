@@ -1,4 +1,4 @@
-#===============================================================================
+# ==============================================================================
 
 #' 0-1 scaling.
 #'
@@ -11,7 +11,6 @@
 #' * min: minimum used for scaling.
 #' * max: maximum used for scaling.
 scale01 <- function(x, other_min = NULL, other_max = NULL) {
-
   if (is.null(other_min)) {
     minimum <- min(x)
   } else {
@@ -30,7 +29,7 @@ scale01 <- function(x, other_min = NULL, other_max = NULL) {
   return(list(y = y, min = minimum, max = maximum))
 }
 
-#===============================================================================
+# ==============================================================================
 
 #' Undo 0-1 scaling.
 #'
@@ -43,7 +42,7 @@ unscale01 <- function(x, unscaled_min, unscaled_max) {
   return(x * (unscaled_max - unscaled_min) + unscaled_min)
 }
 
-#===============================================================================
+# ==============================================================================
 
 #' Check if final subsets are identical.
 #'
@@ -53,7 +52,6 @@ unscale01 <- function(x, unscaled_min, unscaled_max) {
 #' an existing cluster. If a pair of clusters are identical, the second one is
 #' identified as a duplicate.
 check_duplicates <- function(subsetter) {
-
   path_num <- ncol(subsetter)
 
   is_a_duplicate <- rep(FALSE, path_num)
@@ -64,8 +62,10 @@ check_duplicates <- function(subsetter) {
       for (h in (g + 1):path_num) {
         equal_subsets[g, h] <- all(subsetter[, g] == subsetter[, h])
         if (equal_subsets[g, h]) {
-          print(paste0("Failed to distinguish between populations ",
-                       g, " & ", h, "."))
+          print(paste0(
+            "Failed to distinguish between populations ",
+            g, " & ", h, "."
+          ))
           is_a_duplicate[h] <- TRUE
         }
       }
@@ -75,7 +75,7 @@ check_duplicates <- function(subsetter) {
   return(is_a_duplicate)
 }
 
-#===============================================================================
+# ==============================================================================
 
 #' Find which observations are inside the cutoffs for each variable.
 #'

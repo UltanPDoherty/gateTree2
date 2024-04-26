@@ -9,7 +9,6 @@
 #'
 #' @return Logical vector indicating which points in `dens$x` are local maxima.
 find_peaks <- function(dens, width_percent = 1, min_height = 0.01) {
-
   dens$y <- dens$y / max(dens$y) * 100
 
   # w is the number of density points in width_percent of the range
@@ -27,7 +26,7 @@ find_peaks <- function(dens, width_percent = 1, min_height = 0.01) {
   return(is_peak)
 }
 
-#===============================================================================
+# ==============================================================================
 
 #' @title Find the optimal density valley.
 #'
@@ -41,7 +40,6 @@ find_peaks <- function(dens, width_percent = 1, min_height = 0.01) {
 #' @return Vector consisting of the valley and its depth percentage. The
 #' valley will be NA if its depth percentage is less than `min_depth`.
 find_valley <- function(dens, min_depth = 0.01, min_height = 0.01) {
-
   is_peak <- find_peaks(dens, min_height = min_height)
 
   if (sum(is_peak) == 1) {
@@ -49,15 +47,19 @@ find_valley <- function(dens, min_depth = 0.01, min_height = 0.01) {
     best_depth <- NA
   } else {
     maxpeak_ind <- which.max(dens$y)
-    maxpeak <- data.frame(x = dens$x[maxpeak_ind],
-                          y = dens$y[maxpeak_ind])
+    maxpeak <- data.frame(
+      x = dens$x[maxpeak_ind],
+      y = dens$y[maxpeak_ind]
+    )
 
     dens$y <- dens$y / maxpeak$y * 100
     maxpeak$y <- 100.0
 
     otherpeaks_ind <- which(is_peak & dens$y != max(dens$y))
-    otherpeaks <- data.frame(x = dens$x[otherpeaks_ind],
-                             y = dens$y[otherpeaks_ind])
+    otherpeaks <- data.frame(
+      x = dens$x[otherpeaks_ind],
+      y = dens$y[otherpeaks_ind]
+    )
 
     depths <- valleys <- valley_ind <- c()
     interpeak <- matrix(nrow = length(dens$x), ncol = length(otherpeaks$x))
@@ -81,7 +83,7 @@ find_valley <- function(dens, min_depth = 0.01, min_height = 0.01) {
   return(c(best_valley, best_depth))
 }
 
-#===============================================================================
+# ==============================================================================
 
 #' @title Apply [find_valley] across a set of variables.
 #'
@@ -94,15 +96,14 @@ find_valley <- function(dens, min_depth = 0.01, min_height = 0.01) {
 #' @return  Matrix in which the columns contain each variable's valley and its
 #' depth percentage.
 propose_valleys <- function(
-  x,
-  subsetter_g,
-  splittable_vars_g = rep(TRUE, ncol(x)),
-  min_depth, min_height
-) {
+    x,
+    subsetter_g,
+    splittable_vars_g = rep(TRUE, ncol(x)),
+    min_depth, min_height) {
   valleys <- matrix(nrow = 2, ncol = ncol(x))
 
   # loop over all variables to propose splits
-  for (p in which(splittable_vars_g)){
+  for (p in which(splittable_vars_g)) {
     scale01_gp <- scale01(x[subsetter_g, p])
     dens01_gp <- stats::density(scale01_gp$y)
 

@@ -11,7 +11,6 @@
 #' * indistinct_pops: List of indistinguishable sub-tables.
 #' @export
 check_table <- function(plusminus_table) {
-
   check_table_inner(plusminus_table, initial = TRUE)
 
   pm_list <- list(plusminus_table)
@@ -33,11 +32,15 @@ check_table <- function(plusminus_table) {
       pop_group_label[[i]] <- basic_out$pop_group_label
       result[i] <- basic_out$result
 
-      new_pm_list <- append(new_pm_list,
-                            split(pm_list[[i]], pop_group_label[[i]]))
+      new_pm_list <- append(
+        new_pm_list,
+        split(pm_list[[i]], pop_group_label[[i]])
+      )
 
-      new_result <- append(new_result,
-                           rep(result[i], length(unique(pop_group_label[[i]]))))
+      new_result <- append(
+        new_result,
+        rep(result[i], length(unique(pop_group_label[[i]])))
+      )
     }
 
     pm_list <- new_pm_list
@@ -58,9 +61,11 @@ check_table <- function(plusminus_table) {
     lapply(
       seq_along(indistinct_pops),
       function(x) {
-        cat(paste0(x, ". ",
-                   paste0(indistinct_pops[[x]], collapse = ", "),
-                   ".\n"))
+        cat(paste0(
+          x, ". ",
+          paste0(indistinct_pops[[x]], collapse = ", "),
+          ".\n"
+        ))
       }
     )
     cat("\n")
@@ -71,12 +76,14 @@ check_table <- function(plusminus_table) {
     cat("\n")
   }
 
-  return(list(pass = final_check,
-              indistinct_pops = indistinct_pops,
-              indistinct_subtables = indistinct_subtables))
+  return(list(
+    pass = final_check,
+    indistinct_pops = indistinct_pops,
+    indistinct_subtables = indistinct_subtables
+  ))
 }
 
-#===============================================================================
+# ==============================================================================
 
 #' @title Inner function used by [check_table].
 #'
@@ -92,7 +99,6 @@ check_table <- function(plusminus_table) {
 #'
 #' If `initial = TRUE`, `check_table_inner` returns `NULL`.
 check_table_inner <- function(plusminus_table, initial = FALSE) {
-
   pop_num <- nrow(plusminus_table)
 
   common_variables <- apply(plusminus_table, 2, function(x) all(x != 0))

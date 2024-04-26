@@ -39,19 +39,18 @@
 #' @importFrom utils tail
 #' @export
 gatetree <- function(
-  x,
-  plusminus_table = expand.grid(rep(list(c(-1, 1)), ncol(x))),
-  order_table = array(0, dim = dim(plusminus_table)),
-  min_height = min_depth,
-  min_depth = 1,
-  min_scaled_bic_diff = 0,
-  min_size = 50,
-  min_val_cutoff = NULL,
-  max_val_cutoff = NULL,
-  use_boundaries = TRUE,
-  show_plot = c(FALSE, FALSE),
-  explore = TRUE
-) {
+    x,
+    plusminus_table = expand.grid(rep(list(c(-1, 1)), ncol(x))),
+    order_table = array(0, dim = dim(plusminus_table)),
+    min_height = min_depth,
+    min_depth = 1,
+    min_scaled_bic_diff = 0,
+    min_size = 50,
+    min_val_cutoff = NULL,
+    max_val_cutoff = NULL,
+    use_boundaries = TRUE,
+    show_plot = c(FALSE, FALSE),
+    explore = TRUE) {
   explore_min_height <- min(c(100, 5 * min_height))
   explore_min_depth <- min(c(100, 5 * min_depth))
   explore_min_size <- min_size
@@ -60,8 +59,8 @@ gatetree <- function(
   obs_num <- nrow(x)
   path_num <- 1
 
-  splits      <- scores <- matrix(NA, nrow = path_num, ncol = var_num)
-  split_order <- signs  <- matrix(NA, nrow = path_num, ncol = var_num)
+  splits <- scores <- matrix(NA, nrow = path_num, ncol = var_num)
+  split_order <- signs <- matrix(NA, nrow = path_num, ncol = var_num)
   splittable_vars <- matrix(NA, nrow = path_num, ncol = var_num)
   order_vars <- matrix(NA, nrow = path_num, ncol = var_num)
 
@@ -103,7 +102,6 @@ gatetree <- function(
   g <- 1
   k <- 1
   while (g <= path_num) {
-
     proposals <- propose_splits(
       x, subsetter[, g], splittable_vars[g, ],
       min_size, min_depth, min_height,
@@ -113,7 +111,6 @@ gatetree <- function(
     scenario <- proposals$scenario
 
     if (scenario %in% c("valley", "boundary")) {
-
       p_choice <- which.max(proposals$matrix[2, ])
 
       splits[g, p_choice] <- proposals$matrix[1, p_choice]
@@ -159,7 +156,7 @@ gatetree <- function(
         already_split <- rbind(already_split, already_split[g, ])
 
         signs <- rbind(signs, signs[g, ])
-        signs[path_num + 1, p_choice] <- - plusminus_table[k, p_choice]
+        signs[path_num + 1, p_choice] <- -plusminus_table[k, p_choice]
         rownames(signs)[path_num + 1] <-
           rownames(plusminus_table)[which(pop_to_path == path_num + 1)[1]]
 
@@ -181,11 +178,14 @@ gatetree <- function(
 
         path_nodes[[path_num + 1]] <- append(path_nodes[[g]], node_num + 2)
 
-        edge_name[node_num + 2] <- paste0(colnames(x)[p_choice],
-                                          ifelse(is_negative, "+", "-"))
+        edge_name[node_num + 2] <- paste0(
+          colnames(x)[p_choice],
+          ifelse(is_negative, "+", "-")
+        )
 
         node_name[node_num + 2] <- paste(edge_name[path_nodes[[path_num + 1]]],
-                                         collapse = "\n")
+          collapse = "\n"
+        )
 
         is_leaf[node_num + 2] <- TRUE
 
@@ -196,24 +196,26 @@ gatetree <- function(
 
       parent_node[node_num + 1] <- utils::tail(path_nodes[[g]], 1)
       path_nodes[[g]] <- append(path_nodes[[g]], node_num + 1)
-      edge_name[node_num + 1] <- paste0(colnames(x)[p_choice],
-                                        ifelse(is_negative, "-", "+"))
+      edge_name[node_num + 1] <- paste0(
+        colnames(x)[p_choice],
+        ifelse(is_negative, "-", "+")
+      )
       node_name[node_num + 1] <- paste(edge_name[path_nodes[[g]]],
-                                       collapse = "\n")
+        collapse = "\n"
+      )
 
       is_leaf[parent_node[node_num + 1]] <- FALSE
       is_leaf[node_num + 1] <- TRUE
 
       node_num <- node_num + 1 + new_branch_created
-
     } else {
-
       if (sum(subsetter[, g]) > min_size) {
         missed_splits <- 0
         for (p in which(splittable_vars[g, ])) {
           missed_splits <- missed_splits + 1
           plot_list[[g]][[split_num[g] + missed_splits]] <- plot_gatetree_split(
-            x[subsetter[, g], p], g, p, score = NA,
+            x[subsetter[, g], p], g, p,
+            score = NA,
             signs, scenario, split_gp = NA
           )
         }
@@ -254,8 +256,10 @@ gatetree <- function(
 
   plot_paths(plot_list, show_plot = show_plot[1])
 
-  edge_df <- make_edge_df(parent_node, node_num, edge_name, node_name,
-                          is_leaf, path_nodes)
+  edge_df <- make_edge_df(
+    parent_node, node_num, edge_name, node_name,
+    is_leaf, path_nodes
+  )
   tree_plot <- make_tree_plot(edge_df, show_plot[2])
 
   labels <- c()
@@ -267,11 +271,13 @@ gatetree <- function(
 
   signs[is.na(signs)] <- 0
 
-  return(list(splits = splits,
-              split_order = split_order,
-              subsetter = subsetter,
-              edge_df = edge_df,
-              labels = labels,
-              signs = signs,
-              tree_plot = tree_plot))
+  return(list(
+    splits = splits,
+    split_order = split_order,
+    subsetter = subsetter,
+    edge_df = edge_df,
+    labels = labels,
+    signs = signs,
+    tree_plot = tree_plot
+  ))
 }

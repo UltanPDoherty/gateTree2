@@ -32,17 +32,22 @@ propose_splits <- function(x, subsetter_g, splittable_vars_g,
     found_boundary <- FALSE
 
     if (!found_valley && use_boundaries) {
-      proposals <- propose_boundaries(x, min_scaled_bic_diff,
-                                      subsetter_g, splittable_vars_g)
+      proposals <- propose_boundaries(
+        x, min_scaled_bic_diff,
+        subsetter_g, splittable_vars_g
+      )
 
       found_boundary <- any(!is.na(proposals[1, ]))
     }
   }
 
   scenario <- ifelse(found_valley,
-                     "valley",
-                     ifelse(found_boundary, "boundary", "nothing"))
+    "valley",
+    ifelse(found_boundary, "boundary", "nothing")
+  )
 
-  return(list(matrix = proposals,
-              scenario = scenario))
+  return(list(
+    matrix = proposals,
+    scenario = scenario
+  ))
 }

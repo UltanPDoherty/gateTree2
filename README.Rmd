@@ -45,24 +45,27 @@ plusminus
 
 ## Run the `gatetree` function.
 ```{r gatetree, message=FALSE, warning=FALSE}
-hfd1_gatetree <- gatetree(hfd1, plusminus, 
-                          min_scaled_bic_diff = 50,
-                          min_depth = 10,
-                          show_plot = c(TRUE, FALSE))
+hfd1_gatetree <- gatetree(hfd1, plusminus,
+  min_scaled_bic_diff = 50,
+  min_depth = 10,
+  show_plot = c(TRUE, FALSE)
+)
 ```
 
 ## Plot the tree diagram.
 ```{r tree_plot, message=FALSE, warning=FALSE}
-hfd1_gatetree$tree_plot + 
+hfd1_gatetree$tree_plot +
   ggplot2::scale_y_continuous(expand = c(0.1, 0.1)) +
   ggplot2::scale_x_continuous(expand = c(0.1, 0.1))
 ```
 
 ## Plot the data, coloured according to the `gateTree` labels.
 ```{r ggpairs, message=FALSE, warning=FALSE}
-GGally::ggpairs(hfd1, progress = FALSE,
-                upper = list(continuous = "density"),
-                ggplot2::aes(colour = as.factor(1 + hfd1_gatetree$labels))) +
+GGally::ggpairs(hfd1,
+  progress = FALSE,
+  upper = list(continuous = "density"),
+  ggplot2::aes(colour = as.factor(1 + hfd1_gatetree$labels))
+) +
   ggokabeito::scale_colour_okabe_ito(order = c(9, 1, 2, 3)) +
   ggokabeito::scale_fill_okabe_ito(order = c(9, 1, 2, 3))
 ```

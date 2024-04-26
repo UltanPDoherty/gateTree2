@@ -11,7 +11,6 @@
 #' @return Vector of integer labels.
 #' @export
 gatetree_classify <- function(x, gatetree_output) {
-
   pop_num <- nrow(gatetree_output$splits)
   var_num <- ncol(x)
   obs_num <- nrow(x)

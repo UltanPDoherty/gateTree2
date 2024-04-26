@@ -1,4 +1,4 @@
-#===============================================================================
+# ==============================================================================
 
 #' @title Density plot with a `gateTree` split.
 #'
@@ -18,38 +18,32 @@
 #' @return `ggplot` object.
 plot_gatetree_split <- function(x_gp, g, p, score, plusminus_table,
                                 scenario, split_gp) {
-
   # colours from ggokabeito package
-  rect_col <- switch(
-    scenario,
+  rect_col <- switch(scenario,
     "valley" = "#F0E442",
     "boundary" = "#56B4E9",
     "nothing" = NA,
     "explore" = "#CC79A7"
   )
-  score <- switch(
-    scenario,
+  score <- switch(scenario,
     "valley"   = score,
     "boundary" = score,
     "nothing"  = NA,
     "explore"  = score
   )
-  score_title <- switch(
-    scenario,
+  score_title <- switch(scenario,
     "valley"   = paste0("depth % = ", round(score, 1)),
     "boundary" = paste0("sc. BIC diff. = ", round(score, 1)),
     "nothing"  = NA,
     "explore"  = paste0("depth % = ", round(score, 1))
   )
-  line_type <- switch(
-    scenario,
+  line_type <- switch(scenario,
     "valley"   = "solid",
     "boundary" = "dashed",
     "nothing"  = "blank",
     "explore"  = "dotted"
   )
-  is_negative <- switch(
-    scenario,
+  is_negative <- switch(scenario,
     "valley"   = (plusminus_table[g, p] == -1),
     "boundary" = (plusminus_table[g, p] == -1),
     "nothing"  = NA,
@@ -59,8 +53,10 @@ plot_gatetree_split <- function(x_gp, g, p, score, plusminus_table,
   scale01_gp <- scale01(x_gp)
   dens_gp <- stats::density(scale01_gp$y)
 
-  trans_split_gp <- scale01(split_gp,
-                            scale01_gp$min, scale01_gp$max)$y
+  trans_split_gp <- scale01(
+    split_gp,
+    scale01_gp$min, scale01_gp$max
+  )$y
 
   xleft <- ifelse(is_negative, 0, trans_split_gp)
   xright <- ifelse(is_negative, trans_split_gp, 1)
@@ -85,15 +81,20 @@ plot_gatetree_split <- function(x_gp, g, p, score, plusminus_table,
 
   gg <- ggplot(dens_gp_df, aes(x = dens_gp_x, y = dens_gp_y)) +
     geom_rect(aes(xmin = xleft, xmax = xright, ymin = 0, ymax = max(dens_gp_y)),
-              fill = rect_col, na.rm = TRUE) +
+      fill = rect_col, na.rm = TRUE
+    ) +
     geom_line() +
-    geom_vline(xintercept = trans_split_gp, linetype = line_type,
-               na.rm = TRUE) +
+    geom_vline(
+      xintercept = trans_split_gp, linetype = line_type,
+      na.rm = TRUE
+    ) +
     labs(
       title = paste0("g = ", g, ", p = ", p, ", ", score_title),
-      subtitle = paste0("Path: ", rownames(plusminus_table)[g], ", ",
-                        "Var: ", colnames(plusminus_table)[p], ", ",
-                        "\"", scenario, "\""),
+      subtitle = paste0(
+        "Path: ", rownames(plusminus_table)[g], ", ",
+        "Var: ", colnames(plusminus_table)[p], ", ",
+        "\"", scenario, "\""
+      ),
       x = paste0("N before = ", size_before, ", N after = ", size_after),
       y = "Density %"
     ) +
@@ -102,7 +103,7 @@ plot_gatetree_split <- function(x_gp, g, p, score, plusminus_table,
   return(gg)
 }
 
-#===============================================================================
+# ==============================================================================
 
 #' @title Compile edge and node information.
 #'
@@ -126,7 +127,6 @@ plot_gatetree_split <- function(x_gp, g, p, score, plusminus_table,
 #' * ggraph_order
 make_edge_df <- function(parent_node, node_number, edge_name, node_name,
                          is_leaf, path_nodes) {
-
   leaf_name <- rep(NA, node_number)
   leaf_name[is_leaf] <- node_name[is_leaf]
   leaf_name <- gsub("All\n", "", leaf_name)
@@ -150,7 +150,7 @@ make_edge_df <- function(parent_node, node_number, edge_name, node_name,
   return(edge_df)
 }
 
-#===============================================================================
+# ==============================================================================
 
 #' @title Construct tree diagram for `gateTree`.
 #'
@@ -166,9 +166,10 @@ make_edge_df <- function(parent_node, node_number, edge_name, node_name,
 #'
 #' @return `ggraph` object.
 make_tree_plot <- function(edge_df, show_plot = FALSE) {
-
-  tree_graph <- igraph::graph_from_data_frame(d = edge_df[, 1:3],
-                                              v = edge_df[, c(2, 4:7)])
+  tree_graph <- igraph::graph_from_data_frame(
+    d = edge_df[, 1:3],
+    v = edge_df[, c(2, 4:7)]
+  )
 
   tree_tbl_graph <- tidygraph::as_tbl_graph(tree_graph)
 
@@ -182,8 +183,10 @@ make_tree_plot <- function(edge_df, show_plot = FALSE) {
       label_dodge = grid::unit(0.075, "npc")
     ) +
     ggraph::geom_node_label(
-      aes(label = leaf_name,
-          colour = leaf_name),
+      aes(
+        label = leaf_name,
+        colour = leaf_name
+      ),
       show.legend = FALSE
     ) +
     ggraph::theme_graph() +
@@ -196,15 +199,16 @@ make_tree_plot <- function(edge_df, show_plot = FALSE) {
   return(tree_plot)
 }
 
-#===============================================================================
+# ==============================================================================
 
 plot_paths <- function(plot_list, show_plot) {
   if (show_plot) {
     arranged <- list()
     for (g in seq_along(plot_list)) {
-
-      arranged[[g]] <- ggpubr::ggarrange(plotlist = plot_list[[g]],
-                                         ncol = 2, nrow = 2)
+      arranged[[g]] <- ggpubr::ggarrange(
+        plotlist = plot_list[[g]],
+        ncol = 2, nrow = 2
+      )
       if (is.ggplot(arranged[[g]])) {
         plot(arranged[[g]])
       } else {
@@ -216,23 +220,21 @@ plot_paths <- function(plot_list, show_plot) {
   }
 }
 
-#===============================================================================
+# ==============================================================================
 
 explore_plots <- function(
-  explore,
-  x,
-  g,
-  subsetter,
-  splittable_vars,
-  explore_min_depth,
-  explore_min_height,
-  explore_min_size,
-  plot_list,
-  split_num,
-  missed_splits,
-  signs
-) {
-
+    explore,
+    x,
+    g,
+    subsetter,
+    splittable_vars,
+    explore_min_depth,
+    explore_min_height,
+    explore_min_size,
+    plot_list,
+    split_num,
+    missed_splits,
+    signs) {
   if (explore) {
     explore_valleys <- propose_valleys(
       x, subsetter[, g], !splittable_vars[g, ],
@@ -248,7 +250,8 @@ explore_plots <- function(
       explore_splits <- explore_splits + 1
       plot_list[[g]][[split_num[g] + missed_splits + explore_splits]] <-
         plot_gatetree_split(
-          x[subsetter[, g], p], g, p, score = explore_valleys[2, p],
+          x[subsetter[, g], p], g, p,
+          score = explore_valleys[2, p],
           signs, scenario = "explore", split_gp = explore_valleys[1, p]
         )
     }

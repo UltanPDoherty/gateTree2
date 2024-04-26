@@ -55,7 +55,7 @@ find_boundary <- function(x, min_scaled_bic_diff = 0) {
   return(c(boundary, scaled_bic_diff))
 }
 
-#===============================================================================
+# ==============================================================================
 
 #' @title Apply [find_boundary] across a set of variables.
 #'
@@ -68,15 +68,14 @@ find_boundary <- function(x, min_scaled_bic_diff = 0) {
 #' @return Matrix in which the columns contain each variable's boundary and its
 #' scaled BIC difference.
 propose_boundaries <- function(
-  x,
-  min_scaled_bic_diff = 0,
-  subsetter_g,
-  splittable_vars_g = rep(TRUE, ncol(x))
-) {
+    x,
+    min_scaled_bic_diff = 0,
+    subsetter_g,
+    splittable_vars_g = rep(TRUE, ncol(x))) {
   boundaries <- matrix(nrow = 2, ncol = ncol(x))
 
   # loop over all variables to propose splits
-  for (p in which(splittable_vars_g)){
+  for (p in which(splittable_vars_g)) {
     boundaries[, p] <- find_boundary(x[subsetter_g, p], min_scaled_bic_diff)
   }
 
