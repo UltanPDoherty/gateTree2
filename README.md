@@ -3,14 +3,10 @@ gateTree
 Ultán P. Doherty
 2024-04-25
 
-## Install and load `gateTree`.
+## Install `gateTree`.
 
 ``` r
 remotes::install_github("UltanPDoherty/gateTree")
-```
-
-``` r
-library(gateTree)
 ```
 
 ## Load and plot data from `healthyFlowData`.
@@ -49,21 +45,28 @@ plusminus1
 ## This plusminus table can be saved as an Excel file.
 
 ``` r
-openxlsx::write.xlsx(plusminus1, "~/plusminus.xlsx",
-                     rowNames = TRUE, colNames = TRUE)
+openxlsx::write.xlsx(
+  plusminus1, 
+  "~/plusminus.xlsx",
+  rowNames = TRUE, 
+  colNames = TRUE
+)
 ```
 
 ## plusminus tables can also be created in Excel, then read into R.
 
 ``` r
-plusminus2 <- openxlsx::read.xlsx("~/plusminus.xlsx",
-                                  rowNames = TRUE, colNames = TRUE)
+plusminus2 <- openxlsx::read.xlsx(
+  "~/plusminus.xlsx",
+  rowNames = TRUE,
+  colNames = TRUE
+)
 ```
 
 ## Run the `gatetree` function.
 
 ``` r
-hfd1_gatetree <- gatetree(hfd1, plusminus2,
+hfd1_gatetree <- gateTree::gatetree(hfd1, plusminus2,
   min_scaled_bic_diff = 50,
   min_depth = 10,
   show_plot = c(TRUE, FALSE)

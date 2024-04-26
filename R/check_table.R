@@ -11,7 +11,6 @@
 #' * indistinct_pops: List of indistinguishable sub-tables.
 #' @export
 check_table <- function(plusminus_table) {
-
   values_check <- rep(NA, 2)
   values_check[1] <- all(!is.na(plusminus_table))
   values_check[2] <- all(as.matrix(plusminus_table) %in% c(-1, 0, +1))

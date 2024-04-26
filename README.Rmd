@@ -9,16 +9,12 @@ output: github_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## Install and load `gateTree`.
+## Install `gateTree`.
 ```{r, eval=FALSE}
 remotes::install_github("UltanPDoherty/gateTree")
 ```
 
-```{r, message=FALSE, warning=FALSE}
-library(gateTree)
-```
-
-## Load and plot data from `healthyFlowData`.
+## Load and plot data from the `healthyFlowData` package.
 ```{r hfd1_setup, message=FALSE, warning=FALSE}
 library(healthyFlowData)
 data(hd)
@@ -43,25 +39,28 @@ colnames(plusminus1) <- colnames(hfd1)
 plusminus1
 ```
 
-## This plusminus table can be saved as an Excel file.
+## This table can be saved as an Excel file using the `openxlsx` package.
 ```{r write.xlsx}
-
-openxlsx::write.xlsx(plusminus1, "~/plusminus.xlsx",
-                     rowNames = TRUE, colNames = TRUE)
-
+openxlsx::write.xlsx(
+  plusminus1,
+  "~/plusminus.xlsx",
+  rowNames = TRUE,
+  colNames = TRUE
+)
 ```
 
-## plusminus tables can also be created in Excel, then read into R.
+## Tables can also be created in Excel, then read into R using the `openxlsx` package.
 ```{r read.xlsx}
-
-plusminus2 <- openxlsx::read.xlsx("~/plusminus.xlsx",
-                                  rowNames = TRUE, colNames = TRUE)
-
+plusminus2 <- openxlsx::read.xlsx(
+  "~/plusminus.xlsx",
+  rowNames = TRUE,
+  colNames = TRUE
+)
 ```
 
 ## Run the `gatetree` function.
 ```{r gatetree, message=FALSE, warning=FALSE}
-hfd1_gatetree <- gatetree(hfd1, plusminus2,
+hfd1_gatetree <- gateTree::gatetree(hfd1, plusminus2,
   min_scaled_bic_diff = 50,
   min_depth = 10,
   show_plot = c(TRUE, FALSE)
