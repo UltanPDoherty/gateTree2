@@ -106,7 +106,7 @@ gatetree <- function(
   temp_in_common <- apply(
     temp_in_cutoffs[, common_variables[1, ], drop = FALSE], 1, all
   )
-  temp_subsetter <- matrix(inside_common & temp_in_cutoffs,
+  temp_subsetter <- matrix(inside_common & temp_in_common,
                            nrow = obs_num, ncol = path_num)
 
   pop_to_path <- rep(1, pop_num)
@@ -264,6 +264,7 @@ gatetree <- function(
       )
       subsetter[, g] <- subsetter[, g] & inside_common
 
+      temp_subsetter <- subsetter
       temp_in_common <- apply(
         temp_in_cutoffs[, common_variables[1, ], drop = FALSE], 1, all
       )
