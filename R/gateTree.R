@@ -23,6 +23,10 @@
 #'                       included.
 #' @param max_val_cutoff Maximum values per variable for observations to be
 #'                       included.
+#' @param temp_min_cutoff Minimum values per variable for observations to be
+#'                        included in finding a split.
+#' @param temp_max_cutoff Maximum values per variable for observations to be
+#'                        included in finding a split.
 #' @param use_boundaries Logical value.
 #' @param show_plot Logical vector of length 2. Indicating whether the split
 #'                  plots (`[1]`) and the tree plot (`[2]`) should be plotted.
@@ -52,9 +56,12 @@ gatetree <- function(
     min_size = 50,
     min_val_cutoff = NULL,
     max_val_cutoff = NULL,
+    temp_min_cutoff = NULL,
+    temp_max_cutoff = NULL,
     use_boundaries = TRUE,
     show_plot = c(FALSE, FALSE),
     explore = TRUE) {
+
   explore_min_height <- min(c(100, 5 * min_height))
   explore_min_depth <- min(c(100, 5 * min_depth))
   explore_min_size <- min_size
@@ -95,6 +102,13 @@ gatetree <- function(
   )
   subsetter <- matrix(inside_common, nrow = obs_num, ncol = path_num)
 
+  temp_in_cutoffs <- find_inside_cutoffs(x, temp_min_cutoff, temp_max_cutoff)
+  temp_in_common <- apply(
+    temp_in_cutoffs[, common_variables[1, ], drop = FALSE], 1, all
+  )
+  temp_subsetter <- matrix(inside_common & temp_in_cutoffs,
+                           nrow = obs_num, ncol = path_num)
+
   pop_to_path <- rep(1, pop_num)
   path_num <- 1
 
@@ -107,7 +121,7 @@ gatetree <- function(
   k <- 1
   while (g <= path_num) {
     proposals <- propose_splits(
-      x, subsetter[, g], splittable_vars[g, ],
+      x, temp_subsetter[, g], splittable_vars[g, ],
       min_size, min_depth, min_height,
       min_scaled_bic_diff, use_boundaries
     )
@@ -248,8 +262,12 @@ gatetree <- function(
       inside_common <- apply(
         inside_cutoffs[, common_variables[1, ], drop = FALSE], 1, all
       )
-
       subsetter[, g] <- subsetter[, g] & inside_common
+
+      temp_in_common <- apply(
+        temp_in_cutoffs[, common_variables[1, ], drop = FALSE], 1, all
+      )
+      temp_subsetter[, g] <- subsetter[, g] & temp_in_common
 
       splittable_vars[g, ] <- !already_split[g, ] & common_variables[g, ]
 

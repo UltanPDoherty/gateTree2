@@ -14,6 +14,8 @@ gatetree(
   min_size = 50,
   min_val_cutoff = NULL,
   max_val_cutoff = NULL,
+  temp_min_cutoff = NULL,
+  temp_max_cutoff = NULL,
   use_boundaries = TRUE,
   show_plot = c(FALSE, FALSE),
   explore = TRUE
@@ -47,6 +49,12 @@ included.}
 
 \item{max_val_cutoff}{Maximum values per variable for observations to be
 included.}
+
+\item{temp_min_cutoff}{Minimum values per variable for observations to be
+included in finding a split.}
+
+\item{temp_max_cutoff}{Maximum values per variable for observations to be
+included in finding a split.}
 
 \item{use_boundaries}{Logical value.}
 
