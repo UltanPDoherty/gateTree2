@@ -70,41 +70,43 @@ get_f1 <- function(
   matchable_clusts <- setdiff(unique(clust_labels), no_match_clust)
   matchable_clust_rows <- which(colnames(f1_mat) %in% matchable_clusts)
   match_clust_num <- length(matchable_clusts)
+  clust_to_class <- rep(NA, clust_num)
 
   if (match_class_num <= match_clust_num) {
     class_to_clust_match <- as.numeric(
-      clue::solve_LSAP(f1_mat[matchable_class_rows, matchable_clust_rows],
+      clue::solve_LSAP(
+        f1_mat[matchable_class_rows, matchable_clust_rows, drop = FALSE],
         maximum = TRUE
       )
     )
-    # clust_to_class gives column numbers of the selected f1_mat submatrix
-    class_to_clust[matchable_class_rows] <- class_to_clust_match
+    class_to_clust[matchable_class_rows] <-
+      matchable_clust_rows[class_to_clust_match]
   } else {
-    clust_to_class <- as.numeric(
-      clue::solve_LSAP(t(f1_mat[matchable_class_rows, matchable_clust_rows]),
+    clust_to_class_match <- as.numeric(
+      clue::solve_LSAP(
+        t(f1_mat[matchable_class_rows, matchable_clust_rows, drop = FALSE]),
         maximum = TRUE
       )
     )
-    # clust_to_class gives row numbers of the selected f1_mat submatrix
-    other_class <- setdiff(matchable_class_rows, clust_to_class)
-    clust_to_class <- c(clust_to_class, other_class)
-    class_to_clust[matchable_class_rows] <- order(clust_to_class)
-    class_to_clust_extra <- class_to_clust > match_clust_num
-    class_to_clust[!is.na(class_to_clust) & class_to_clust_extra] <- NA
-    # match_clust_num is the number of columns of the selected f1_mat submatrix
+    clust_to_class[matchable_clust_rows] <-
+      matchable_class_rows[clust_to_class_match]
+
+    for (i in seq_along(class_to_clust)) {
+      class_to_clust[i] <- ifelse(
+        any(clust_to_class == i),
+        which(clust_to_class == i),
+        NA
+      )
+    }
   }
 
-  # we need to convert from column numbers of the f1_mat submatrix to column
-  # numbers of the full f1_mat matrix
-  class_to_clust2 <- (1:clust_num)[matchable_clust_rows][class_to_clust]
-
-  pr_mat_ord <- pr_mat[, class_to_clust2]
+  pr_mat_ord <- pr_mat[, class_to_clust]
   pr_vec <- diag(pr_mat_ord)
 
-  re_mat_ord <- re_mat[, class_to_clust2]
+  re_mat_ord <- re_mat[, class_to_clust]
   re_vec <- diag(re_mat_ord)
 
-  f1_mat_ord <- f1_mat[, class_to_clust2]
+  f1_mat_ord <- f1_mat[, class_to_clust]
   f1_vec <- diag(f1_mat_ord)
 
   out <- list(
