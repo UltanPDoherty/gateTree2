@@ -19,13 +19,11 @@ propose_valleys(
 
 \item{splittable_vars_g}{Row g of the splittable_vars matrix.}
 
-\item{min_depth}{Minimum depth, as a percentage of the height of the global
-density maximum, for a split to be returned by
-\link{find_valley}.}
+\item{min_depth}{Minimum depth, as a percentage of the height of the global density maximum,
+for a split to be returned by \link{find_valley}.}
 
-\item{min_height}{Minimum height, as a percentage of the height of the global
-density maximum, for a peak to be recognised by
-\link{find_peaks}.}
+\item{min_height}{Minimum height, as a percentage of the height of the global density maximum,
+for a peak to be recognised by \link{find_peaks}.}
 }
 \value{
 Matrix in which the columns contain each variable's valley and its

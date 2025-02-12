@@ -5,31 +5,34 @@
 #' clusters.
 #'
 #' @param x Dataset in `matrix` or `data.frame` form.
-#' @param plusminus_table Table indicated whether each group (row) is positive
-#'                        (+1), negative (-1), or neutral / unknown (0) for each
-#'                        variable (column).
+#' @param plusminus_table
+#' Table indicating whether each population (row) is positive (+1),
+#' negative (-1), or neutral / unknown (0) for each variable (column).
 #' @param order_table Table influencing the order of splits.
-#' @param min_height Minimum height, as a percentage of the height of the global
-#'                   density maximum, for a peak to be recognised by
-#'                   [find_peaks].
-#' @param min_depth Minimum depth, as a percentage of the height of the global
-#'                  density maximum, for a split to be returned by
-#'                  [find_valley].
-#' @param min_scaled_bic_diff Minimum value of difference between one-component
-#'                            and two-component BIC divided by
-#'                            2 log(obs_num).
+#' @param min_height
+#' Minimum height, as a percentage of the height of the global density maximum,
+#' for a peak to be recognised by [find_peaks].
+#' @param min_depth
+#' Minimum depth, as a percentage of the height of the global density maximum,
+#' for a split to be returned by [find_valley].
+#' @param min_scaled_bic_diff
+#' Minimum value of difference between one-component and two-component BIC
+#' divided by 2 log(obs_num).
 #' @param min_size Minimum number of observations for a subset to be split.
-#' @param min_val_cutoff Minimum values per variable for observations to be
-#'                       included.
-#' @param max_val_cutoff Maximum values per variable for observations to be
-#'                       included.
-#' @param temp_min_cutoff Minimum values per variable for observations to be
-#'                        included in finding a split.
-#' @param temp_max_cutoff Maximum values per variable for observations to be
-#'                        included in finding a split.
+#' @param min_val_cutoff
+#' Minimum values per variable for observations to be included.
+#' @param max_val_cutoff
+#' Maximum values per variable for observations to be included.
+#' @param temp_min_cutoff
+#' Minimum values per variable for observations to be included in finding a
+#' split.
+#' @param temp_max_cutoff
+#' Maximum values per variable for observations to be included in finding a
+#' split.
 #' @param use_boundaries Logical value.
-#' @param show_plot Logical vector of length 2. Indicating whether the split
-#'                  plots (`[1]`) and the tree plot (`[2]`) should be plotted.
+#' @param show_plot
+#' Logical vector of length 2. Indicating whether the split plots (`[1]`) and
+#' the tree plot (`[2]`) should be plotted.
 #' @param explore Logical value.
 #'
 #' @return A `list` object:
@@ -42,9 +45,6 @@
 #' * `signs`: matrix of split signs for all variables and described populations.
 #' * `tree_plot`: the clustering tree as a `ggplot` object.
 #'
-#' @import ggplot2
-#' @importFrom ggpubr ggarrange
-#' @importFrom utils tail
 #' @export
 gatetree <- function(
     x,
@@ -61,25 +61,16 @@ gatetree <- function(
     use_boundaries = TRUE,
     show_plot = c(FALSE, FALSE),
     explore = TRUE) {
-
+  # Set the minimum requirement thresholds for the 'explore' stage.
+  # These are higher than the user-defined thresholds for making splits.
   explore_min_height <- min(c(100, 5 * min_height))
   explore_min_depth <- min(c(100, 5 * min_depth))
   explore_min_size <- min_size
 
   var_num <- ncol(x)
   obs_num <- nrow(x)
+  pop_num <- nrow(plusminus_table)
   path_num <- 1
-
-  splits <- scores <- matrix(NA, nrow = path_num, ncol = var_num)
-  split_order <- signs <- matrix(NA, nrow = path_num, ncol = var_num)
-  splittable_vars <- matrix(NA, nrow = path_num, ncol = var_num)
-  order_vars <- matrix(NA, nrow = path_num, ncol = var_num)
-
-  colnames(signs) <- colnames(plusminus_table)
-
-  already_split <- matrix(FALSE, nrow = path_num, ncol = var_num)
-
-  plot_list <- list(list())
 
   split_num <- c(0)
   node_num <- 1
@@ -89,36 +80,54 @@ gatetree <- function(
   node_name <- c("All")
   is_leaf <- c(TRUE)
 
-  pop_num <- nrow(plusminus_table)
-  same_branch <- matrix(TRUE, nrow = pop_num, ncol = pop_num)
+  # ----------------------------------------------------------------------------
 
-  common_variables <- matrix(nrow = path_num, ncol = var_num)
+  # These 8 matrices all have the same dimensions.
+  # splits will store the location / value of each split.
+  # scores will store the depth % or BIC associated with each split.
+  # split_order will store the order in which the splits occur.
+  # splittable_vars keeps track of which variables can be split.
+  # order_vars is used to implement `order_table`'s split restrictions.
+  # common_variables: vars that have info for all of the path's populations.
+  # already_split keeps track of which variables have been partitioned.
+  splits <- scores <- split_order <- signs <-
+    splittable_vars <- order_vars <- common_variables <- already_split <-
+    matrix(NA, nrow = path_num, ncol = var_num)
+
+  colnames(signs) <- colnames(plusminus_table)
+
   colnames(common_variables) <- colnames(x)
   common_variables[1, ] <- apply(plusminus_table == 0, 2, function(x) !any(x))
 
+  already_split[] <- FALSE
+
+  order_vars[1, ] <- split_num[1] >= order_table[1, ]
+
+  splittable_vars[1, ] <-
+    !already_split[1, ] & common_variables[1, ] & order_vars[1, ]
+
+  # ----------------------------------------------------------------------------
+
   inside_cutoffs <- find_inside_cutoffs(x, min_val_cutoff, max_val_cutoff)
-  inside_common <- apply(
-    inside_cutoffs[, common_variables[1, ], drop = FALSE], 1, all
-  )
+  inside_common <-
+    apply(inside_cutoffs[, common_variables[1, ], drop = FALSE], 1, all)
   subsetter <- matrix(inside_common, nrow = obs_num, ncol = path_num)
 
   temp_in_cutoffs <- find_inside_cutoffs(x, temp_min_cutoff, temp_max_cutoff)
-  temp_in_common <- apply(
-    temp_in_cutoffs[, common_variables[1, ], drop = FALSE], 1, all
-  )
-  temp_subsetter <- matrix(inside_common & temp_in_common,
-                           nrow = obs_num, ncol = path_num)
+  temp_in_common <-
+    apply(temp_in_cutoffs[, common_variables[1, ], drop = FALSE], 1, all)
+  temp_subsetter <-
+    matrix(inside_common & temp_in_common, nrow = obs_num, ncol = path_num)
+
+  # ----------------------------------------------------------------------------
 
   pop_to_path <- rep(1, pop_num)
-  path_num <- 1
 
-  splittable_vars[1, ] <- !already_split[1, ] & common_variables[1, ]
-
-  order_vars[1, ] <- split_num[1] >= order_table[1, ]
-  splittable_vars[1, ] <- splittable_vars[1, ] & order_vars[1, ]
+  same_branch <- matrix(TRUE, nrow = pop_num, ncol = pop_num)
 
   g <- 1
   k <- 1
+  plot_list <- list(list())
   while (g <= path_num) {
     proposals <- propose_splits(
       x, temp_subsetter[, g], splittable_vars[g, ],
@@ -126,40 +135,40 @@ gatetree <- function(
       min_scaled_bic_diff, use_boundaries
     )
 
-    scenario <- proposals$scenario
+    if (proposals$scenario %in% c("valley", "boundary")) {
+      var_choice <- which.max(proposals$matrix[2, ])
 
-    if (scenario %in% c("valley", "boundary")) {
-      p_choice <- which.max(proposals$matrix[2, ])
-
-      splits[g, p_choice] <- proposals$matrix[1, p_choice]
-      scores[g, p_choice] <- proposals$matrix[2, p_choice]
-      already_split[g, p_choice] <- TRUE
+      splits[g, var_choice] <- proposals$matrix[1, var_choice]
+      scores[g, var_choice] <- proposals$matrix[2, var_choice]
+      already_split[g, var_choice] <- TRUE
 
       for (j in which(pop_to_path == g)) {
-        same_sign <- plusminus_table[, p_choice] == plusminus_table[j, p_choice]
+        same_sign <-
+          plusminus_table[, var_choice] == plusminus_table[j, var_choice]
         same_branch[, j] <- same_branch[, j] & same_sign
       }
 
-      same_sign <- plusminus_table[, p_choice] == plusminus_table[k, p_choice]
+      same_sign <-
+        plusminus_table[, var_choice] == plusminus_table[k, var_choice]
       new_branch_created <- !all(same_sign[pop_to_path == g])
       pop_to_path[pop_to_path == g & !same_sign] <- path_num + 1
 
-      x_gp <- x[subsetter[, g], p_choice]
-      more_gp <- x[, p_choice] > splits[g, p_choice]
+      x_gp <- x[subsetter[, g], var_choice]
+      more_gp <- x[, var_choice] > splits[g, var_choice]
 
-      is_negative <- plusminus_table[k, p_choice] == -1
+      is_negative <- plusminus_table[k, var_choice] == -1
       refine_current <- if (is_negative) !more_gp else more_gp
 
       split_num[g] <- split_num[g] + 1
-      split_order[g, p_choice] <- split_num[g]
+      split_order[g, var_choice] <- split_num[g]
 
-      signs[g, p_choice] <- plusminus_table[k, p_choice]
+      signs[g, var_choice] <- plusminus_table[k, var_choice]
       rownames(signs)[g] <-
         rownames(plusminus_table)[which(pop_to_path == g)[1]]
 
       plot_list[[g]][[split_num[g]]] <- plot_gatetree_split(
-        x_gp, g, p_choice, scores[g, p_choice],
-        signs, scenario, splits[g, p_choice]
+        x_gp, g, var_choice, scores[g, var_choice],
+        signs, proposals$scenario, splits[g, var_choice]
       )
 
       if (new_branch_created) {
@@ -174,7 +183,7 @@ gatetree <- function(
         already_split <- rbind(already_split, already_split[g, ])
 
         signs <- rbind(signs, signs[g, ])
-        signs[path_num + 1, p_choice] <- -plusminus_table[k, p_choice]
+        signs[path_num + 1, var_choice] <- -plusminus_table[k, var_choice]
         rownames(signs)[path_num + 1] <-
           rownames(plusminus_table)[which(pop_to_path == path_num + 1)[1]]
 
@@ -188,22 +197,19 @@ gatetree <- function(
 
         plot_list[[path_num + 1]][[split_num[path_num + 1]]] <-
           plot_gatetree_split(
-            x_gp, path_num + 1, p_choice, scores[g, p_choice],
-            signs, scenario, splits[g, p_choice]
+            x_gp, path_num + 1, var_choice, scores[g, var_choice],
+            signs, proposals$scenario, splits[g, var_choice]
           )
 
         parent_node[node_num + 2] <- utils::tail(path_nodes[[g]], 1)
 
         path_nodes[[path_num + 1]] <- append(path_nodes[[g]], node_num + 2)
 
-        edge_name[node_num + 2] <- paste0(
-          colnames(x)[p_choice],
-          ifelse(is_negative, "+", "-")
-        )
+        edge_name[node_num + 2] <-
+          paste0(colnames(x)[var_choice], ifelse(is_negative, "+", "-"))
 
-        node_name[node_num + 2] <- paste(edge_name[path_nodes[[path_num + 1]]],
-          collapse = "\n"
-        )
+        node_name[node_num + 2] <-
+          paste(edge_name[path_nodes[[path_num + 1]]], collapse = "\n")
 
         is_leaf[node_num + 2] <- TRUE
 
@@ -214,13 +220,10 @@ gatetree <- function(
 
       parent_node[node_num + 1] <- utils::tail(path_nodes[[g]], 1)
       path_nodes[[g]] <- append(path_nodes[[g]], node_num + 1)
-      edge_name[node_num + 1] <- paste0(
-        colnames(x)[p_choice],
-        ifelse(is_negative, "-", "+")
-      )
-      node_name[node_num + 1] <- paste(edge_name[path_nodes[[g]]],
-        collapse = "\n"
-      )
+      edge_name[node_num + 1] <-
+        paste0(colnames(x)[var_choice], ifelse(is_negative, "-", "+"))
+      node_name[node_num + 1] <-
+        paste(edge_name[path_nodes[[g]]], collapse = "\n")
 
       is_leaf[parent_node[node_num + 1]] <- FALSE
       is_leaf[node_num + 1] <- TRUE
@@ -231,11 +234,12 @@ gatetree <- function(
         missed_splits <- 0
         for (p in which(splittable_vars[g, ])) {
           missed_splits <- missed_splits + 1
-          plot_list[[g]][[split_num[g] + missed_splits]] <- plot_gatetree_split(
-            x[subsetter[, g], p], g, p,
-            score = NA,
-            signs, scenario, split_gp = NA
-          )
+          plot_list[[g]][[split_num[g] + missed_splits]] <-
+            plot_gatetree_split(
+              x[subsetter[, g], p], g, p,
+              score = NA,
+              signs, proposals$scenario, split_gp = NA
+            )
         }
 
         plot_list <- explore_plots(
@@ -259,15 +263,13 @@ gatetree <- function(
         function(x) all(x != 0)
       )
 
-      inside_common <- apply(
-        inside_cutoffs[, common_variables[1, ], drop = FALSE], 1, all
-      )
+      inside_common <-
+        apply(inside_cutoffs[, common_variables[1, ], drop = FALSE], 1, all)
       subsetter[, g] <- subsetter[, g] & inside_common
 
       temp_subsetter <- subsetter
-      temp_in_common <- apply(
-        temp_in_cutoffs[, common_variables[1, ], drop = FALSE], 1, all
-      )
+      temp_in_common <-
+        apply(temp_in_cutoffs[, common_variables[1, ], drop = FALSE], 1, all)
       temp_subsetter[, g] <- subsetter[, g] & temp_in_common
 
       splittable_vars[g, ] <- !already_split[g, ] & common_variables[g, ]
@@ -279,17 +281,16 @@ gatetree <- function(
 
   plot_paths(plot_list, show_plot = show_plot[1])
 
-  edge_df <- make_edge_df(
-    parent_node, node_num, edge_name, node_name,
-    is_leaf, path_nodes
-  )
+  edge_df <-
+    make_edge_df(
+      parent_node, node_num, edge_name, node_name, is_leaf, path_nodes
+    )
   tree_plot <- make_tree_plot(edge_df, show_plot[2])
 
   labels <- c()
   unassigned <- rowSums(subsetter) == 0
-  labels[!unassigned] <- apply(
-    subsetter[!unassigned, , drop = FALSE], 1, which
-  )
+  labels[!unassigned] <-
+    apply(subsetter[!unassigned, , drop = FALSE], 1, which)
   labels[unassigned] <- 0
 
   signs[is.na(signs)] <- 0

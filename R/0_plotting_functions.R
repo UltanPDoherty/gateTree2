@@ -79,16 +79,21 @@ plot_gatetree_split <- function(x_gp, g, p, score, plusminus_table,
   dens_gp_y <- dens_gp$y / max(dens_gp$y) * 100
   dens_gp_df <- data.frame(dens_gp_x, dens_gp_y)
 
-  gg <- ggplot(dens_gp_df, aes(x = dens_gp_x, y = dens_gp_y)) +
-    geom_rect(aes(xmin = xleft, xmax = xright, ymin = 0, ymax = max(dens_gp_y)),
+  gg <- ggplot2::ggplot(
+    dens_gp_df, ggplot2::aes(x = dens_gp_x, y = dens_gp_y)
+  ) +
+    ggplot2::geom_rect(
+      ggplot2::aes(
+        xmin = xleft, xmax = xright, ymin = 0, ymax = max(dens_gp_y)
+      ),
       fill = rect_col, na.rm = TRUE
     ) +
-    geom_line() +
-    geom_vline(
+    ggplot2::geom_line() +
+    ggplot2::geom_vline(
       xintercept = trans_split_gp, linetype = line_type,
       na.rm = TRUE
     ) +
-    labs(
+    ggplot2::labs(
       title = paste0("g = ", g, ", p = ", p, ", ", score_title),
       subtitle = paste0(
         "Path: ", rownames(plusminus_table)[g], ", ",
@@ -98,7 +103,7 @@ plot_gatetree_split <- function(x_gp, g, p, score, plusminus_table,
       x = paste0("N before = ", size_before, ", N after = ", size_after),
       y = "Density %"
     ) +
-    theme_bw()
+    ggplot2::theme_bw()
 
   return(gg)
 }
@@ -183,14 +188,14 @@ make_tree_plot <- function(edge_df, show_plot = FALSE) {
       label_dodge = grid::unit(0.075, "npc")
     ) +
     ggraph::geom_node_label(
-      aes(
+      ggplot2::aes(
         label = leaf_name,
         colour = leaf_name
       ),
       show.legend = FALSE
     ) +
     ggraph::theme_graph() +
-    scale_colour_manual(values = rep("black", nrow(edge_df)))
+    ggplot2::scale_colour_manual(values = rep("black", nrow(edge_df)))
 
   if (show_plot) {
     plot(tree_plot)
@@ -209,7 +214,7 @@ plot_paths <- function(plot_list, show_plot) {
         plotlist = plot_list[[g]],
         ncol = 2, nrow = 2
       )
-      if (is.ggplot(arranged[[g]])) {
+      if (ggplot2::is.ggplot(arranged[[g]])) {
         plot(arranged[[g]])
       } else {
         for (j in seq_along(arranged[[g]])) {

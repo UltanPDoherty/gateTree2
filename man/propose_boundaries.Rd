@@ -14,9 +14,8 @@ propose_boundaries(
 \arguments{
 \item{x}{Dataset in \code{matrix} or \code{data.frame} form.}
 
-\item{min_scaled_bic_diff}{Minimum value of difference between one-component
-and two-component BIC divided by
-2 log(obs_num).}
+\item{min_scaled_bic_diff}{Minimum value of difference between one-component and two-component BIC
+divided by 2 log(obs_num).}
 
 \item{subsetter_g}{Column g of the subsetting matrix.}
 

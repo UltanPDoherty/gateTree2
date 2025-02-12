@@ -15,9 +15,8 @@ plot_gatetree_split(x_gp, g, p, score, plusminus_table, scenario, split_gp)
 
 \item{score}{The valley depth percentage or the scaled BIC difference.}
 
-\item{plusminus_table}{Table indicated whether each group (row) is positive
-(+1), negative (-1), or neutral / unknown (0) for each
-variable (column).}
+\item{plusminus_table}{Table indicating whether each population (row) is positive (+1),
+negative (-1), or neutral / unknown (0) for each variable (column).}
 
 \item{scenario}{\code{"valley"}, \code{"boundary"}, \code{"nothing"}, or \code{"explore"}.}
 

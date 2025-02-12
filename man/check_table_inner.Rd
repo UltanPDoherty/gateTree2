@@ -7,9 +7,8 @@
 check_table_inner(plusminus_table, initial = FALSE)
 }
 \arguments{
-\item{plusminus_table}{Table indicated whether each group (row) is positive
-(+1), negative (-1), or neutral / unknown (0) for each
-variable (column).}
+\item{plusminus_table}{Table indicating whether each population (row) is positive (+1),
+negative (-1), or neutral / unknown (0) for each variable (column).}
 
 \item{initial}{Logical: whether this is the initial check before the loop.}
 }
