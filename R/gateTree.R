@@ -123,8 +123,6 @@ gatetree <- function(
 
   pop_to_path <- rep(1, pop_num)
 
-  same_branch <- matrix(TRUE, nrow = pop_num, ncol = pop_num)
-
   g <- 1
   k <- 1
   plot_list <- list(list())
@@ -141,12 +139,6 @@ gatetree <- function(
       splits[g, var_choice] <- proposals$splits[var_choice]
       scores[g, var_choice] <- proposals$scores[var_choice]
       already_split[g, var_choice] <- TRUE
-
-      for (j in which(pop_to_path == g)) {
-        same_sign <-
-          plusminus_table[, var_choice] == plusminus_table[j, var_choice]
-        same_branch[, j] <- same_branch[, j] & same_sign
-      }
 
       same_sign <-
         plusminus_table[, var_choice] == plusminus_table[k, var_choice]
