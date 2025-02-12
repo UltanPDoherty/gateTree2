@@ -65,8 +65,9 @@ find_boundary <- function(x, min_scaled_bic_diff = 0) {
 #'
 #' @inheritParams propose_splits
 #'
-#' @return Matrix in which the columns contain each variable's boundary and its
-#' scaled BIC difference.
+#' @return List:
+#' * splits: each variable's boundary
+#' * scores: the corresponding scaled BIC difference.
 propose_boundaries <- function(
     x,
     min_scaled_bic_diff = 0,
@@ -79,5 +80,5 @@ propose_boundaries <- function(
     boundaries[, p] <- find_boundary(x[subsetter_g, p], min_scaled_bic_diff)
   }
 
-  return(boundaries)
+  return(list("splits" = boundaries[1, ], "scores" = boundaries[2, ]))
 }

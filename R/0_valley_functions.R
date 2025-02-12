@@ -90,8 +90,9 @@ find_valley <- function(dens, min_depth = 0.01, min_height = 0.01) {
 #'
 #' @inheritParams propose_splits
 #'
-#' @return  Matrix in which the columns contain each variable's valley and its
-#' depth percentage.
+#' @return List:
+#' * splits: each variable's boundary
+#' * scores: the corresponding depth percentage.
 propose_valleys <- function(
     x,
     subsetter_g,
@@ -113,5 +114,5 @@ propose_valleys <- function(
     valleys[1, p] <- unscale01(valleys[1, p], scale01_gp$min, scale01_gp$max)
   }
 
-  return(valleys)
+  return(list("splits" = valleys[1, ], "scores" = valleys[2, ]))
 }

@@ -22,8 +22,11 @@ divided by 2 log(obs_num).}
 \item{splittable_vars_g}{Row g of the splittable_vars matrix.}
 }
 \value{
-Matrix in which the columns contain each variable's boundary and its
-scaled BIC difference.
+List:
+\itemize{
+\item splits: each variable's boundary
+\item scores: the corresponding scaled BIC difference.
+}
 }
 \description{
 Apply \link{find_boundary} to each variable in a set of splittable

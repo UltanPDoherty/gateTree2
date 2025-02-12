@@ -248,7 +248,7 @@ explore_plots <- function(
 
     explore_splits <- 0
 
-    explore_check <- !is.na(explore_valleys[1, ])
+    explore_check <- !is.na(explore_valleys$splits)
     explore_check <- explore_check & sum(subsetter[, g]) >= explore_min_size
 
     for (p in which(explore_check)) {
@@ -256,8 +256,8 @@ explore_plots <- function(
       plot_list[[g]][[split_num[g] + missed_splits + explore_splits]] <-
         plot_gatetree_split(
           x[subsetter[, g], p], g, p,
-          score = explore_valleys[2, p],
-          signs, scenario = "explore", split_gp = explore_valleys[1, p]
+          score = explore_valleys$scores[p],
+          signs, scenario = "explore", split_gp = explore_valleys$splits[p]
         )
     }
   }

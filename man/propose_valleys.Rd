@@ -26,8 +26,11 @@ for a split to be returned by \link{find_valley}.}
 for a peak to be recognised by \link{find_peaks}.}
 }
 \value{
-Matrix in which the columns contain each variable's valley and its
-depth percentage.
+List:
+\itemize{
+\item splits: each variable's boundary
+\item scores: the corresponding depth percentage.
+}
 }
 \description{
 Apply \link{find_valley} to each variable in a set of splittable

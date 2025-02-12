@@ -136,10 +136,10 @@ gatetree <- function(
     )
 
     if (proposals$scenario %in% c("valley", "boundary")) {
-      var_choice <- which.max(proposals$matrix[2, ])
+      var_choice <- which.max(proposals$scores)
 
-      splits[g, var_choice] <- proposals$matrix[1, var_choice]
-      scores[g, var_choice] <- proposals$matrix[2, var_choice]
+      splits[g, var_choice] <- proposals$splits[var_choice]
+      scores[g, var_choice] <- proposals$scores[var_choice]
       already_split[g, var_choice] <- TRUE
 
       for (j in which(pop_to_path == g)) {

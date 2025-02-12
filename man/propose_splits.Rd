@@ -38,8 +38,8 @@ divided by 2 log(obs_num).}
 \value{
 List
 \itemize{
-\item matrix: each column contains the split location for that variable and the
-valley depth percentage or scaled BIC difference of that split.
+\item splits: the split locations for each variable.
+\item scores: the valley depth percentage or scaled BIC difference of that split.
 \item scenario: a character string indicating the type of the split (\code{"valley"}
 or \code{"boundary"}), if no split was found (\code{"nothing"}), or if the split was
 identified in the context of the \code{explore} option (\code{"explore"}).
