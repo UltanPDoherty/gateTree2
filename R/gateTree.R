@@ -46,6 +46,31 @@
 #' * `tree_plot`: the clustering tree as a `ggplot` object.
 #'
 #' @export
+#'
+#' @examples
+#'
+#' penguin_plusminus <- rbind(
+#'   "adelie" = c(-1, +1, -1, -1),
+#'   "chinstrap" = c(+1, +1, -1, -1),
+#'   "gentoo" = c(+1, -1, +1, +1)
+#' )
+#' colnames(penguin_plusminus) <- colnames(palmerpenguins::penguins[, 3:6])
+#' #
+#' penguins_complete <-
+#'   palmerpenguins::penguins[complete.cases(palmerpenguins::penguins[, 3:6]), ]
+#'
+#' penguins_complete$flipper_length_mm <-
+#'   as.numeric(penguins_complete$flipper_length_mm)
+#'
+#' penguins_complete$body_mass_g <-
+#'   as.numeric(penguins_complete$body_mass_g)
+#'
+#' penguin_gatetree <- gatetree(
+#'   as.matrix(penguins_complete[, 3:6]),
+#'   penguin_plusminus,
+#'   show_plot = c(T, T),
+#'   min_depth = 10
+#' )
 gatetree <- function(
     x,
     plusminus_table = expand.grid(rep(list(c(-1, 1)), ncol(x))),
@@ -134,20 +159,25 @@ gatetree <- function(
     )
 
     if (proposals$scenario %in% c("valley", "boundary")) {
+      # choose the variable whose proposed split has the highest score
       var_choice <- which.max(proposals$scores)
 
       splits[g, var_choice] <- proposals$splits[var_choice]
       scores[g, var_choice] <- proposals$scores[var_choice]
       already_split[g, var_choice] <- TRUE
 
+      # We need to find out which populations have the same sign for the chosen
+      # variable as population k.
       same_sign <-
         plusminus_table[, var_choice] == plusminus_table[k, var_choice]
+      # If all populations on path g have the same sign as population k,
+      # then a new branch is not created.
       new_branch_created <- !all(same_sign[pop_to_path == g])
-      pop_to_path[pop_to_path == g & !same_sign] <- path_num + 1
 
+      # x_gp is the values for the chosen variable of the events currently on
+      # path g.
       x_gp <- x[subsetter[, g], var_choice]
       more_gp <- x[, var_choice] > splits[g, var_choice]
-
       is_negative <- plusminus_table[k, var_choice] == -1
       refine_current <- if (is_negative) !more_gp else more_gp
 
@@ -164,6 +194,10 @@ gatetree <- function(
       )
 
       if (new_branch_created) {
+        # Any populations on path g that do not have the same sign as population
+        # k will move onto a new path.
+        pop_to_path[pop_to_path == g & !same_sign] <- path_num + 1
+
         split_num[path_num + 1] <- split_num[g]
 
         plot_list[[path_num + 1]] <- plot_list[[g]]
