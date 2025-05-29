@@ -24,5 +24,4 @@ Imports:
     mvtnorm,
     abind,
     igraph,
-    tidygraph,
-    palmerpenguins
+    tidygraph

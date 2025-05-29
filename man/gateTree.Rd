@@ -76,25 +76,17 @@ clusters.
 }
 \examples{
 
-penguin_plusminus <- rbind(
-  "adelie" = c(-1, +1, -1, -1),
-  "chinstrap" = c(+1, +1, -1, -1),
-  "gentoo" = c(+1, -1, +1, +1)
+iris_plusminus <- rbind(
+"setosa" = c(0, 0, -1, 0),
+"versicolor" = c(0, 0, +1, -1),
+"virginica" = c(0, 0, +1, +1)
 )
-colnames(penguin_plusminus) <- colnames(palmerpenguins::penguins[, 3:6])
-penguins_complete <-
-palmerpenguins::penguins[complete.cases(palmerpenguins::penguins[, 3:6]), ]
+colnames(iris_plusminus) <- colnames(iris_plusminus)[1:4]
 
-penguins_complete$flipper_length_mm <-
-as.numeric(penguins_complete$flipper_length_mm)
-
-penguins_complete$body_mass_g <-
-as.numeric(penguins_complete$body_mass_g)
-
-penguin_gatetree <- gatetree(
-  as.matrix(penguins_complete[, 3:6]),
-  penguin_plusminus,
-  show_plot = c(T, T),
+iris_gatetree <- gatetree(
+  iris[, -5],
+  iris_plusminus,
+  show_plot = c(TRUE, TRUE),
   min_depth = 10
 )
 }
