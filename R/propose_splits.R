@@ -22,7 +22,7 @@ propose_splits <- function(x, subsetter_g, splittable_vars_g,
   if (sum(subsetter_g) < min_size) {
     found_valley <- FALSE
     found_boundary <- FALSE
-    proposals <- NA
+    proposals <- list("splits" = NA, "scores" = NA)
   } else {
     proposals <- propose_valleys(
       x, subsetter_g, splittable_vars_g,
