@@ -77,9 +77,9 @@ clusters.
 \examples{
 
 iris_plusminus <- rbind(
-"setosa" = c(0, 0, -1, 0),
-"versicolor" = c(0, 0, +1, -1),
-"virginica" = c(0, 0, +1, +1)
+  "setosa" = c(0, 0, -1, 0),
+  "versicolor" = c(0, 0, +1, -1),
+  "virginica" = c(0, 0, +1, +1)
 )
 colnames(iris_plusminus) <- colnames(iris_plusminus)[1:4]
 
