@@ -165,10 +165,6 @@ make_edge_df <- function(parent_node, node_number, edge_name, node_name,
 #' @param edge_df Output from [make_edge_df].
 #' @param show_plot Logical: should the tree diagram be plotted?
 #'
-#' @import ggraph
-#' @importFrom igraph graph_from_data_frame
-#' @importFrom tidygraph as_tbl_graph
-#'
 #' @return `ggraph` object.
 make_tree_plot <- function(edge_df, show_plot = FALSE) {
   tree_graph <- igraph::graph_from_data_frame(

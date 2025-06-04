@@ -1,5 +1,3 @@
-#' @importFrom mvtnorm dmvnorm
-#' @importFrom abind abind
 gmm_estep <- function(x, labels, exclude_index = NULL) {
   obs_num <- nrow(x)
   var_num <- ncol(x)
