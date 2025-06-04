@@ -193,22 +193,13 @@ find_boundary3 <- function(x, min_scaled_bic_diff = 0, verbose = FALSE) {
   xseq <- seq(leftx, rightx, length.out = 100)
   model_num <- length(xseq)
 
-  npar <- c(
-    "gmm_gmm" = 4,
-    "gmm_gmmn" = 5,
-    "gmmn_gmm" = 5,
-    "gmmn_gmmn" = 6,
-    "gmm_unif" = 3,
-    "unif_gmm" = 3,
-    "gmmn_unif" = 4,
-    "unif_gmmn" = 4,
-    "unif_unif" = 2
-  )
-
   best_model <- integer(model_num)
   best_bic <- double(model_num)
   for (j in 1:model_num) {
     neg <- x <= xseq[j]
+
+    neg_prop <- sum(neg) / obs_num
+    pos_prop <- 1 - neg_prop
 
     neg_gmm <- mclust::Mclust(x[neg], G = 1, modelNames = "V", verbose = FALSE)
     pos_gmm <- mclust::Mclust(x[!neg], G = 1, modelNames = "V", verbose = FALSE)
@@ -251,15 +242,15 @@ find_boundary3 <- function(x, min_scaled_bic_diff = 0, verbose = FALSE) {
     pos_unif_bic <- 2 * pos_unif_ll - log(sum(!neg))
 
     bic <- c(
-      "gmm_gmm" = neg_gmm$bic + pos_gmm$bic,
-      "gmm_gmmn" = neg_gmm$bic + pos_gmmn_bic,
-      "gmmn_gmm" = neg_gmmn_bic + pos_gmm$bic,
-      "gmmn_gmmn" = neg_gmmn_bic + pos_gmmn_bic,
-      "gmm_unif" = neg_gmm$bic + pos_unif_bic,
-      "unif_gmm" = neg_unif_bic + pos_gmm$bic,
-      "gmmn_unif" = neg_gmmn_bic + pos_unif_bic,
-      "unif_gmmn" = neg_unif_bic + pos_gmmn_bic,
-      "unif_unif" = neg_unif_bic + pos_unif_bic
+      "gmm_gmm" = neg_prop * neg_gmm$bic + pos_prop * pos_gmm$bic,
+      "gmm_gmmn" = neg_prop * neg_gmm$bic + pos_prop * pos_gmmn_bic,
+      "gmmn_gmm" = neg_prop * neg_gmmn_bic + pos_prop * pos_gmm$bic,
+      "gmmn_gmmn" = neg_prop * neg_gmmn_bic + pos_prop * pos_gmmn_bic,
+      "gmm_unif" = neg_prop * neg_gmm$bic + pos_prop * pos_unif_bic,
+      "unif_gmm" = neg_prop * neg_unif_bic + pos_prop * pos_gmm$bic,
+      "gmmn_unif" = neg_prop * neg_gmmn_bic + pos_prop * pos_unif_bic,
+      "unif_gmmn" = neg_prop * neg_unif_bic + pos_prop * pos_gmmn_bic,
+      "unif_unif" = neg_prop * neg_unif_bic + pos_prop * pos_unif_bic
     )
 
     best_bic[j] <- max(bic)
@@ -273,15 +264,28 @@ find_boundary3 <- function(x, min_scaled_bic_diff = 0, verbose = FALSE) {
     }
   }
 
-  ll_one <- sum(stats::dnorm(x, mean(x), stats::sd(x), log = TRUE))
-  bic_one <- 2 * ll_one - 2 * log(obs_num)
+  one_dens <- stats::dnorm(x, mean(x), stats::sd(x))
+  one_const <- mclust::hypvol(x, TRUE)
+  one_noise <- one_dens < one_const
+  one_gmmn <- mclust::Mclust(
+    x, 1, "V", initialization = list(noise = one_noise), verbose = FALSE
+  )
+  one_gmm_bic <- 2 * (sum(log(one_dens))) - 2 * log(obs_num)
+  one_unif_bic <- 2 * (obs_num * log(one_const)) - log(obs_num)
+  one_gmmn_bic <- one_gmmn$bic
+  one_bic_vec <- c(
+    "gmm" = one_gmm_bic, "unif" = one_unif_bic, "gmmn" = one_gmmn_bic
+  )
+  one_choice <- which.max(one_bic_vec)
+  one_bic <- one_bic_vec[one_choice]
 
   choice <- which.max(best_bic)
 
-  scaled_bic_diff <- (best_bic[choice] - bic_one) / (2 * log(obs_num))
+  scaled_bic_diff <- (best_bic[choice] - one_bic) / (2 * log(obs_num))
 
   if (verbose) {
-    message("Chosen model was ", names(npar)[best_model[choice]])
+    message("Chosen one-component model was ", names(one_bic_vec)[one_choice])
+    message("Chosen two-component model was ", names(bic)[best_model[choice]])
   }
   if (scaled_bic_diff > min_scaled_bic_diff) {
     boundary <- xseq[choice]
