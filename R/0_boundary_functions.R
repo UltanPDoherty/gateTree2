@@ -263,31 +263,49 @@ find_boundary3 <- function(x, min_scaled_bic_diff = 0, verbose = FALSE) {
       pos_gmmn_norm_prop <- 1 - pos_gmmn_unif_prop
     }
 
-    neg_unif_ll <- sum(neg) * log(neg_const)
-    pos_unif_ll <- sum(!neg) * log(pos_const)
+    dens <- matrix(nrow = obs_num, ncol = length(npar))
+    colnames(dens) <- names(npar)
 
-    neg_unif_bic <- 2 * neg_unif_ll - log(sum(neg))
-    pos_unif_bic <- 2 * pos_unif_ll - log(sum(!neg))
+    dens[neg, "gmm_gmm"] <- neg_dens
+    dens[!neg, "gmm_gmm"] <- pos_dens
 
-    ll <- c(
-      "gmm_gmm" = sum(log(neg_dens)) + sum(log(pos_dens)),
-      "gmm_gmmn" = sum(log(neg_dens)) +
-          sum(log(pos_gmmn_norm_prop * pos_gmmn_dens + pos_gmmn_unif_prop * rep(pos_const, sum(!neg)))),
-      "gmmn_gmm" =
-        sum(log((neg_gmmn_norm_prop * neg_gmmn_dens + neg_gmmn_unif_prop * rep(neg_const, sum(neg))))) +
-          sum(log(pos_dens)),
-      "gmmn_gmmn" =
-        sum(log((neg_gmmn_norm_prop * neg_gmmn_dens + neg_gmmn_unif_prop * rep(neg_const, sum(neg))))) +
-          sum(log(pos_gmmn_norm_prop * pos_gmmn_dens + pos_gmmn_unif_prop * rep(pos_const, sum(!neg)))),
-      "gmm_unif" = sum(log(neg_dens)) + sum(log(rep(pos_const, sum(!neg)))),
-      "unif_gmm" = sum(log(rep(neg_const, sum(neg)))) + sum(log(pos_dens)),
-      "gmmn_unif" =
-        sum(log((neg_gmmn_norm_prop * neg_gmmn_dens + neg_gmmn_unif_prop * rep(neg_const, sum(neg))))) +
-          sum(log(rep(pos_const, sum(!neg)))),
-      "unif_gmmn" = sum(log(rep(neg_const, sum(neg)))) +
-          sum(log(pos_gmmn_norm_prop * pos_gmmn_dens + pos_gmmn_unif_prop * rep(pos_const, sum(!neg)))),
-      "unif_unif" = sum(log(rep(neg_const, sum(neg)))) + sum(log(rep(pos_const, sum(!neg))))
-    )
+    dens[neg, "gmm_gmmn"] <- neg_dens
+    dens[!neg, "gmm_gmmn"] <-
+      pos_gmmn_norm_prop * pos_gmmn_dens +
+      pos_gmmn_unif_prop * rep(pos_const, sum(!neg))
+
+    dens[neg, "gmmn_gmm"] <-
+      neg_gmmn_norm_prop * neg_gmmn_dens +
+      neg_gmmn_unif_prop * rep(neg_const, sum(neg))
+    dens[!neg, "gmmn_gmm"] <- pos_dens
+
+    dens[neg, "gmmn_gmmn"] <-
+      neg_gmmn_norm_prop * neg_gmmn_dens +
+      neg_gmmn_unif_prop * rep(neg_const, sum(neg))
+    dens[!neg, "gmmn_gmmn"] <-
+      pos_gmmn_norm_prop * pos_gmmn_dens +
+      pos_gmmn_unif_prop * rep(pos_const, sum(!neg))
+
+    dens[neg, "gmm_unif"] <- neg_dens
+    dens[!neg, "gmm_unif"] <- rep(pos_const, sum(!neg))
+
+    dens[neg, "unif_gmm"] <- rep(neg_const, sum(neg))
+    dens[!neg, "unif_gmm"] <- pos_dens
+
+    dens[neg, "gmmn_unif"] <-
+      neg_gmmn_norm_prop * neg_gmmn_dens +
+      neg_gmmn_unif_prop * rep(neg_const, sum(neg))
+    dens[!neg, "gmmn_unif"] <- rep(pos_const, sum(!neg))
+
+    dens[neg, "unif_gmmn"] <- rep(neg_const, sum(neg))
+    dens[!neg, "unif_gmmn"] <-
+      pos_gmmn_norm_prop * pos_gmmn_dens +
+      pos_gmmn_unif_prop * rep(pos_const, sum(!neg))
+
+    dens[neg, "unif_unif"] <- rep(neg_const, sum(neg))
+    dens[!neg, "unif_unif"] <- rep(pos_const, sum(!neg))
+
+    ll <- colSums(log(dens))
 
     bic <- 2 * ll - npar * log(obs_num)
 
