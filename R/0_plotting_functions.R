@@ -6,7 +6,6 @@
 #' Plot a univariate kernel density estimate of the data with the `gateTree`
 #' split illustrated, and information about the split in the title and subtitle.
 #'
-#'
 #' @inheritParams gatetree
 #' @param x_gp The data to be displayed, should be only pathway g & variable p.
 #' @param g The pathway number.
@@ -52,12 +51,14 @@ plot_gatetree_split <- function(x_gp, g, p, score, plusminus_table,
 
   dens_gp <- stats::density(x_gp)
 
-  xleft <- ifelse(is_negative, 0, split_gp)
-  xright <- ifelse(is_negative, split_gp, 1)
-
+  min_x_gp <- min(x_gp)
+  max_x_gp <- max(x_gp)
   if (scenario == "nothing") {
-    xleft <- min(x_gp)
-    xright <- max(x_gp)
+    xleft <- min_x_gp
+    xright <- max_x_gp
+  } else {
+    xleft <- ifelse(is_negative, min_x_gp, split_gp)
+    xright <- ifelse(is_negative, split_gp, max_x_gp)
   }
 
   size_before <- length(x_gp)
@@ -102,7 +103,7 @@ plot_gatetree_split <- function(x_gp, g, p, score, plusminus_table,
     )
   }
 
-  return(gg)
+  gg
 }
 
 # ==============================================================================
