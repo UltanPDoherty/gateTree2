@@ -102,17 +102,22 @@ gatetree <- function(
 
   # These 8 matrices all have the same dimensions.
   # splits will store the location / value of each split.
-  # scores will store the depth % or BIC associated with each split.
+  # depths will store the depth % for relevant splits.
+  # sc_bic_diffs will store the scaled BIC difference for relevant splits.
   # split_order will store the order in which the splits occur.
   # splittable_vars keeps track of which variables can be split.
   # order_vars is used to implement `order_table`'s split restrictions.
   # common_variables: vars that have info for all of the path's populations.
   # already_split keeps track of which variables have been partitioned.
-  splits <- scores <- split_order <- signs <-
+  splits <- depths <- sc_bic_diffs <- split_order <- signs <-
     splittable_vars <- order_vars <- common_variables <- already_split <-
     matrix(NA, nrow = path_num, ncol = var_num)
 
+  colnames(splits) <- colnames(plusminus_table)
+  colnames(split_order) <- colnames(plusminus_table)
   colnames(signs) <- colnames(plusminus_table)
+  colnames(depths) <- colnames(plusminus_table)
+  colnames(sc_bic_diffs) <- colnames(plusminus_table)
 
   colnames(common_variables) <- colnames(x)
   common_variables[1, ] <- apply(plusminus_table == 0, 2, function(x) !any(x))
@@ -156,7 +161,11 @@ gatetree <- function(
       var_choice <- which.max(proposals$scores)
 
       splits[g, var_choice] <- proposals$splits[var_choice]
-      scores[g, var_choice] <- proposals$scores[var_choice]
+      if (proposals$scenario == "valley") {
+        depths[g, var_choice] <- proposals$scores[var_choice]
+      } else {
+        sc_bic_diffs[g, var_choice] <- proposals$scores[var_choice]
+      }
       already_split[g, var_choice] <- TRUE
 
       # We need to find out which populations have the same sign for the chosen
@@ -182,7 +191,7 @@ gatetree <- function(
         rownames(plusminus_table)[which(pop_to_path == g)[1]]
 
       plot_list[[g]][[split_num[g]]] <- plot_gatetree_split(
-        x_gp, g, var_choice, scores[g, var_choice],
+        x_gp, g, var_choice, proposals$scores[var_choice],
         signs, proposals$scenario, splits[g, var_choice]
       )
 
@@ -197,7 +206,8 @@ gatetree <- function(
 
         splits <- rbind(splits, splits[g, ])
 
-        scores <- rbind(scores, scores[g, ])
+        depths <- rbind(depths, depths[g, ])
+        sc_bic_diffs <- rbind(sc_bic_diffs, sc_bic_diffs[g, ])
 
         already_split <- rbind(already_split, already_split[g, ])
 
@@ -216,7 +226,7 @@ gatetree <- function(
 
         plot_list[[path_num + 1]][[split_num[path_num + 1]]] <-
           plot_gatetree_split(
-            x_gp, path_num + 1, var_choice, scores[g, var_choice],
+            x_gp, path_num + 1, var_choice, proposals$scores[var_choice],
             signs, proposals$scenario, splits[g, var_choice]
           )
 
@@ -314,13 +324,18 @@ gatetree <- function(
 
   signs[is.na(signs)] <- 0
 
-  return(list(
+  rownames(splits) <- rownames(split_order) <-
+    rownames(depths) <- rownames(sc_bic_diffs) <- rownames(signs)
+
+  list(
     splits = splits,
     split_order = split_order,
     subsetter = subsetter,
     edge_df = edge_df,
     labels = labels,
     signs = signs,
-    tree_plot = tree_plot
-  ))
+    tree_plot = tree_plot,
+    depths = depths,
+    sc_bic_diffs = sc_bic_diffs
+  )
 }
