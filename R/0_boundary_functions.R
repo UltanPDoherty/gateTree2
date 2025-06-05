@@ -11,30 +11,35 @@
 #' @return Vector consisting of the boundary and its scaled BIC difference. The
 #' boundary will be NA if its scaled BIC difference is less than
 #' `min_scaled_bic_diff`.
-find_boundary <- function(x, min_scaled_bic_diff = 0) {
+find_boundary <- function(x, min_scaled_bic_diff = 0, noise_comp = FALSE) {
   gmm1 <- mclust::Mclust(x, G = 1, modelNames = "E", verbose = FALSE)
-  gmm1_dens <- mclust::dens(x, modelName = "E", gmm1$parameters)
-  gmm1_noise <- gmm1_dens < mclust::hypvol(x, TRUE)
-  gmm1n <- mclust::Mclust(
-    x,
-    G = 1, modelNames = "E", initialization = list("noise" = gmm1_noise),
-    verbose = FALSE
-  )
-
   gmm2 <- mclust::Mclust(x, G = 2, modelNames = "E", verbose = FALSE)
-  gmm2_dens <- mclust::dens(x, modelName = "E", gmm2$parameters)
-  gmm2_noise <- gmm2_dens < mclust::hypvol(x, TRUE)
-  gmm2n <- mclust::Mclust(
-    x,
-    G = 2, modelNames = "E", initialization = list("noise" = gmm2_noise),
-    verbose = FALSE
-  )
 
-  scaled_bic_diff <- (gmm2n$bic - gmm1n$bic) / (2 * log(length(x)))
+  if (noise_comp) {
+    gmm1_dens <- mclust::dens(x, modelName = "E", gmm1$parameters)
+    gmm1_noise <- gmm1_dens < mclust::hypvol(x, TRUE)
+    gmm1n <- mclust::Mclust(
+      x,
+      G = 1, modelNames = "E", initialization = list("noise" = gmm1_noise),
+      verbose = FALSE
+    )
 
-  if (scaled_bic_diff > min_scaled_bic_diff) {
+    gmm2_dens <- mclust::dens(x, modelName = "E", gmm2$parameters)
+    gmm2_noise <- gmm2_dens < mclust::hypvol(x, TRUE)
+    gmm2n <- mclust::Mclust(
+      x,
+      G = 2, modelNames = "E", initialization = list("noise" = gmm2_noise),
+      verbose = FALSE
+    )
+
+    scaled_bic_diff <- (gmm2n$bic - gmm1n$bic) / (2 * log(length(x)))
     boundary <- get_mclust_boundary(gmm2n$parameters)
   } else {
+    scaled_bic_diff <- (gmm2n$bic - gmm1n$bic) / (2 * log(length(x)))
+    boundary <- get_mclust_boundary(gmm2n$parameters)
+  }
+
+  if (scaled_bic_diff < min_scaled_bic_diff) {
     boundary <- NA
   }
 
