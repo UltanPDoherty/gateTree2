@@ -33,10 +33,10 @@ find_boundary <- function(
       verbose = FALSE
     )
 
-    scaled_bic_diff <- (gmm2n$bic - gmm1n$bic) / (2 * log(length(x)))
+    scaled_bic_diff <- (gmm2n$bic - gmm1n$bic) / (2 * length(x))
     boundary <- get_mclust_boundary(gmm2n$parameters)
   } else {
-    scaled_bic_diff <- (gmm2$bic - gmm1$bic) / (2 * log(length(x)))
+    scaled_bic_diff <- (gmm2$bic - gmm1$bic) / (2 * length(x))
     boundary <- get_mclust_boundary(gmm2$parameters)
   }
 
