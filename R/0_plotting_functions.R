@@ -50,20 +50,14 @@ plot_gatetree_split <- function(x_gp, g, p, score, plusminus_table,
     "explore"  = FALSE
   )
 
-  scale01_gp <- scale01(x_gp)
-  dens_gp <- stats::density(scale01_gp$y)
+  dens_gp <- stats::density(x_gp)
 
-  trans_split_gp <- scale01(
-    split_gp,
-    scale01_gp$min, scale01_gp$max
-  )$y
-
-  xleft <- ifelse(is_negative, 0, trans_split_gp)
-  xright <- ifelse(is_negative, trans_split_gp, 1)
+  xleft <- ifelse(is_negative, 0, split_gp)
+  xright <- ifelse(is_negative, split_gp, 1)
 
   if (scenario == "nothing") {
-    xleft <- 0
-    xright <- 1
+    xleft <- min(x_gp)
+    xright <- max(x_gp)
   }
 
   size_before <- length(x_gp)
@@ -89,10 +83,6 @@ plot_gatetree_split <- function(x_gp, g, p, score, plusminus_table,
       fill = rect_col, na.rm = TRUE
     ) +
     ggplot2::geom_line() +
-    ggplot2::geom_vline(
-      xintercept = trans_split_gp, linetype = line_type,
-      na.rm = TRUE
-    ) +
     ggplot2::labs(
       title = paste0("g = ", g, ", p = ", p, ", ", score_title),
       subtitle = paste0(
@@ -104,6 +94,13 @@ plot_gatetree_split <- function(x_gp, g, p, score, plusminus_table,
       y = "Density %"
     ) +
     ggplot2::theme_bw()
+
+  if (!is.na(split_gp)) {
+    gg <- gg + ggplot2::geom_vline(
+      xintercept = split_gp, linetype = line_type,
+      na.rm = TRUE
+    )
+  }
 
   return(gg)
 }
