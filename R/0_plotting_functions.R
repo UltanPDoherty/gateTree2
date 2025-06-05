@@ -150,7 +150,7 @@ make_edge_df <- function(parent_node, node_number, edge_name, node_name,
     ggraph_order = ggraph_order
   )
 
-  return(edge_df)
+  edge_df
 }
 
 # ==============================================================================
@@ -256,5 +256,5 @@ explore_plots <- function(
     }
   }
 
-  return(plot_list)
+  plot_list
 }

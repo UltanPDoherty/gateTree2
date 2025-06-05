@@ -80,14 +80,14 @@ unassigned_labelling <- function(z, pdf, z_threshold, pdf_threshold) {
     )
   }
 
-  return(data.frame(
+  data.frame(
     map = map_labels,
     map0 = map_labels_with0,
     z_vals = zmap_values,
     pdf_vals = pdfmap_values,
     low_zmap = low_zmap,
     low_pdfmap = low_pdfmap
-  ))
+  )
 }
 
 # ==============================================================================
@@ -278,8 +278,8 @@ merge_subsets <- function(signs, typemarker, subsetter) {
     }
   }
 
-  return(list(
+  list(
     match_matrix = match_matrix,
     merged_subsetter = merged_subsetter
-  ))
+  )
 }

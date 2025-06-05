@@ -20,5 +20,5 @@ expand_table <- function(x, plusminus_subtable) {
   plusminus_table[, colnames(plusminus_subtable)] <- plusminus_subtable
   rownames(plusminus_table) <- rownames(plusminus_subtable)
 
-  return(plusminus_table)
+  plusminus_table
 }

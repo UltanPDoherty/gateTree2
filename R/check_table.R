@@ -91,11 +91,11 @@ check_table <- function(plusminus_table) {
     cat("\n")
   }
 
-  return(list(
+  list(
     pass = final_check,
     indistinct_pops = indistinct_pops,
     indistinct_subtables = indistinct_subtables
-  ))
+  )
 }
 
 # ==============================================================================

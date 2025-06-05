@@ -37,5 +37,5 @@ gatetree_classify <- function(x, gatetree_output) {
     which
   ))
 
-  return(new_labels)
+  new_labels
 }

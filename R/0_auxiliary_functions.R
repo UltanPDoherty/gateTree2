@@ -39,7 +39,7 @@ scale01 <- function(x, other_min = NULL, other_max = NULL) {
 #'
 #' @return Unscaled version of `x`.
 unscale01 <- function(x, unscaled_min, unscaled_max) {
-  return(x * (unscaled_max - unscaled_min) + unscaled_min)
+  x * (unscaled_max - unscaled_min) + unscaled_min
 }
 
 # ==============================================================================
@@ -72,7 +72,7 @@ check_duplicates <- function(subsetter) {
     }
   }
 
-  return(is_a_duplicate)
+  is_a_duplicate
 }
 
 # ==============================================================================
@@ -106,5 +106,5 @@ find_inside_cutoffs <- function(x, min_val_cutoff, max_val_cutoff) {
   # an observation-variable pair is TRUE if it is inside the two cutoffs
   inside_cutoffs <- !below_cutoff & !above_cutoff
 
-  return(inside_cutoffs)
+  inside_cutoffs
 }
