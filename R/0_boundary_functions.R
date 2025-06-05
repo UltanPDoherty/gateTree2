@@ -210,11 +210,8 @@ find_boundary3 <- function(x, min_scaled_bic_diff = 0, verbose = FALSE) {
   for (j in 1:model_num) {
     neg <- x <= xseq[j]
 
-    neg_prop <- sum(neg) / obs_num
-    pos_prop <- 1 - neg_prop
-
-    neg_dens <- stats::dnorm(x[neg], mean(x[neg]), sd(x[neg]))
-    pos_dens <- stats::dnorm(x[!neg], mean(x[!neg]), sd(x[!neg]))
+    neg_dens <- stats::dnorm(x[neg], mean(x[neg]), stats::sd(x[neg]))
+    pos_dens <- stats::dnorm(x[!neg], mean(x[!neg]), stats::sd(x[!neg]))
 
     neg_const <- mclust::hypvol(x[neg], TRUE)
     pos_const <- mclust::hypvol(x[!neg], TRUE)
@@ -229,17 +226,14 @@ find_boundary3 <- function(x, min_scaled_bic_diff = 0, verbose = FALSE) {
         initialization = list(noise = neg_noise), verbose = FALSE
       )
 
-      neg_gmmn_dens <- stats::dnorm(
-        x[neg], neg_gmmn$parameters$mean, sqrt(neg_gmmn$parameters$variance$sigmasq)
+      neg_gmmn_dens <- double(sum(neg))
+      neg_gmmn_dens[neg_gmmn$classification == 0] <- neg_const
+      neg_gmmn_dens[neg_gmmn$classification == 1] <- stats::dnorm(
+        x[neg][neg_gmmn$classification == 1],
+        neg_gmmn$parameters$mean, sqrt(neg_gmmn$parameters$variance$sigmasq)
       )
-
-      neg_gmmn_unif_prop <- sum(neg_gmmn$classification == 0) / sum(neg)
-      neg_gmmn_norm_prop <- 1 - neg_gmmn_unif_prop
     } else {
       neg_gmmn_dens <- rep(0, sum(neg))
-
-      neg_gmmn_unif_prop <- 0.5
-      neg_gmmn_norm_prop <- 1 - neg_gmmn_unif_prop
     }
 
     if (sum(!neg) - sum(pos_noise) > 5) {
@@ -249,42 +243,30 @@ find_boundary3 <- function(x, min_scaled_bic_diff = 0, verbose = FALSE) {
         initialization = list(noise = pos_noise), verbose = FALSE
       )
 
-      pos_gmmn_dens <- stats::dnorm(
-        x[!neg], pos_gmmn$parameters$mean, sqrt(pos_gmmn$parameters$variance$sigmasq)
+      pos_gmmn_dens <- double(sum(!neg))
+      pos_gmmn_dens[pos_gmmn$classification == 0] <- pos_const
+      pos_gmmn_dens[pos_gmmn$classification == 1] <- stats::dnorm(
+        x[!neg][pos_gmmn$classification == 1],
+        pos_gmmn$parameters$mean, sqrt(pos_gmmn$parameters$variance$sigmasq)
       )
-      pos_gmmn_unif <- 1 / pos_gmmn$hypvol
-
-      pos_gmmn_unif_prop <- sum(pos_gmmn$classification == 0) / sum(!neg)
-      pos_gmmn_norm_prop <- 1 - pos_gmmn_unif_prop
     } else {
       pos_gmmn_dens <- rep(0, sum(!neg))
-
-      pos_gmmn_unif_prop <- 0.5
-      pos_gmmn_norm_prop <- 1 - pos_gmmn_unif_prop
     }
 
-    dens <- matrix(nrow = obs_num, ncol = length(npar))
+    dens <- matrix(0, nrow = obs_num, ncol = length(npar))
     colnames(dens) <- names(npar)
 
     dens[neg, "gmm_gmm"] <- neg_dens
     dens[!neg, "gmm_gmm"] <- pos_dens
 
     dens[neg, "gmm_gmmn"] <- neg_dens
-    dens[!neg, "gmm_gmmn"] <-
-      pos_gmmn_norm_prop * pos_gmmn_dens +
-      pos_gmmn_unif_prop * rep(pos_const, sum(!neg))
+    dens[!neg, "gmm_gmmn"] <- pos_gmmn_dens
 
-    dens[neg, "gmmn_gmm"] <-
-      neg_gmmn_norm_prop * neg_gmmn_dens +
-      neg_gmmn_unif_prop * rep(neg_const, sum(neg))
+    dens[neg, "gmmn_gmm"] <- neg_gmmn_dens
     dens[!neg, "gmmn_gmm"] <- pos_dens
 
-    dens[neg, "gmmn_gmmn"] <-
-      neg_gmmn_norm_prop * neg_gmmn_dens +
-      neg_gmmn_unif_prop * rep(neg_const, sum(neg))
-    dens[!neg, "gmmn_gmmn"] <-
-      pos_gmmn_norm_prop * pos_gmmn_dens +
-      pos_gmmn_unif_prop * rep(pos_const, sum(!neg))
+    dens[neg, "gmmn_gmmn"] <- neg_gmmn_dens
+    dens[!neg, "gmmn_gmmn"] <- pos_gmmn_dens
 
     dens[neg, "gmm_unif"] <- neg_dens
     dens[!neg, "gmm_unif"] <- rep(pos_const, sum(!neg))
@@ -292,15 +274,11 @@ find_boundary3 <- function(x, min_scaled_bic_diff = 0, verbose = FALSE) {
     dens[neg, "unif_gmm"] <- rep(neg_const, sum(neg))
     dens[!neg, "unif_gmm"] <- pos_dens
 
-    dens[neg, "gmmn_unif"] <-
-      neg_gmmn_norm_prop * neg_gmmn_dens +
-      neg_gmmn_unif_prop * rep(neg_const, sum(neg))
+    dens[neg, "gmmn_unif"] <- neg_gmmn_dens
     dens[!neg, "gmmn_unif"] <- rep(pos_const, sum(!neg))
 
     dens[neg, "unif_gmmn"] <- rep(neg_const, sum(neg))
-    dens[!neg, "unif_gmmn"] <-
-      pos_gmmn_norm_prop * pos_gmmn_dens +
-      pos_gmmn_unif_prop * rep(pos_const, sum(!neg))
+    dens[!neg, "unif_gmmn"] <- pos_gmmn_dens
 
     dens[neg, "unif_unif"] <- rep(neg_const, sum(neg))
     dens[!neg, "unif_unif"] <- rep(pos_const, sum(!neg))
@@ -324,7 +302,8 @@ find_boundary3 <- function(x, min_scaled_bic_diff = 0, verbose = FALSE) {
   one_const <- mclust::hypvol(x, TRUE)
   one_noise <- one_dens < one_const
   one_gmmn <- mclust::Mclust(
-    x, 1, "V", initialization = list(noise = one_noise), verbose = FALSE
+    x, 1, "V",
+    initialization = list(noise = one_noise), verbose = FALSE
   )
   one_gmm_bic <- 2 * (sum(log(one_dens))) - 2 * log(obs_num)
   one_unif_bic <- 2 * (obs_num * log(one_const)) - log(obs_num)
@@ -397,8 +376,8 @@ find_boundary4 <- function(x, min_scaled_bic_diff = 0, verbose = FALSE) {
     neg_prop <- sum(neg) / obs_num
     pos_prop <- 1 - neg_prop
 
-    neg_dens <- stats::dnorm(x, mean(x[neg]), sd(x[neg]))
-    pos_dens <- stats::dnorm(x, mean(x[!neg]), sd(x[!neg]))
+    neg_dens <- stats::dnorm(x, mean(x[neg]), stats::sd(x[neg]))
+    pos_dens <- stats::dnorm(x, mean(x[!neg]), stats::sd(x[!neg]))
 
     neg_const <- mclust::hypvol(x[neg], TRUE)
     pos_const <- mclust::hypvol(x[!neg], TRUE)
@@ -436,7 +415,6 @@ find_boundary4 <- function(x, min_scaled_bic_diff = 0, verbose = FALSE) {
       pos_gmmn_dens <- stats::dnorm(
         x, pos_gmmn$parameters$mean, sqrt(pos_gmmn$parameters$variance$sigmasq)
       )
-      pos_gmmn_unif <- 1 / pos_gmmn$hypvol
 
       pos_gmmn_unif_prop <- sum(pos_gmmn$classification == 0) / sum(!neg)
       pos_gmmn_norm_prop <- 1 - pos_gmmn_unif_prop
@@ -447,51 +425,45 @@ find_boundary4 <- function(x, min_scaled_bic_diff = 0, verbose = FALSE) {
       pos_gmmn_norm_prop <- 1 - pos_gmmn_unif_prop
     }
 
-    neg_unif_ll <- sum(neg) * log(neg_const)
-    pos_unif_ll <- sum(!neg) * log(pos_const)
-
-    neg_unif_bic <- 2 * neg_unif_ll - log(sum(neg))
-    pos_unif_bic <- 2 * pos_unif_ll - log(sum(!neg))
-
     ll <- c(
       "gmm_gmm" = sum(log(neg_prop * neg_dens + pos_prop * pos_dens)),
       "gmm_gmmn" = sum(log(
         neg_prop * neg_dens +
-          pos_prop *
-          (pos_gmmn_norm_prop * pos_gmmn_dens +
-             pos_gmmn_unif_prop * pos_const)
+          pos_prop * (
+            pos_gmmn_norm_prop * pos_gmmn_dens + pos_gmmn_unif_prop * pos_const
+          )
       )),
       "gmmn_gmm" = sum(log(
-        neg_prop *
-          (neg_gmmn_norm_prop * neg_gmmn_dens +
-             neg_gmmn_unif_prop * neg_const) +
-        pos_prop * pos_dens
+        neg_prop * (
+          neg_gmmn_norm_prop * neg_gmmn_dens + neg_gmmn_unif_prop * neg_const
+        ) +
+          pos_prop * pos_dens
       )),
       "gmmn_gmmn" = sum(log(
-        neg_prop *
-          (neg_gmmn_norm_prop * neg_gmmn_dens +
-             neg_gmmn_unif_prop * neg_const) +
-          pos_prop *
-          (pos_gmmn_norm_prop * pos_gmmn_dens +
-             pos_gmmn_unif_prop * pos_const)
+        neg_prop * (
+          neg_gmmn_norm_prop * neg_gmmn_dens + neg_gmmn_unif_prop * neg_const
+        ) +
+          pos_prop * (
+            pos_gmmn_norm_prop * pos_gmmn_dens + pos_gmmn_unif_prop * pos_const
+          )
       )),
       "gmm_unif" = sum(log(
         neg_prop * neg_dens + pos_prop * rep(pos_const, obs_num)
       )),
       "unif_gmm" = sum(log(
-         neg_prop * rep(neg_const, obs_num) + pos_prop * pos_dens
+        neg_prop * rep(neg_const, obs_num) + pos_prop * pos_dens
       )),
       "gmmn_unif" = sum(log(
-        neg_prop *
-          (neg_gmmn_norm_prop * neg_gmmn_dens +
-             neg_gmmn_unif_prop * neg_const) +
+        neg_prop * (
+          neg_gmmn_norm_prop * neg_gmmn_dens + neg_gmmn_unif_prop * neg_const
+        ) +
           pos_prop * rep(pos_const, obs_num)
       )),
       "unif_gmmn" = sum(log(
         neg_prop * rep(neg_const, obs_num) +
-          pos_prop *
-          (pos_gmmn_norm_prop * pos_gmmn_dens +
-             pos_gmmn_unif_prop * pos_const)
+          pos_prop * (
+            pos_gmmn_norm_prop * pos_gmmn_dens + pos_gmmn_unif_prop * pos_const
+          )
       )),
       "unif_unif" = sum(log(
         neg_prop * rep(neg_const, obs_num) + pos_prop * rep(pos_const, obs_num)
@@ -515,7 +487,8 @@ find_boundary4 <- function(x, min_scaled_bic_diff = 0, verbose = FALSE) {
   one_const <- mclust::hypvol(x, TRUE)
   one_noise <- one_dens < one_const
   one_gmmn <- mclust::Mclust(
-    x, 1, "V", initialization = list(noise = one_noise), verbose = FALSE
+    x, 1, "V",
+    initialization = list(noise = one_noise), verbose = FALSE
   )
   one_gmm_bic <- 2 * (sum(log(one_dens))) - 2 * log(obs_num)
   one_unif_bic <- 2 * (obs_num * log(one_const)) - log(obs_num)
@@ -536,6 +509,140 @@ find_boundary4 <- function(x, min_scaled_bic_diff = 0, verbose = FALSE) {
   }
   if (scaled_bic_diff > min_scaled_bic_diff) {
     boundary <- xseq[choice]
+  } else {
+    boundary <- NA
+  }
+
+  return(c(boundary, as.numeric(scaled_bic_diff)))
+}
+
+# ==============================================================================
+
+#' @title Find the optimal univariate GMM boundary.
+#'
+#' @description
+#' Find the optimal two-component univariate GMM boundary and check if its
+#' scaled BIC difference is greater than `min_scaled_bic_diff`.
+#'
+#' @inheritParams gatetree
+#' @param verbose message about `best_model`.
+#'
+#' @return Vector consisting of the boundary and its scaled BIC difference. The
+#' boundary will be NA if its scaled BIC difference is less than
+#' `min_scaled_bic_diff`.
+#'
+#' @import mclust
+find_boundary5 <- function(x, min_scaled_bic_diff = 0, verbose = FALSE) {
+  obs_num <- length(x)
+  sortx <- sort(x)
+
+  leftx <- sortx[10]
+  rightx <- sortx[obs_num - 11]
+  xseq <- seq(leftx, rightx, length.out = 100)
+  model_num <- length(xseq)
+
+  hard_bic <- soft_bic <- double(model_num)
+  hard_icl <- soft_icl <- double(model_num)
+  for (j in 1:model_num) {
+    neg <- x <= xseq[j]
+
+    neg_prop <- sum(neg) / obs_num
+    pos_prop <- 1 - neg_prop
+
+    neg_dens <- stats::dnorm(x[neg], mean(x[neg]), stats::sd(x[neg]))
+    pos_dens <- stats::dnorm(x[!neg], mean(x[!neg]), stats::sd(x[!neg]))
+
+    neg_const <- mclust::hypvol(x[neg], TRUE)
+    pos_const <- mclust::hypvol(x[!neg], TRUE)
+
+    neg_noise <- neg_dens < neg_const
+    pos_noise <- pos_dens < pos_const
+
+    if ((sum(neg) - sum(neg_noise) > 5) && (sum(!neg) - sum(pos_noise) > 5)) {
+      neg_gmmn <- mclust::Mclust(
+        x[neg],
+        G = 1, modelNames = "V",
+        initialization = list(noise = neg_noise), verbose = FALSE
+      )
+      pos_gmmn <- mclust::Mclust(
+        x[!neg],
+        G = 1, modelNames = "V",
+        initialization = list(noise = pos_noise), verbose = FALSE
+      )
+
+      neg_gmmn_dens <- stats::dnorm(
+        x, neg_gmmn$parameters$mean, sqrt(neg_gmmn$parameters$variance$sigmasq)
+      )
+      pos_gmmn_dens <- stats::dnorm(
+        x, pos_gmmn$parameters$mean, sqrt(pos_gmmn$parameters$variance$sigmasq)
+      )
+
+      gmmn_prop <- c(
+        neg_prop * neg_gmmn$parameters$pro[1],
+        neg_prop * neg_gmmn$parameters$pro[2],
+        pos_prop * pos_gmmn$parameters$pro[1],
+        pos_prop * pos_gmmn$parameters$pro[2]
+      )
+
+      hard_dens <- double(obs_num)
+      hard_dens[neg] <- neg_gmmn_dens[neg]
+      hard_dens[neg][neg_gmmn$classification == 0] <- neg_const
+      hard_dens[!neg] <- pos_gmmn_dens[!neg]
+      hard_dens[!neg][pos_gmmn$classification == 0] <- pos_const
+
+      soft_dens_mat <- cbind(
+        gmmn_prop[1] * neg_gmmn_dens,
+        gmmn_prop[2] * neg_const,
+        gmmn_prop[3] * pos_gmmn_dens,
+        gmmn_prop[4] * pos_const
+      )
+
+      soft_dens <- rowSums(soft_dens_mat)
+
+      z <- soft_dens_mat / soft_dens
+
+      hard_z <- matrix(0, nrow = obs_num, ncol = 4)
+      for (i in seq_len(obs_num)) {
+        hard_z[i, which.max(z[i, ])] <- 1
+      }
+
+      mclust_entropy_penalty <- 2 * sum(hard_z * ifelse(z > 0, log(z), 0))
+    } else {
+      hard_dens <- soft_dens <- rep(0, obs_num)
+      mclust_entropy_penalty <- 0
+    }
+
+    hard_ll <- sum(log(hard_dens))
+    hard_bic[j] <- 2 * hard_ll - 8 * log(obs_num)
+    hard_icl[j] <- hard_bic[j] + mclust_entropy_penalty
+
+    soft_ll <- sum(log(soft_dens))
+    soft_bic[j] <- 2 * soft_ll - 8 * log(obs_num)
+    soft_icl[j] <- soft_bic[j] + mclust_entropy_penalty
+
+    if (verbose) {
+      message("*", appendLF = FALSE)
+      if (j %% 10 == 0) {
+        message("\tSplit No. ", j)
+      }
+    }
+  }
+
+  one_dens <- stats::dnorm(x, mean(x), stats::sd(x))
+  one_const <- mclust::hypvol(x, TRUE)
+  one_noise <- one_dens < one_const
+  one_gmmn <- mclust::Mclust(
+    x, 1, "V",
+    initialization = list(noise = one_noise), verbose = FALSE
+  )
+  one_bic <- one_gmmn$bic
+
+  soft_choice <- which.max(soft_bic)
+
+  scaled_bic_diff <- (soft_bic[soft_choice] - one_bic) / (2 * log(obs_num))
+
+  if (scaled_bic_diff > min_scaled_bic_diff) {
+    boundary <- xseq[soft_choice]
   } else {
     boundary <- NA
   }
