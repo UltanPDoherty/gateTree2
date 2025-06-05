@@ -11,11 +11,12 @@
 #' @return Vector consisting of the boundary and its scaled BIC difference. The
 #' boundary will be NA if its scaled BIC difference is less than
 #' `min_scaled_bic_diff`.
-find_boundary <- function(x, min_scaled_bic_diff = 0, noise_comp = FALSE) {
+find_boundary <- function(
+    x, min_scaled_bic_diff = 0, boundary_noise_comp = TRUE) {
   gmm1 <- mclust::Mclust(x, G = 1, modelNames = "E", verbose = FALSE)
   gmm2 <- mclust::Mclust(x, G = 2, modelNames = "E", verbose = FALSE)
 
-  if (noise_comp) {
+  if (boundary_noise_comp) {
     gmm1_dens <- mclust::dens(x, modelName = "E", gmm1$parameters)
     gmm1_noise <- gmm1_dens < mclust::hypvol(x, TRUE)
     gmm1n <- mclust::Mclust(
@@ -87,12 +88,15 @@ propose_boundaries <- function(
     x,
     min_scaled_bic_diff = 0,
     subsetter_g,
-    splittable_vars_g = rep(TRUE, ncol(x))) {
+    splittable_vars_g = rep(TRUE, ncol(x)),
+    boundary_noise_comp) {
   boundaries <- matrix(nrow = 2, ncol = ncol(x))
 
   # loop over all variables to propose splits
   for (p in which(splittable_vars_g)) {
-    boundaries[, p] <- find_boundary(x[subsetter_g, p], min_scaled_bic_diff)
+    boundaries[, p] <- find_boundary(
+      x[subsetter_g, p], min_scaled_bic_diff, boundary_noise_comp
+    )
   }
 
   return(list("splits" = boundaries[1, ], "scores" = boundaries[2, ]))

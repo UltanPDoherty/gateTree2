@@ -17,6 +17,7 @@ gatetree(
   temp_min_cutoff = NULL,
   temp_max_cutoff = NULL,
   use_boundaries = TRUE,
+  boundary_noise_comp = TRUE,
   show_plot = c(FALSE, FALSE),
   explore = TRUE
 )
@@ -51,6 +52,8 @@ split.}
 split.}
 
 \item{use_boundaries}{Logical value.}
+
+\item{boundary_noise_comp}{Logical; whether the GMMs fit a noise component.}
 
 \item{show_plot}{Logical vector of length 2. Indicating whether the split plots (\verb{[1]}) and
 the tree plot (\verb{[2]}) should be plotted.}

@@ -18,7 +18,7 @@
 propose_splits <- function(x, subsetter_g, splittable_vars_g,
                            min_size, min_depth, min_height = min_depth,
                            min_scaled_bic_diff = 0,
-                           use_boundaries) {
+                           use_boundaries, boundary_noise_comp) {
   if (sum(subsetter_g) < min_size) {
     found_valley <- FALSE
     found_boundary <- FALSE
@@ -34,7 +34,8 @@ propose_splits <- function(x, subsetter_g, splittable_vars_g,
     if (!found_valley && use_boundaries) {
       proposals <- propose_boundaries(
         x, min_scaled_bic_diff,
-        subsetter_g, splittable_vars_g
+        subsetter_g, splittable_vars_g,
+        boundary_noise_comp
       )
 
       found_boundary <- any(!is.na(proposals$splits))

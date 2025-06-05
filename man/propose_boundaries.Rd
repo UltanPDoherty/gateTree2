@@ -8,7 +8,8 @@ propose_boundaries(
   x,
   min_scaled_bic_diff = 0,
   subsetter_g,
-  splittable_vars_g = rep(TRUE, ncol(x))
+  splittable_vars_g = rep(TRUE, ncol(x)),
+  boundary_noise_comp
 )
 }
 \arguments{
@@ -20,6 +21,8 @@ divided by 2 log(obs_num).}
 \item{subsetter_g}{Column g of the subsetting matrix.}
 
 \item{splittable_vars_g}{Row g of the splittable_vars matrix.}
+
+\item{boundary_noise_comp}{Logical; whether the GMMs fit a noise component.}
 }
 \value{
 List:

@@ -30,6 +30,7 @@
 #' Maximum values per variable for observations to be included in finding a
 #' split.
 #' @param use_boundaries Logical value.
+#' @param boundary_noise_comp Logical; whether the GMMs fit a noise component.
 #' @param show_plot
 #' Logical vector of length 2. Indicating whether the split plots (`[1]`) and
 #' the tree plot (`[2]`) should be plotted.
@@ -75,6 +76,7 @@ gatetree <- function(
     temp_min_cutoff = NULL,
     temp_max_cutoff = NULL,
     use_boundaries = TRUE,
+    boundary_noise_comp = TRUE,
     show_plot = c(FALSE, FALSE),
     explore = TRUE) {
   # Set the minimum requirement thresholds for the 'explore' stage.
@@ -146,7 +148,7 @@ gatetree <- function(
     proposals <- propose_splits(
       x, temp_subsetter[, g], splittable_vars[g, ],
       min_size, min_depth, min_height,
-      min_scaled_bic_diff, use_boundaries
+      min_scaled_bic_diff, use_boundaries, boundary_noise_comp
     )
 
     if (proposals$scenario %in% c("valley", "boundary")) {

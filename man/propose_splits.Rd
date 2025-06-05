@@ -12,7 +12,8 @@ propose_splits(
   min_depth,
   min_height = min_depth,
   min_scaled_bic_diff = 0,
-  use_boundaries
+  use_boundaries,
+  boundary_noise_comp
 )
 }
 \arguments{
@@ -34,6 +35,8 @@ for a peak to be recognised by \link{find_peaks}.}
 divided by 2 log(obs_num).}
 
 \item{use_boundaries}{Logical value.}
+
+\item{boundary_noise_comp}{Logical; whether the GMMs fit a noise component.}
 }
 \value{
 List
