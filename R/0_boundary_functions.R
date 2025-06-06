@@ -70,34 +70,3 @@ get_mclust_boundary <- function(mclust_params) {
 
   mean_average + modifier
 }
-
-# ==============================================================================
-
-#' @title Apply [find_boundary] across a set of variables.
-#'
-#' @description
-#' Apply [find_boundary] to each variable in a set of splittable
-#' variables for a subset of observations.
-#'
-#' @inheritParams propose_splits
-#'
-#' @return List:
-#' * splits: each variable's boundary
-#' * scores: the corresponding scaled BIC difference.
-propose_boundaries <- function(
-    x,
-    min_scaled_bic_diff = 0,
-    subsetter_g,
-    splittable_vars_g = rep(TRUE, ncol(x)),
-    boundary_noise_comp) {
-  boundaries <- matrix(nrow = 2, ncol = ncol(x))
-
-  # loop over all variables to propose splits
-  for (p in which(splittable_vars_g)) {
-    boundaries[, p] <- find_boundary(
-      x[subsetter_g, p], min_scaled_bic_diff, boundary_noise_comp
-    )
-  }
-
-  return(list("splits" = boundaries[1, ], "scores" = boundaries[2, ]))
-}
