@@ -1,49 +1,5 @@
 # ==============================================================================
 
-#' 0-1 scaling.
-#'
-#' @inheritParams gatetree
-#' @param other_min Minimum to be used for 0-1 scaling.
-#' @param other_max Maximum to be used for 0-1 scaling.
-#'
-#' @return List:
-#' * y: scaled version of `x`.
-#' * min: minimum used for scaling.
-#' * max: maximum used for scaling.
-scale01 <- function(x, other_min = NULL, other_max = NULL) {
-  if (is.null(other_min)) {
-    minimum <- min(x)
-  } else {
-    minimum <- other_min
-  }
-
-  if (is.null(other_max)) {
-    maximum <- max(x)
-  } else {
-    maximum <- other_max
-  }
-
-  stopifnot("Maximum and minimum are equal" = maximum != minimum)
-  y <- (x - minimum) / (maximum - minimum)
-
-  return(list(y = y, min = minimum, max = maximum))
-}
-
-# ==============================================================================
-
-#' Undo 0-1 scaling.
-#'
-#' @inheritParams gatetree
-#' @param unscaled_min Minimum used for 0-1 scaling.
-#' @param unscaled_max Maximum used for 0-1 scaling.
-#'
-#' @return Unscaled version of `x`.
-unscale01 <- function(x, unscaled_min, unscaled_max) {
-  x * (unscaled_max - unscaled_min) + unscaled_min
-}
-
-# ==============================================================================
-
 #' Check if final subsets are identical.
 #'
 #' @param subsetter The subsetting matrix.
@@ -79,7 +35,9 @@ check_duplicates <- function(subsetter) {
 
 #' Find which observations are inside the cutoffs for each variable.
 #'
-#' @inheritParams gatetree
+#' @param x Matrix
+#' @param min_val_cutoff Minimum value vector
+#' @param max_val_cutoff Maximum value vector
 #'
 #' @return Matrix of the same dimensions as `x` containing logical values
 #' indicating whether that observation (row) is inside the cutoffs for that

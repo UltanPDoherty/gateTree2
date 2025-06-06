@@ -4,10 +4,10 @@
 \alias{check_table}
 \title{Check if table populations are theoretically distinguishable.}
 \usage{
-check_table(plusminus_table)
+check_table(plusminus)
 }
 \arguments{
-\item{plusminus_table}{Table indicating whether each population (row) is positive (+1),
+\item{plusminus}{Table indicating whether each population (row) is positive (+1),
 negative (-1), or neutral / unknown (0) for each variable (column).}
 }
 \value{

@@ -10,10 +10,10 @@
 #' * pass: Logical, whether the table passed the check.
 #' * indistinct_pops: List of indistinguishable sub-tables.
 #' @export
-check_table <- function(plusminus_table) {
+check_table <- function(plusminus) {
   values_check <- rep(NA, 2)
-  values_check[1] <- all(!is.na(plusminus_table))
-  values_check[2] <- all(as.matrix(plusminus_table) %in% c(-1, 0, +1))
+  values_check[1] <- all(!is.na(plusminus))
+  values_check[2] <- all(as.matrix(plusminus) %in% c(-1, 0, +1))
   if (!values_check[1]) {
     cat(paste0("This table contains NAs.\n"))
   } else if (!values_check[2]) {
@@ -26,9 +26,9 @@ check_table <- function(plusminus_table) {
     ))
   }
 
-  check_table_inner(plusminus_table, initial = TRUE)
+  check_table_inner(plusminus, initial = TRUE)
 
-  pm_list <- list(plusminus_table)
+  pm_list <- list(plusminus)
   new_pm_list <- list()
 
   result <- rep("continue", length(pm_list))
@@ -103,7 +103,7 @@ check_table <- function(plusminus_table) {
 #' @title Inner function used by [check_table].
 #'
 #' @description
-#' Non-recursive / non-iterative check of a single `plusminus_table` sub-table.
+#' Non-recursive / non-iterative check of a single `plusminus` sub-table.
 #'
 #' @inheritParams gatetree
 #' @param initial Logical: whether this is the initial check before the loop.
@@ -113,10 +113,10 @@ check_table <- function(plusminus_table) {
 #' * result: `"success"`, `"continue"`, or `"fail"`.
 #'
 #' If `initial = TRUE`, `check_table_inner` returns `NULL`.
-check_table_inner <- function(plusminus_table, initial = FALSE) {
-  pop_num <- nrow(plusminus_table)
+check_table_inner <- function(plusminus, initial = FALSE) {
+  pop_num <- nrow(plusminus)
 
-  common_variables <- apply(plusminus_table, 2, function(x) all(x != 0))
+  common_variables <- apply(plusminus, 2, function(x) all(x != 0))
   common_num <- sum(common_variables)
 
   if (initial && common_num == 0) {
@@ -131,7 +131,7 @@ check_table_inner <- function(plusminus_table, initial = FALSE) {
   for (j in seq_len(common_num)) {
     pop_group_binary <- (
       pop_group_binary +
-        2^j * (plusminus_table[, which(common_variables)[j]] == 1)
+        2^j * (plusminus[, which(common_variables)[j]] == 1)
     )
   }
 

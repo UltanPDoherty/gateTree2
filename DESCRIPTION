@@ -19,10 +19,4 @@ Imports:
     clue,
     stats,
     ggplot2,
-    ggraph,
-    ggpubr,
-    mvtnorm,
-    abind,
-    igraph,
-    tidygraph,
     mclust

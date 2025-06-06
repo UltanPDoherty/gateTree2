@@ -4,15 +4,12 @@
 \alias{find_boundary}
 \title{Find the optimal univariate GMM boundary.}
 \usage{
-find_boundary(x, min_scaled_bic_diff = 0, boundary_noise_comp = TRUE)
+find_boundary(x, boundary_noise_comp = TRUE)
 }
 \arguments{
-\item{x}{Dataset in \code{matrix} or \code{data.frame} form.}
+\item{x}{Data vector}
 
-\item{min_scaled_bic_diff}{Minimum value of difference between one-component and two-component BIC
-divided by 2 log(obs_num).}
-
-\item{boundary_noise_comp}{Logical; whether the GMMs fit a noise component.}
+\item{boundary_noise_comp}{= TRUE}
 }
 \value{
 Vector consisting of the boundary and its scaled BIC difference. The

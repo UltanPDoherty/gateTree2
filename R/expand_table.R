@@ -4,7 +4,7 @@
 #' Given a plusminus subtable which does not include all of the variables from
 #' the data set, add in zero columns for the unused variables.
 #'
-#' @inheritParams gatetree
+#' @param x Matrix
 #' @param plusminus_subtable A `matrix` or `data.frame` whose column names are a
 #' subset of the column names of `x`.
 #'

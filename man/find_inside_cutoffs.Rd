@@ -7,11 +7,11 @@
 find_inside_cutoffs(x, min_val_cutoff, max_val_cutoff)
 }
 \arguments{
-\item{x}{Dataset in \code{matrix} or \code{data.frame} form.}
+\item{x}{Matrix}
 
-\item{min_val_cutoff}{Minimum values per variable for observations to be included.}
+\item{min_val_cutoff}{Minimum value vector}
 
-\item{max_val_cutoff}{Maximum values per variable for observations to be included.}
+\item{max_val_cutoff}{Maximum value vector}
 }
 \value{
 Matrix of the same dimensions as \code{x} containing logical values
