@@ -7,16 +7,23 @@
 #' split illustrated, and information about the split in the title and subtitle.
 #'
 #' @inheritParams gatetree
-#' @param x_gp The data to be displayed, should be only pathway g & variable p.
-#' @param g The pathway number.
-#' @param p The variable number.
-#' @param score The valley depth percentage or the scaled BIC difference.
-#' @param scenario `"valley"`, `"boundary"`, `"nothing"`, or `"explore"`.
-#' @param split_gp The split value.
+#' @param gatetree_out Output from gatetree.
+#' @param pop The population number.
+#' @param samp The sample number.
+#' @param var The variable number.
 #'
 #' @return `ggplot` object.
-plot_gatetree_split <- function(x_gp, g, p, score, plusminus_table,
-                                scenario, split_gp) {
+plot_split <- function(samples, gatetree_out, pop, samp, var) {
+  if (!is.na(gatetree_out[[pop]]$depths[[samp]][var])) {
+    scenario <- "valley"
+    score <- gatetree_out[[pop]]$depths[[samp]][var]
+  } else if (!is.na(gatetree_out[[pop]]$diffs[[samp]][var])) {
+    scenario <- "boundary"
+    score <- gatetree_out[[pop]]$diffs[[samp]][var]
+  } else {
+    scenario <- "nothing"
+  }
+
   # colours from ggokabeito package
   rect_col <- switch(scenario,
     "valley" = "#F0E442",
@@ -43,52 +50,75 @@ plot_gatetree_split <- function(x_gp, g, p, score, plusminus_table,
     "explore"  = "dotted"
   )
   is_negative <- switch(scenario,
-    "valley"   = (plusminus_table[g, p] == -1),
-    "boundary" = (plusminus_table[g, p] == -1),
+    "valley"   = gatetree_out[[pop]]$pm_previous[var] == -1,
+    "boundary" = gatetree_out[[pop]]$pm_previous[var] == -1,
     "nothing"  = NA,
     "explore"  = FALSE
   )
 
-  dens_gp <- stats::density(x_gp)
+  split_num <- gatetree_out[[pop]]$order[var]
+  x <- samples[[samp]][gatetree_out[[pop]]$subsetter[[samp]][, split_num], ]
 
-  min_x_gp <- min(x_gp)
-  max_x_gp <- max(x_gp)
-  if (scenario == "nothing") {
-    xleft <- min_x_gp
-    xright <- max_x_gp
+  if (!is.null(names(samples))) {
+    samp_name <- names(samples)[samp]
   } else {
-    xleft <- ifelse(is_negative, min_x_gp, split_gp)
-    xright <- ifelse(is_negative, split_gp, max_x_gp)
+    samp_name <- samp
+  }
+  if (!is.null(colnames(x))) {
+    var_name <- colnames(x)[var]
+  } else {
+    var_name <- var
+  }
+  if (!is.null(names(gatetree_out))) {
+    pop_name <- names(gatetree_out)[pop]
+  } else {
+    pop_name <- pop
   }
 
-  size_before <- length(x_gp)
+  x <- x[, var]
+
+  dens <- stats::density(x)
+
+  split_val <- gatetree_out[[pop]]$splits[[samp]][var]
+
+  min_x <- min(x)
+  max_x <- max(x)
+  if (scenario == "nothing") {
+    xleft <- min_x
+    xright <- max_x
+  } else {
+    xleft <- ifelse(is_negative, min_x, split_val)
+    xright <- ifelse(is_negative, split_val, max_x)
+  }
+
+  size_before <- length(x)
   if (is.na(is_negative)) {
     size_after <- NA
   } else if (is_negative) {
-    size_after <- sum(x_gp < split_gp)
+    size_after <- sum(x < split_val)
   } else {
-    size_after <- sum(x_gp > split_gp)
+    size_after <- sum(x > split_val)
   }
 
-  dens_gp_x <- dens_gp$x
-  dens_gp_y <- dens_gp$y / max(dens_gp$y) * 100
-  dens_gp_df <- data.frame(dens_gp_x, dens_gp_y)
+  dens_x <- dens$x
+  dens_y <- dens$y / max(dens$y) * 100
+  dens_df <- data.frame(dens_x, dens_y)
 
   gg <- ggplot2::ggplot(
-    dens_gp_df, ggplot2::aes(x = dens_gp_x, y = dens_gp_y)
+    dens_df, ggplot2::aes(x = dens_x, y = dens_y)
   ) +
     ggplot2::geom_rect(
       ggplot2::aes(
-        xmin = xleft, xmax = xright, ymin = 0, ymax = max(dens_gp_y)
+        xmin = xleft, xmax = xright, ymin = 0, ymax = max(dens_y)
       ),
       fill = rect_col, na.rm = TRUE
     ) +
     ggplot2::geom_line() +
     ggplot2::labs(
-      title = paste0("g = ", g, ", p = ", p, ", ", score_title),
+      title = paste0("Sample = ", samp_name, ", ", score_title),
       subtitle = paste0(
-        "Path: ", rownames(plusminus_table)[g], ", ",
-        "Var: ", colnames(plusminus_table)[p], ", ",
+        "Path: ", pop_name, ", ",
+        "Var: ", var_name, ", ",
         "\"", scenario, "\""
       ),
       x = paste0("N before = ", size_before, ", N after = ", size_after),
@@ -96,9 +126,9 @@ plot_gatetree_split <- function(x_gp, g, p, score, plusminus_table,
     ) +
     ggplot2::theme_bw()
 
-  if (!is.na(split_gp)) {
+  if (!is.na(split_val)) {
     gg <- gg + ggplot2::geom_vline(
-      xintercept = split_gp, linetype = line_type,
+      xintercept = split_val, linetype = line_type,
       na.rm = TRUE
     )
   }

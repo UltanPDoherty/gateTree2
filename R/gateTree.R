@@ -4,47 +4,20 @@
 #' Construct a semi-supervised decision tree to identify user-described
 #' clusters.
 #'
-#' @param x Dataset in `matrix` or `data.frame` form.
-#' @param plusminus_table
+#' @param samples Dataset in `matrix` or `data.frame` form.
+#' @param plusminus
 #' Table indicating whether each population (row) is positive (+1),
 #' negative (-1), or neutral / unknown (0) for each variable (column).
-#' @param order_table Table influencing the order of splits.
-#' @param min_height
-#' Minimum height, as a percentage of the height of the global density maximum,
-#' for a peak to be recognised by [find_peaks].
 #' @param min_depth
 #' Minimum depth, as a percentage of the height of the global density maximum,
 #' for a split to be returned by [find_valley].
-#' @param min_scaled_bic_diff
+#' @param min_diff
 #' Minimum value of difference between one-component and two-component BIC
 #' divided by 2 log(obs_num).
-#' @param min_size Minimum number of observations for a subset to be split.
-#' @param min_val_cutoff
-#' Minimum values per variable for observations to be included.
-#' @param max_val_cutoff
-#' Maximum values per variable for observations to be included.
-#' @param temp_min_cutoff
-#' Minimum values per variable for observations to be included in finding a
-#' split.
-#' @param temp_max_cutoff
-#' Maximum values per variable for observations to be included in finding a
-#' split.
-#' @param use_boundaries Logical value.
-#' @param boundary_noise_comp Logical; whether the GMMs fit a noise component.
-#' @param show_plot
-#' Logical vector of length 2. Indicating whether the split plots (`[1]`) and
-#' the tree plot (`[2]`) should be plotted.
-#' @param explore Logical value.
+#' @param use_gmm Logical value.
+#' @param verbose Logical value.
 #'
 #' @return A `list` object:
-#' * `splits`: matrix of split locations for all variables and described
-#' populations.
-#' * `split_order`: matrix of split order for all variables and described
-#' populations.
-#' * `edge_df`: data.frame describing the tree's edges and nodes.
-#' * `labels`: vector of integer cluster labels. `0` represents "Unassigned".
-#' * `signs`: matrix of split signs for all variables and described populations.
-#' * `tree_plot`: the clustering tree as a `ggplot` object.
 #'
 #' @export
 #'
@@ -58,282 +31,226 @@
 #' colnames(iris_plusminus) <- colnames(iris_plusminus)[1:4]
 #'
 #' iris_gatetree <- gatetree(
-#'   iris[, -5],
+#'   list(iris[, -5]),
 #'   iris_plusminus,
-#'   show_plot = c(TRUE, TRUE),
-#'   min_depth = 10
+#'   min_depth = 10,
+#'   min_diff = 0.01
 #' )
 gatetree <- function(
-    x,
-    plusminus_table = expand.grid(rep(list(c(-1, 1)), ncol(x))),
-    order_table = array(0, dim = dim(plusminus_table)),
-    min_height = min_depth,
+    samples,
+    plusminus,
     min_depth = 1,
-    min_scaled_bic_diff = 0,
-    min_size = 50,
-    min_val_cutoff = NULL,
-    max_val_cutoff = NULL,
-    temp_min_cutoff = NULL,
-    temp_max_cutoff = NULL,
-    use_boundaries = TRUE,
-    boundary_noise_comp = TRUE,
-    show_plot = c(FALSE, FALSE),
-    explore = TRUE) {
-  # Set the minimum requirement thresholds for the 'explore' stage.
-  # These are higher than the user-defined thresholds for making splits.
-  explore_min_height <- min(c(100, 5 * min_height))
-  explore_min_depth <- min(c(100, 5 * min_depth))
-  explore_min_size <- min_size
+    min_diff = 0.01,
+    use_gmm = TRUE,
+    verbose = TRUE) {
+  pop_num <- nrow(plusminus)
+  var_num <- ncol(plusminus)
+  samp_num <- length(samples)
 
-  var_num <- ncol(x)
-  obs_num <- nrow(x)
-  pop_num <- nrow(plusminus_table)
-  path_num <- 1
+  if (is.null(rownames(plusminus))) {
+    rownames(plusminus) <- paste0("pop", seq_len(pop_num))
+  }
 
-  split_num <- c(0)
-  node_num <- 1
-  parent_node <- c(1)
-  edge_name <- c("All")
-  path_nodes <- list(c(1))
-  node_name <- c("All")
-  is_leaf <- c(TRUE)
-
-  # ----------------------------------------------------------------------------
-
-  # These 8 matrices all have the same dimensions.
-  # splits will store the location / value of each split.
-  # depths will store the depth % for relevant splits.
-  # sc_bic_diffs will store the scaled BIC difference for relevant splits.
-  # split_order will store the order in which the splits occur.
-  # splittable_vars keeps track of which variables can be split.
-  # order_vars is used to implement `order_table`'s split restrictions.
-  # common_variables: vars that have info for all of the path's populations.
-  # already_split keeps track of which variables have been partitioned.
-  splits <- depths <- sc_bic_diffs <- split_order <- signs <-
-    splittable_vars <- order_vars <- common_variables <- already_split <-
-    matrix(NA, nrow = path_num, ncol = var_num)
-
-  colnames(splits) <- colnames(plusminus_table)
-  colnames(split_order) <- colnames(plusminus_table)
-  colnames(signs) <- colnames(plusminus_table)
-  colnames(depths) <- colnames(plusminus_table)
-  colnames(sc_bic_diffs) <- colnames(plusminus_table)
-
-  colnames(common_variables) <- colnames(x)
-  common_variables[1, ] <- apply(plusminus_table == 0, 2, function(x) !any(x))
-
-  already_split[] <- FALSE
-
-  order_vars[1, ] <- split_num[1] >= order_table[1, ]
-
-  splittable_vars[1, ] <-
-    !already_split[1, ] & common_variables[1, ] & order_vars[1, ]
-
-  # ----------------------------------------------------------------------------
-
-  inside_cutoffs <- find_inside_cutoffs(x, min_val_cutoff, max_val_cutoff)
-  inside_common <-
-    apply(inside_cutoffs[, common_variables[1, ], drop = FALSE], 1, all)
-  subsetter <- matrix(inside_common, nrow = obs_num, ncol = path_num)
-
-  temp_in_cutoffs <- find_inside_cutoffs(x, temp_min_cutoff, temp_max_cutoff)
-  temp_in_common <-
-    apply(temp_in_cutoffs[, common_variables[1, ], drop = FALSE], 1, all)
-  temp_subsetter <-
-    matrix(inside_common & temp_in_common, nrow = obs_num, ncol = path_num)
-
-  # ----------------------------------------------------------------------------
-
-  pop_to_path <- rep(1, pop_num)
-
-  g <- 1
-  k <- 1
-  plot_list <- list(list())
-  while (g <= path_num) {
-    proposals <- propose_splits(
-      x, temp_subsetter[, g], splittable_vars[g, ],
-      min_size, min_depth, min_height,
-      min_scaled_bic_diff, use_boundaries, boundary_noise_comp
+  pop_list <- list()
+  for (p in seq_len(pop_num)) {
+    pop_list[[p]] <- list(
+      "subsetter" = lapply(samples, \(x) as.matrix(rep(TRUE, nrow(x)))),
+      "pm_future" = plusminus[p, ],
+      "pm_previous" = rep(0, var_num),
+      "other_pops" = plusminus[-p, , drop = FALSE],
+      "splits" = rep(list(rep(NA, var_num)), samp_num),
+      "depths" = rep(list(rep(NA, var_num)), samp_num),
+      "diffs" = rep(list(rep(NA, var_num)), samp_num),
+      "order" = rep(NA, var_num),
+      "terminated" = FALSE
     )
 
-    if (proposals$scenario %in% c("valley", "boundary")) {
-      # choose the variable whose proposed split has the highest score
-      var_choice <- which.max(proposals$scores)
+    names(pop_list)[p] <- rownames(plusminus)[p]
 
-      splits[g, var_choice] <- proposals$splits[var_choice]
-      if (proposals$scenario == "valley") {
-        depths[g, var_choice] <- proposals$scores[var_choice]
-      } else {
-        sc_bic_diffs[g, var_choice] <- proposals$scores[var_choice]
-      }
-      already_split[g, var_choice] <- TRUE
+    pop_list[[p]] <- recursive_gatetree(
+      pop_list[[p]], samples,
+      min_depth = min_depth, min_diff = min_diff,
+      use_gmm = use_gmm
+    )
 
-      # We need to find out which populations have the same sign for the chosen
-      # variable as population k.
-      same_sign <-
-        plusminus_table[, var_choice] == plusminus_table[k, var_choice]
-      # If all populations on path g have the same sign as population k,
-      # then a new branch is not created.
-      new_branch_created <- !all(same_sign[pop_to_path == g])
-
-      # x_gp is the values for the chosen variable of the events currently on
-      # path g.
-      x_gp <- x[subsetter[, g], var_choice]
-      more_gp <- x[, var_choice] > splits[g, var_choice]
-      is_negative <- plusminus_table[k, var_choice] == -1
-      refine_current <- if (is_negative) !more_gp else more_gp
-
-      split_num[g] <- split_num[g] + 1
-      split_order[g, var_choice] <- split_num[g]
-
-      signs[g, var_choice] <- plusminus_table[k, var_choice]
-      rownames(signs)[g] <-
-        rownames(plusminus_table)[which(pop_to_path == g)[1]]
-
-      plot_list[[g]][[split_num[g]]] <- plot_gatetree_split(
-        x_gp, g, var_choice, proposals$scores[var_choice],
-        signs, proposals$scenario, splits[g, var_choice]
-      )
-
-      if (new_branch_created) {
-        # Any populations on path g that do not have the same sign as population
-        # k will move onto a new path.
-        pop_to_path[pop_to_path == g & !same_sign] <- path_num + 1
-
-        split_num[path_num + 1] <- split_num[g]
-
-        plot_list[[path_num + 1]] <- plot_list[[g]]
-
-        splits <- rbind(splits, splits[g, ])
-
-        depths <- rbind(depths, depths[g, ])
-        sc_bic_diffs <- rbind(sc_bic_diffs, sc_bic_diffs[g, ])
-
-        already_split <- rbind(already_split, already_split[g, ])
-
-        signs <- rbind(signs, signs[g, ])
-        signs[path_num + 1, var_choice] <- -plusminus_table[k, var_choice]
-        rownames(signs)[path_num + 1] <-
-          rownames(plusminus_table)[which(pop_to_path == path_num + 1)[1]]
-
-        split_order <- rbind(split_order, split_order[g, ])
-
-        subsetter <- cbind(subsetter, subsetter[, g])
-        subsetter[, path_num + 1] <- subsetter[, path_num + 1] & !refine_current
-
-        splittable_vars <- rbind(splittable_vars, splittable_vars[g, ])
-        order_vars <- rbind(order_vars, order_vars[g, ])
-
-        plot_list[[path_num + 1]][[split_num[path_num + 1]]] <-
-          plot_gatetree_split(
-            x_gp, path_num + 1, var_choice, proposals$scores[var_choice],
-            signs, proposals$scenario, splits[g, var_choice]
-          )
-
-        parent_node[node_num + 2] <- utils::tail(path_nodes[[g]], 1)
-
-        path_nodes[[path_num + 1]] <- append(path_nodes[[g]], node_num + 2)
-
-        edge_name[node_num + 2] <-
-          paste0(colnames(x)[var_choice], ifelse(is_negative, "+", "-"))
-
-        node_name[node_num + 2] <-
-          paste(edge_name[path_nodes[[path_num + 1]]], collapse = "\n")
-
-        is_leaf[node_num + 2] <- TRUE
-
-        path_num <- path_num + 1
-      }
-
-      subsetter[, g] <- subsetter[, g] & refine_current
-
-      parent_node[node_num + 1] <- utils::tail(path_nodes[[g]], 1)
-      path_nodes[[g]] <- append(path_nodes[[g]], node_num + 1)
-      edge_name[node_num + 1] <-
-        paste0(colnames(x)[var_choice], ifelse(is_negative, "-", "+"))
-      node_name[node_num + 1] <-
-        paste(edge_name[path_nodes[[g]]], collapse = "\n")
-
-      is_leaf[parent_node[node_num + 1]] <- FALSE
-      is_leaf[node_num + 1] <- TRUE
-
-      node_num <- node_num + 1 + new_branch_created
-    } else {
-      if (sum(subsetter[, g]) > min_size) {
-        missed_splits <- 0
-        for (p in which(splittable_vars[g, ])) {
-          missed_splits <- missed_splits + 1
-          plot_list[[g]][[split_num[g] + missed_splits]] <-
-            plot_gatetree_split(
-              x[subsetter[, g], p], g, p,
-              score = NA,
-              signs, proposals$scenario, split_gp = NA
-            )
-        }
-
-        plot_list <- explore_plots(
-          explore,
-          x, g, subsetter, splittable_vars,
-          explore_min_depth, explore_min_height, explore_min_size,
-          plot_list, split_num, missed_splits, signs
-        )
-      }
-
-      g <- g + 1
-      common_variables <- rbind(common_variables, NA)
-    }
-
-    if (any(pop_to_path == g)) {
-      k <- match(g, pop_to_path)
-
-      common_variables[g, ] <- apply(
-        plusminus_table[pop_to_path == g, , drop = FALSE], 2, \(x) all(x != 0)
-      )
-
-      inside_common <-
-        apply(inside_cutoffs[, common_variables[1, ], drop = FALSE], 1, all)
-      subsetter[, g] <- subsetter[, g] & inside_common
-
-      temp_subsetter <- subsetter
-      temp_in_common <-
-        apply(temp_in_cutoffs[, common_variables[1, ], drop = FALSE], 1, all)
-      temp_subsetter[, g] <- subsetter[, g] & temp_in_common
-
-      splittable_vars[g, ] <- !already_split[g, ] & common_variables[g, ]
-
-      order_vars[g, ] <- split_num[g] >= order_table[k, ]
-      splittable_vars[g, ] <- splittable_vars[g, ] & order_vars[g, ]
+    if (verbose) {
+      message("Population ", p, " complete.")
     }
   }
 
-  plot_paths(plot_list, show_plot = show_plot[1])
+  pop_list
+}
 
-  edge_df <-
-    make_edge_df(
-      parent_node, node_num, edge_name, node_name, is_leaf, path_nodes
+recursive_gatetree <- function(pop, samples, min_depth, min_diff, use_gmm) {
+  if (pop$terminated) {
+    return(pop)
+  }
+
+  var_num <- length(pop$pm_future)
+  samp_num <- length(samples)
+  split_num <- sum(pop$pm_previous != 0) + 1
+
+  valleys <- rep(list(matrix(nrow = var_num, ncol = 2)), samp_num)
+  for (s in seq_len(samp_num)) {
+    for (v in seq_len(var_num)) {
+      if (pop$pm_future[v] != 0 && all(pop$other_pops[, v] != 0)) {
+        valleys[[s]][v, ] <- find_valley(
+          stats::density(samples[[s]][pop$subsetter[[s]][, split_num], v]),
+          min_depth
+        )
+      } else {
+        valleys[[s]][v, ] <- c(NA, NA)
+      }
+    }
+  }
+
+  samp_depths <- vapply(valleys, \(x) x[, 2], double(var_num))
+  samp_depth_checks <- samp_depths > min_depth
+
+  if (any(samp_depth_checks, na.rm = TRUE)) {
+    samp_depths_na <- samp_depths
+    samp_depths_na[!samp_depth_checks] <- NA
+    samp_depth_means <- apply(samp_depths_na, 1, mean, na.rm = TRUE)
+    samp_count_depth_checks <- apply(samp_depth_checks, 1, sum, na.rm = TRUE)
+    max_depth_mean <- max(samp_depth_means[which.max(samp_count_depth_checks)])
+    var_choice <- which(samp_depth_means == max_depth_mean)
+
+    samp_valleys <- vapply(valleys, \(x) x[, 1], double(var_num))
+    samp_valleys_na <- samp_valleys
+    samp_valleys_na[!samp_depth_checks] <- NA
+    samp_valley_means <- vapply(
+      seq_len(var_num),
+      FUN.VALUE = double(1L),
+      \(x) {
+        stats::weighted.mean(
+          samp_valleys_na[x, ], samp_depths_na[x, ], na.rm = TRUE
+        )
+      }
     )
-  tree_plot <- make_tree_plot(edge_df, show_plot[2])
 
-  labels <- c()
-  unassigned <- rowSums(subsetter) == 0
-  labels[!unassigned] <-
-    apply(subsetter[!unassigned, , drop = FALSE], 1, which)
-  labels[unassigned] <- 0
+    valley_choices <- samp_valleys_na[var_choice, ]
+    valley_choices[is.na(valley_choices)] <- samp_valley_means[var_choice]
 
-  signs[is.na(signs)] <- 0
+    for (s in seq_len(samp_num)) {
+      if (pop$pm_future[var_choice] == +1) {
+        temp_subsetter <-
+          samples[[s]][pop$subsetter[[s]][, split_num], var_choice] >=
+            valley_choices[s]
+        pop$pm_previous[var_choice] <- +1
+      } else if (pop$pm_future[var_choice] == -1) {
+        temp_subsetter <-
+          samples[[s]][pop$subsetter[[s]][, split_num], var_choice] <
+            valley_choices[s]
+        pop$pm_previous[var_choice] <- -1
+      } else {
+        stop("pop$pm_future[var_choice] should not be 0.")
+      }
 
-  rownames(splits) <- rownames(split_order) <-
-    rownames(depths) <- rownames(sc_bic_diffs) <- rownames(signs)
+      pop$splits[[s]][var_choice] <- valley_choices[s]
+      pop$depths[[s]][var_choice] <- valleys[[s]][var_choice, 2]
 
-  list(
-    splits = splits,
-    split_order = split_order,
-    subsetter = subsetter,
-    edge_df = edge_df,
-    labels = labels,
-    signs = signs,
-    tree_plot = tree_plot,
-    depths = depths,
-    sc_bic_diffs = sc_bic_diffs
+      pop$subsetter[[s]] <-
+        cbind(pop$subsetter[[s]], pop$subsetter[[s]][, split_num])
+      pop$subsetter[[s]][pop$subsetter[[s]][, split_num], split_num + 1] <-
+        temp_subsetter
+
+      if (s == samp_num) {
+        pop$order[var_choice] <- split_num
+
+        same_path <- pop$other_pops[, var_choice] == pop$pm_future[var_choice]
+        pop$other_pops <- pop$other_pops[same_path, , drop = FALSE]
+        pop$pm_future[var_choice] <- 0
+        pop$other_pops[, var_choice] <- 0
+      }
+    }
+  } else if (use_gmm) {
+    boundaries <- rep(list(matrix(nrow = var_num, ncol = 2)), samp_num)
+    for (s in seq_len(samp_num)) {
+      for (v in seq_len(var_num)) {
+        if (pop$pm_future[v] != 0 && all(pop$other_pops[, v] != 0)) {
+          boundaries[[s]][v, ] <- find_boundary(
+            samples[[s]][pop$subsetter[[s]][, split_num], v],
+            TRUE
+          )
+        } else {
+          boundaries[[s]][v, ] <- c(NA, NA)
+        }
+      }
+    }
+
+    samp_diffs <- vapply(boundaries, \(x) x[, 2], double(var_num))
+    samp_diff_checks <- samp_diffs > min_diff
+
+    if (any(samp_diff_checks, na.rm = TRUE)) {
+      samp_diffs_na <- samp_diffs
+      samp_diffs_na[!samp_diff_checks] <- NA
+      samp_diff_means <- apply(samp_diffs_na, 1, mean, na.rm = TRUE)
+      samp_count_diff_checks <- apply(samp_diff_checks, 1, sum, na.rm = TRUE)
+      max_diff_mean <- max(samp_diff_means[which.max(samp_count_diff_checks)])
+      var_choice <- which(samp_diff_means == max_diff_mean)
+
+      samp_boundaries <- vapply(boundaries, \(x) x[, 1], double(var_num))
+      samp_boundaries_na <- samp_boundaries
+      samp_boundaries_na[!samp_diff_checks] <- NA
+      samp_boundary_means <- vapply(
+        seq_len(var_num),
+        FUN.VALUE = double(1L),
+        \(x) {
+          stats::weighted.mean(
+            samp_boundaries_na[x, ], samp_diffs_na[x, ], na.rm = TRUE
+          )
+        }
+      )
+
+      boundary_choices <- samp_boundaries_na[var_choice, ]
+      boundary_choices[is.na(boundary_choices)] <-
+        samp_boundary_means[var_choice]
+
+      for (s in seq_len(samp_num)) {
+        if (pop$pm_future[var_choice] == +1) {
+          temp_subsetter <-
+            samples[[s]][pop$subsetter[[s]][, split_num], var_choice] >=
+              boundary_choices[s]
+          pop$pm_previous[var_choice] <- +1
+        } else if (pop$pm_future[var_choice] == -1) {
+          temp_subsetter <-
+            samples[[s]][pop$subsetter[[s]][, split_num], var_choice] <
+              boundary_choices[s]
+          pop$pm_previous[var_choice] <- -1
+        } else {
+          stop("pop$pm_future[var_choice] should not be 0.")
+        }
+
+        pop$splits[[s]][var_choice] <- boundary_choices[s]
+        pop$diffs[[s]][var_choice] <- boundaries[[s]][var_choice, 2]
+
+        pop$subsetter[[s]] <-
+          cbind(pop$subsetter[[s]], pop$subsetter[[s]][, split_num])
+        pop$subsetter[[s]][pop$subsetter[[s]][, split_num], split_num + 1] <-
+          temp_subsetter
+
+        if (s == samp_num) {
+          pop$order[var_choice] <- split_num
+
+          same_path <- pop$other_pops[, var_choice] == pop$pm_future[var_choice]
+          pop$other_pops <- pop$other_pops[same_path, , drop = FALSE]
+          pop$pm_future[var_choice] <- 0
+          pop$other_pops[, var_choice] <- 0
+        }
+      }
+    } else {
+      pop$terminated <- TRUE
+    }
+  } else {
+    pop$terminated <- TRUE
+  }
+
+  if (all(pop$pm_future == 0)) {
+    pop$terminated <- TRUE
+  }
+
+  recursive_gatetree(
+    pop, samples,
+    min_depth = min_depth, min_diff = min_diff, use_gmm = use_gmm
   )
 }

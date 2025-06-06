@@ -4,15 +4,15 @@
 #' Find the optimal two-component univariate GMM boundary and check if its
 #' scaled BIC difference is greater than `min_scaled_bic_diff`.
 #'
-#' @inheritParams gatetree
+#' @param x Data vector
+#' @param boundary_noise_comp = TRUE
 #'
 #' @import mclust
 #'
 #' @return Vector consisting of the boundary and its scaled BIC difference. The
 #' boundary will be NA if its scaled BIC difference is less than
 #' `min_scaled_bic_diff`.
-find_boundary <- function(
-    x, min_scaled_bic_diff = 0, boundary_noise_comp = TRUE) {
+find_boundary <- function(x, boundary_noise_comp = TRUE) {
   gmm1 <- mclust::Mclust(x, G = 1, modelNames = "E", verbose = FALSE)
   gmm2 <- mclust::Mclust(x, G = 2, modelNames = "E", verbose = FALSE)
 
@@ -38,10 +38,6 @@ find_boundary <- function(
   } else {
     scaled_bic_diff <- (gmm2$bic - gmm1$bic) / (2 * length(x))
     boundary <- get_mclust_boundary(gmm2$parameters)
-  }
-
-  if (scaled_bic_diff < min_scaled_bic_diff) {
-    boundary <- NA
   }
 
   c(boundary, scaled_bic_diff)
