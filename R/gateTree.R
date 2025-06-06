@@ -287,9 +287,7 @@ gatetree <- function(
       k <- match(g, pop_to_path)
 
       common_variables[g, ] <- apply(
-        plusminus_table[pop_to_path == g, , drop = FALSE],
-        2,
-        function(x) all(x != 0)
+        plusminus_table[pop_to_path == g, , drop = FALSE], 2, \(x) all(x != 0)
       )
 
       inside_common <-
