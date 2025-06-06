@@ -4,7 +4,7 @@
 \alias{plot_split}
 \title{Density plot with a \code{gateTree} split.}
 \usage{
-plot_split(samples, gatetree_out, pop, samp, var)
+plot_split(samples, gatetree_out, pop = NULL, samp = NULL, var = NULL)
 }
 \arguments{
 \item{samples}{Dataset in \code{matrix} or \code{data.frame} form.}

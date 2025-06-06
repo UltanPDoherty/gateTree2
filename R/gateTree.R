@@ -62,6 +62,7 @@ gatetree <- function(
       "depths" = rep(list(rep(NA, var_num)), samp_num),
       "diffs" = rep(list(rep(NA, var_num)), samp_num),
       "order" = rep(NA, var_num),
+      "method" = rep(NA, var_num),
       "terminated" = FALSE
     )
 
@@ -123,7 +124,8 @@ recursive_gatetree <- function(pop, samples, min_depth, min_diff, use_gmm) {
       FUN.VALUE = double(1L),
       \(x) {
         stats::weighted.mean(
-          samp_valleys_na[x, ], samp_depths_na[x, ], na.rm = TRUE
+          samp_valleys_na[x, ], samp_depths_na[x, ],
+          na.rm = TRUE
         )
       }
     )
@@ -133,21 +135,19 @@ recursive_gatetree <- function(pop, samples, min_depth, min_diff, use_gmm) {
 
     for (s in seq_len(samp_num)) {
       if (pop$pm_future[var_choice] == +1) {
-        temp_subsetter <-
-          samples[[s]][pop$subsetter[[s]][, split_num], var_choice] >=
-            valley_choices[s]
+        x <- samples[[s]][pop$subsetter[[s]][, split_num], var_choice]
+        temp_subsetter <- x >= valley_choices[s]
         pop$pm_previous[var_choice] <- +1
       } else if (pop$pm_future[var_choice] == -1) {
-        temp_subsetter <-
-          samples[[s]][pop$subsetter[[s]][, split_num], var_choice] <
-            valley_choices[s]
+        x <- samples[[s]][pop$subsetter[[s]][, split_num], var_choice]
+        temp_subsetter <- x < valley_choices[s]
         pop$pm_previous[var_choice] <- -1
       } else {
         stop("pop$pm_future[var_choice] should not be 0.")
       }
 
       pop$splits[[s]][var_choice] <- valley_choices[s]
-      pop$depths[[s]][var_choice] <- valleys[[s]][var_choice, 2]
+      pop$depths[[s]][var_choice] <- samp_depths_na[var_choice, s]
 
       pop$subsetter[[s]] <-
         cbind(pop$subsetter[[s]], pop$subsetter[[s]][, split_num])
@@ -156,6 +156,7 @@ recursive_gatetree <- function(pop, samples, min_depth, min_diff, use_gmm) {
 
       if (s == samp_num) {
         pop$order[var_choice] <- split_num
+        pop$method[var_choice] <- "valley"
 
         same_path <- pop$other_pops[, var_choice] == pop$pm_future[var_choice]
         pop$other_pops <- pop$other_pops[same_path, , drop = FALSE]
@@ -197,7 +198,8 @@ recursive_gatetree <- function(pop, samples, min_depth, min_diff, use_gmm) {
         FUN.VALUE = double(1L),
         \(x) {
           stats::weighted.mean(
-            samp_boundaries_na[x, ], samp_diffs_na[x, ], na.rm = TRUE
+            samp_boundaries_na[x, ], samp_diffs_na[x, ],
+            na.rm = TRUE
           )
         }
       )
@@ -208,21 +210,19 @@ recursive_gatetree <- function(pop, samples, min_depth, min_diff, use_gmm) {
 
       for (s in seq_len(samp_num)) {
         if (pop$pm_future[var_choice] == +1) {
-          temp_subsetter <-
-            samples[[s]][pop$subsetter[[s]][, split_num], var_choice] >=
-              boundary_choices[s]
+          x <- samples[[s]][pop$subsetter[[s]][, split_num], var_choice]
+          temp_subsetter <- x >= boundary_choices[s]
           pop$pm_previous[var_choice] <- +1
         } else if (pop$pm_future[var_choice] == -1) {
-          temp_subsetter <-
-            samples[[s]][pop$subsetter[[s]][, split_num], var_choice] <
-              boundary_choices[s]
+          x <- samples[[s]][pop$subsetter[[s]][, split_num], var_choice]
+          temp_subsetter <- x < boundary_choices[s]
           pop$pm_previous[var_choice] <- -1
         } else {
           stop("pop$pm_future[var_choice] should not be 0.")
         }
 
         pop$splits[[s]][var_choice] <- boundary_choices[s]
-        pop$diffs[[s]][var_choice] <- boundaries[[s]][var_choice, 2]
+        pop$diffs[[s]][var_choice] <- samp_diffs_na[var_choice, s]
 
         pop$subsetter[[s]] <-
           cbind(pop$subsetter[[s]], pop$subsetter[[s]][, split_num])
@@ -231,6 +231,7 @@ recursive_gatetree <- function(pop, samples, min_depth, min_diff, use_gmm) {
 
         if (s == samp_num) {
           pop$order[var_choice] <- split_num
+          pop$method[var_choice] <- "boundary"
 
           same_path <- pop$other_pops[, var_choice] == pop$pm_future[var_choice]
           pop$other_pops <- pop$other_pops[same_path, , drop = FALSE]

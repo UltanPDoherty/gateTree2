@@ -13,16 +13,58 @@
 #' @param var The variable number.
 #'
 #' @return `ggplot` object.
-plot_split <- function(samples, gatetree_out, pop, samp, var) {
-  if (!is.na(gatetree_out[[pop]]$depths[[samp]][var])) {
-    scenario <- "valley"
-    score <- gatetree_out[[pop]]$depths[[samp]][var]
-  } else if (!is.na(gatetree_out[[pop]]$diffs[[samp]][var])) {
-    scenario <- "boundary"
-    score <- gatetree_out[[pop]]$diffs[[samp]][var]
+plot_split <- function(
+    samples, gatetree_out, pop = NULL, samp = NULL, var = NULL) {
+  plots <- list()
+
+  if (!is.null(pop) && !is.null(samp) && !is.null(var)) {
+    plots[[1]] <- plot_single_split(
+      samples, gatetree_out, pop, samp, var, c(1, 1)
+    )
+  } else if (!is.null(pop) && !is.null(samp) && is.null(var)) {
+    max_split <- max(gatetree_out[[pop]]$order, na.rm = TRUE)
+    for (i in seq_len(max_split)) {
+      var <- which(gatetree_out[[pop]]$order == i)
+      plots[[i]] <- plot_single_split(
+        samples, gatetree_out, pop, samp, var, c(i, max_split)
+      )
+    }
+  } else if (!is.null(pop) && is.null(samp) && !is.null(var)) {
+    samp_num <- length(samples)
+    for (j in seq_len(samp_num)) {
+      plots[[j]] <- plot_single_split(
+        samples, gatetree_out, pop, j, var, c(j, samp_num)
+      )
+    }
+  } else if (is.null(pop) && !is.null(samp) && !is.null(var)) {
+    pop_num <- length(gatetree_out)
+    for (k in seq_len(pop_num)) {
+      plots[[k]] <- plot_single_split(
+        samples, gatetree_out, k, samp, var, c(k, pop_num)
+      )
+    }
   } else {
-    scenario <- "nothing"
+    stop("At least two of pop, samp, and var are required.")
   }
+
+  plots
+}
+
+
+plot_single_split <- function(
+    samples, gatetree_out, pop, samp, var, plot_num) {
+  
+  scenario <- ifelse(
+    is.na(gatetree_out[[pop]]$method[var]),
+    "nothing",
+    gatetree_out[[pop]]$method[var]
+  )
+  score <- switch(
+    scenario,
+    "valley" = gatetree_out[[pop]]$depths[[samp]][var],
+    "boundary" = gatetree_out[[pop]]$diffs[[samp]][var],
+    "nothing" = NA
+  )
 
   # colours from ggokabeito package
   rect_col <- switch(scenario,
@@ -39,7 +81,7 @@ plot_split <- function(samples, gatetree_out, pop, samp, var) {
   )
   score_title <- switch(scenario,
     "valley"   = paste0("depth % = ", round(score, 1)),
-    "boundary" = paste0("sc. BIC diff. = ", round(score, 3)),
+    "boundary" = paste0("scaled BIC diff. = ", round(score, 3)),
     "nothing"  = NA,
     "explore"  = paste0("depth % = ", round(score, 1))
   )
@@ -115,11 +157,13 @@ plot_split <- function(samples, gatetree_out, pop, samp, var) {
     ) +
     ggplot2::geom_line() +
     ggplot2::labs(
-      title = paste0("Sample = ", samp_name, ", ", score_title),
+      title = paste0(
+        "(", plot_num[1], "/", plot_num[2], "). ",
+        "Sample: ", samp_name, ", ", score_title
+      ),
       subtitle = paste0(
-        "Path: ", pop_name, ", ",
-        "Var: ", var_name, ", ",
-        "\"", scenario, "\""
+        "Population: ", pop_name, ", ",
+        "Variable: ", var_name
       ),
       x = paste0("N before = ", size_before, ", N after = ", size_after),
       y = "Density %"
