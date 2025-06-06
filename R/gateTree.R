@@ -39,9 +39,11 @@
 gatetree <- function(
     samples,
     plusminus,
-    min_depth = 1,
+    min_depth = 50,
     min_diff = 0.01,
     use_gmm = TRUE,
+    min_cutoffs = NULL,
+    max_cutoffs = NULL,
     verbose = TRUE) {
   pop_num <- nrow(plusminus)
   var_num <- ncol(plusminus)
@@ -49,6 +51,13 @@ gatetree <- function(
 
   if (is.null(rownames(plusminus))) {
     rownames(plusminus) <- paste0("pop", seq_len(pop_num))
+  }
+  
+  if (is.null(min_cutoffs)) {
+    min_cutoffs <- rep(-Inf, var_num)
+  }
+  if (is.null(max_cutoffs)) {
+    max_cutoffs <- rep(Inf, var_num)
   }
 
   pop_list <- list()
@@ -63,6 +72,8 @@ gatetree <- function(
       "diffs" = rep(list(rep(NA, var_num)), samp_num),
       "order" = rep(NA, var_num),
       "method" = rep(NA, var_num),
+      "min_cutoffs" = min_cutoffs,
+      "max_cutoffs" = max_cutoffs,
       "terminated" = FALSE
     )
 
@@ -95,10 +106,11 @@ recursive_gatetree <- function(pop, samples, min_depth, min_diff, use_gmm) {
   for (s in seq_len(samp_num)) {
     for (v in seq_len(var_num)) {
       if (pop$pm_future[v] != 0 && all(pop$other_pops[, v] != 0)) {
-        valleys[[s]][v, ] <- find_valley(
-          stats::density(samples[[s]][pop$subsetter[[s]][, split_num], v]),
-          min_depth
-        )
+        x <- samples[[s]][pop$subsetter[[s]][, split_num], v]
+        x <- x[x > pop$min_cutoffs[v]]
+        x <- x[x < pop$max_cutoffs[v]]
+        # valleys[[s]][v, ] <- find_valley(stats::density(x), min_depth)
+        valleys[[s]][v, ] <- find_valley2(x)
       } else {
         valleys[[s]][v, ] <- c(NA, NA)
       }
@@ -169,10 +181,10 @@ recursive_gatetree <- function(pop, samples, min_depth, min_diff, use_gmm) {
     for (s in seq_len(samp_num)) {
       for (v in seq_len(var_num)) {
         if (pop$pm_future[v] != 0 && all(pop$other_pops[, v] != 0)) {
-          boundaries[[s]][v, ] <- find_boundary(
-            samples[[s]][pop$subsetter[[s]][, split_num], v],
-            TRUE
-          )
+          x <- samples[[s]][pop$subsetter[[s]][, split_num], v]
+          x <- x[x > pop$min_cutoffs[v]]
+          x <- x[x < pop$max_cutoffs[v]]
+          boundaries[[s]][v, ] <- find_boundary(x, TRUE)
         } else {
           boundaries[[s]][v, ] <- c(NA, NA)
         }
