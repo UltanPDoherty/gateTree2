@@ -165,12 +165,6 @@ plot_single_split <- function(
       fill = rect_col, na.rm = TRUE
     ) +
     ggplot2::geom_col(width = width) +
-    ggplot2::geom_vline(
-      ggplot2::aes(xintercept = min_cut), linetype = "dotted", colour = "red"
-    ) +
-    ggplot2::geom_vline(
-      ggplot2::aes(xintercept = max_cut), linetype = "dotted", colour = "red"
-    ) +
     ggplot2::labs(
       title = paste0(
         "(", plot_num[1], "/", plot_num[2], "). ",
@@ -187,6 +181,18 @@ plot_single_split <- function(
 
   if (!is.na(split_val)) {
     gg <- gg + ggplot2::geom_vline(xintercept = split_val, na.rm = TRUE)
+  }
+  if (is.finite(min_cut)) {
+    gg <- gg + ggplot2::geom_vline(
+      ggplot2::aes(xintercept = min_cut), 
+      linetype = "dotted", linewidth = 2, colour = "red"
+    )
+  }
+  if (is.finite(max_cut)) {
+    gg <- gg + ggplot2::geom_vline(
+      ggplot2::aes(xintercept = max_cut), 
+      linetype = "dotted", linewidth = 2, colour = "red"
+    )
   }
 
   gg
