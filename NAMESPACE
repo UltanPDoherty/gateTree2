@@ -2,6 +2,7 @@
 
 export(check_table)
 export(expand_table)
+export(extract_labels)
 export(gatetree)
 export(get_f1)
 export(plot_split)
