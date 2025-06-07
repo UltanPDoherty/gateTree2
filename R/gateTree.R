@@ -61,6 +61,15 @@ gatetree <- function(
   if (is.null(max_cutoffs)) {
     max_cutoffs <- rep(Inf, var_num)
   }
+  
+  this_call <- call(
+    "ombc_gmm",
+    "samples" = substitute(samples),
+    "plusminus" = plusminus,
+    "min_depth" = min_depth, "min_diff" = min_diff, "use_gmm" = use_gmm,
+    "min_cutoffs" = min_cutoffs, "max_cutoffs" = max_cutoffs, 
+    "verbose" = verbose
+  )
 
   pop_list <- list()
   for (p in seq_len(pop_num)) {
@@ -92,7 +101,7 @@ gatetree <- function(
     }
   }
 
-  pop_list
+  list("output" = pop_list, "call" = this_call)
 }
 
 recursive_gatetree <- function(pop, samples, min_depth, min_diff, use_gmm) {
