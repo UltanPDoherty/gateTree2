@@ -219,6 +219,9 @@ plot_single_split2 <- function(
   )
   
   split_num <- gatetree_out[[pop]]$order[var]
+  if (is.na(split_num)) {
+    split_num <- max(gatetree_out[[pop]]$order, na.rm = TRUE)
+  }
   x <- samples[[samp]][gatetree_out[[pop]]$subsetter[[samp]][, split_num], ]
   
   if (!is.null(names(samples))) {

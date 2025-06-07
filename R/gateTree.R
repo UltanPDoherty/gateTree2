@@ -121,29 +121,12 @@ recursive_gatetree <- function(pop, samples, min_depth, min_diff, use_gmm) {
   samp_depth_checks <- samp_depths > min_depth
 
   if (any(samp_depth_checks, na.rm = TRUE)) {
-    samp_depths_na <- samp_depths
-    samp_depths_na[!samp_depth_checks] <- NA
-    samp_depth_means <- apply(samp_depths_na, 1, mean, na.rm = TRUE)
-    samp_count_depth_checks <- apply(samp_depth_checks, 1, sum, na.rm = TRUE)
-    max_depth_mean <- max(samp_depth_means[which.max(samp_count_depth_checks)])
-    var_choice <- which(samp_depth_means == max_depth_mean)
-
-    samp_valleys <- vapply(valleys, \(x) x[, 1], double(var_num))
-    samp_valleys_na <- samp_valleys
-    samp_valleys_na[!samp_depth_checks] <- NA
-    samp_valley_means <- vapply(
-      seq_len(var_num),
-      FUN.VALUE = double(1L),
-      \(x) {
-        stats::weighted.mean(
-          samp_valleys_na[x, ], samp_depths_na[x, ],
-          na.rm = TRUE
-        )
-      }
+    choices <- make_choices(
+      valleys, samp_depths, samp_depth_checks, samples, pop$subsetter
     )
-
-    valley_choices <- samp_valleys_na[var_choice, ]
-    valley_choices[is.na(valley_choices)] <- samp_valley_means[var_choice]
+    var_choice <- choices$var
+    valley_choices <- choices$splits
+    choice_depths <- choices$scores
 
     for (s in seq_len(samp_num)) {
       if (pop$pm_future[var_choice] == +1) {
@@ -159,7 +142,7 @@ recursive_gatetree <- function(pop, samples, min_depth, min_diff, use_gmm) {
       }
 
       pop$splits[[s]][var_choice] <- valley_choices[s]
-      pop$depths[[s]][var_choice] <- samp_depths_na[var_choice, s]
+      pop$depths[[s]][var_choice] <- choice_depths[s]
 
       pop$subsetter[[s]] <-
         cbind(pop$subsetter[[s]], pop$subsetter[[s]][, split_num])
@@ -195,30 +178,12 @@ recursive_gatetree <- function(pop, samples, min_depth, min_diff, use_gmm) {
     samp_diff_checks <- samp_diffs > min_diff
 
     if (any(samp_diff_checks, na.rm = TRUE)) {
-      samp_diffs_na <- samp_diffs
-      samp_diffs_na[!samp_diff_checks] <- NA
-      samp_diff_means <- apply(samp_diffs_na, 1, mean, na.rm = TRUE)
-      samp_count_diff_checks <- apply(samp_diff_checks, 1, sum, na.rm = TRUE)
-      max_diff_mean <- max(samp_diff_means[which.max(samp_count_diff_checks)])
-      var_choice <- which(samp_diff_means == max_diff_mean)
-
-      samp_boundaries <- vapply(boundaries, \(x) x[, 1], double(var_num))
-      samp_boundaries_na <- samp_boundaries
-      samp_boundaries_na[!samp_diff_checks] <- NA
-      samp_boundary_means <- vapply(
-        seq_len(var_num),
-        FUN.VALUE = double(1L),
-        \(x) {
-          stats::weighted.mean(
-            samp_boundaries_na[x, ], samp_diffs_na[x, ],
-            na.rm = TRUE
-          )
-        }
+      choices <- make_choices(
+        boundaries, samp_diffs, samp_diff_checks, samples, pop$subsetter
       )
-
-      boundary_choices <- samp_boundaries_na[var_choice, ]
-      boundary_choices[is.na(boundary_choices)] <-
-        samp_boundary_means[var_choice]
+      var_choice <- choices$var
+      boundary_choices <- choices$splits
+      choice_diffs <- choices$scores
 
       for (s in seq_len(samp_num)) {
         if (pop$pm_future[var_choice] == +1) {
@@ -234,7 +199,7 @@ recursive_gatetree <- function(pop, samples, min_depth, min_diff, use_gmm) {
         }
 
         pop$splits[[s]][var_choice] <- boundary_choices[s]
-        pop$diffs[[s]][var_choice] <- samp_diffs_na[var_choice, s]
+        pop$diffs[[s]][var_choice] <- choice_diffs[s]
 
         pop$subsetter[[s]] <-
           cbind(pop$subsetter[[s]], pop$subsetter[[s]][, split_num])
@@ -266,4 +231,78 @@ recursive_gatetree <- function(pop, samples, min_depth, min_diff, use_gmm) {
     pop, samples,
     min_depth = min_depth, min_diff = min_diff, use_gmm = use_gmm
   )
+}
+
+make_choices <- function(splits, scores, checks, samples, subsetter) {
+  
+  var_num <- nrow(scores)
+  samp_num <- length(samples)
+  
+  scores[!checks] <- NA
+  split_vals <- vapply(splits, \(x) x[, 1], double(var_num))
+  split_vals[!checks] <- NA
+  
+  score_sums <- apply(scores, 1, sum, na.rm = TRUE)
+  score_means <- score_sums / samp_num
+  var_choice <- which.max(score_means)
+  
+  choice_scores <- scores[var_choice, ]
+  
+  comparable_splits <- compare_splits(split_vals, scores, samples, subsetter)
+  split_means <- vapply(
+    seq_len(var_num), FUN.VALUE = double(1L),
+    \(x) {
+      stats::weighted.mean(
+        split_vals[x, ] * comparable_splits[x, ], 
+        scores[x, ] * comparable_splits[x, ],
+        na.rm = TRUE
+      )
+    }
+  )
+  
+  split_choices <- split_vals[var_choice, ]
+  split_choices[is.na(split_choices)] <- split_means[var_choice]
+  
+  list("var" = var_choice, "splits" = split_choices, "scores" = choice_scores)
+}
+
+compare_splits <- function(split_vals, scores, samples, subsetter) {
+  samp_num <- ncol(split_vals)
+  var_num <- nrow(split_vals)
+  subset_num <- ncol(subsetter[[1]])
+  
+  balanced_accuracy <- matrix(NA, nrow = var_num, ncol = samp_num)
+  comparable_splits <- matrix(NA, nrow = var_num, ncol = samp_num)
+  for (v in seq_len(var_num)) {
+    if (any(!is.na(scores[v, ]))) {
+      max_s <- which.max(scores[v, ])
+      
+      for (s in seq_along(samples)) {
+        if (!is.na(scores[v, s])) {
+          obs_num <- sum(subsetter[[s]][, subset_num])
+          
+          original_neg <- sum(
+            samples[[s]][subsetter[[s]][, subset_num], v] < split_vals[v, s]
+          )
+          original_pos <- obs_num - original_neg
+          
+          maximum_neg <- sum(
+            samples[[s]][subsetter[[s]][, subset_num], v] < split_vals[v, max_s]
+          )
+          maximum_pos <- obs_num - maximum_neg
+          
+          tp <- min(original_pos, maximum_pos)
+          tn <- min(original_neg, maximum_neg)
+          fp <- max(maximum_pos - original_pos, 0)
+          fn <- max(maximum_neg - original_neg, 0)
+          
+          fp + fn / obs_num
+          balanced_accuracy[v, s] <- ((tp / (tp + fp)) + (tn / (tn + fn))) / 2
+          comparable_splits[v, s] <- balanced_accuracy[v, s] >= 0.75
+        }
+      }
+    }
+  }
+  
+  comparable_splits
 }
