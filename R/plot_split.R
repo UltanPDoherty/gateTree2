@@ -17,15 +17,16 @@
 #' @export
 plot_split <- function(
     samples, gatetree_out, pop = NULL, samp = NULL, var = NULL) {
+  
   plots <- list()
   if (!is.null(pop) && !is.null(samp) && !is.null(var)) {
     plots[[1]] <- plot_single_split(
       samples, gatetree_out, pop, samp, var, c(1, 1)
     )
   } else if (!is.null(pop) && !is.null(samp) && is.null(var)) {
-    max_split <- max(gatetree_out[[pop]]$order, na.rm = TRUE)
+    max_split <- max(gatetree_out$output[[pop]]$order, na.rm = TRUE)
     for (i in seq_len(max_split)) {
-      var <- which(gatetree_out[[pop]]$order == i)
+      var <- which(gatetree_out$output[[pop]]$order == i)
       plots[[i]] <- plot_single_split(
         samples, gatetree_out, pop, samp, var, c(i, max_split)
       )
@@ -38,7 +39,7 @@ plot_split <- function(
       )
     }
   } else if (is.null(pop) && !is.null(samp) && !is.null(var)) {
-    pop_num <- length(gatetree_out)
+    pop_num <- length(gatetree_out$output)
     for (k in seq_len(pop_num)) {
       plots[[k]] <- plot_single_split(
         samples, gatetree_out, k, samp, var, c(k, pop_num)
@@ -53,6 +54,10 @@ plot_split <- function(
 
 plot_single_split <- function(
     samples, gatetree_out, pop, samp, var, plot_num) {
+  
+  gatetree_call <- gatetree_out$call 
+  gatetree_out <- gatetree_out$output
+  
   scenario <- ifelse(
     is.na(gatetree_out[[pop]]$method[var]),
     "nothing",
@@ -113,6 +118,10 @@ plot_single_split <- function(
   }
 
   x <- x[, var]
+  min_cut <- gatetree_call$min_cutoffs[var]
+  max_cut <- gatetree_call$max_cutoffs[var]
+  x <- x[x > min_cut]
+  x <- x[x < max_cut]
 
   split_val <- gatetree_out[[pop]]$splits[[samp]][var]
 
@@ -156,6 +165,12 @@ plot_single_split <- function(
       fill = rect_col, na.rm = TRUE
     ) +
     ggplot2::geom_col(width = width) +
+    ggplot2::geom_vline(
+      ggplot2::aes(xintercept = min_cut), linetype = "dotted", colour = "red"
+    ) +
+    ggplot2::geom_vline(
+      ggplot2::aes(xintercept = max_cut), linetype = "dotted", colour = "red"
+    ) +
     ggplot2::labs(
       title = paste0(
         "(", plot_num[1], "/", plot_num[2], "). ",
