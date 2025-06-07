@@ -15,6 +15,8 @@
 #' Minimum value of difference between one-component and two-component BIC
 #' divided by 2 log(obs_num).
 #' @param use_gmm Logical value.
+#' @param min_cutoffs Minimum values for observations used when finding splits.
+#' @param max_cutoffs Maximum values for observations used when finding splits.
 #' @param verbose Logical value.
 #'
 #' @return A `list` object:
@@ -110,7 +112,7 @@ recursive_gatetree <- function(pop, samples, min_depth, min_diff, use_gmm) {
         x <- x[x > pop$min_cutoffs[v]]
         x <- x[x < pop$max_cutoffs[v]]
         # valleys[[s]][v, ] <- find_valley(stats::density(x), min_depth)
-        valleys[[s]][v, ] <- find_valley2(x)
+        valleys[[s]][v, ] <- find_valley(x)
       } else {
         valleys[[s]][v, ] <- c(NA, NA)
       }

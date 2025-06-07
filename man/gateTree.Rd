@@ -7,9 +7,11 @@
 gatetree(
   samples,
   plusminus,
-  min_depth = 1,
+  min_depth = 50,
   min_diff = 0.01,
   use_gmm = TRUE,
+  min_cutoffs = NULL,
+  max_cutoffs = NULL,
   verbose = TRUE
 )
 }
@@ -26,6 +28,10 @@ for a split to be returned by \link{find_valley}.}
 divided by 2 log(obs_num).}
 
 \item{use_gmm}{Logical value.}
+
+\item{min_cutoffs}{Minimum values for observations used when finding splits.}
+
+\item{max_cutoffs}{Maximum values for observations used when finding splits.}
 
 \item{verbose}{Logical value.}
 }
