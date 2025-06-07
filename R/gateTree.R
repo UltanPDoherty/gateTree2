@@ -54,7 +54,7 @@ gatetree <- function(
   if (is.null(rownames(plusminus))) {
     rownames(plusminus) <- paste0("pop", seq_len(pop_num))
   }
-  
+
   if (is.null(min_cutoffs)) {
     min_cutoffs <- rep(-Inf, var_num)
   }
@@ -111,7 +111,6 @@ recursive_gatetree <- function(pop, samples, min_depth, min_diff, use_gmm) {
         x <- samples[[s]][pop$subsetter[[s]][, split_num], v]
         x <- x[x > pop$min_cutoffs[v]]
         x <- x[x < pop$max_cutoffs[v]]
-        # valleys[[s]][v, ] <- find_valley(stats::density(x), min_depth)
         valleys[[s]][v, ] <- find_valley(x)
       } else {
         valleys[[s]][v, ] <- c(NA, NA)
@@ -236,35 +235,35 @@ recursive_gatetree <- function(pop, samples, min_depth, min_diff, use_gmm) {
 }
 
 make_choices <- function(splits, scores, checks, samples, subsetter) {
-  
   var_num <- nrow(scores)
   samp_num <- length(samples)
-  
+
   scores[!checks] <- NA
   split_vals <- vapply(splits, \(x) x[, 1], double(var_num))
   split_vals[!checks] <- NA
-  
+
   score_sums <- apply(scores, 1, sum, na.rm = TRUE)
   score_means <- score_sums / samp_num
   var_choice <- which.max(score_means)
-  
+
   choice_scores <- scores[var_choice, ]
-  
+
   comparable_splits <- compare_splits(split_vals, scores, samples, subsetter)
   split_means <- vapply(
-    seq_len(var_num), FUN.VALUE = double(1L),
+    seq_len(var_num),
+    FUN.VALUE = double(1L),
     \(x) {
       stats::weighted.mean(
-        split_vals[x, ] * comparable_splits[x, ], 
+        split_vals[x, ] * comparable_splits[x, ],
         scores[x, ] * comparable_splits[x, ],
         na.rm = TRUE
       )
     }
   )
-  
+
   split_choices <- split_vals[var_choice, ]
   split_choices[is.na(split_choices)] <- split_means[var_choice]
-  
+
   list("var" = var_choice, "splits" = split_choices, "scores" = choice_scores)
 }
 
@@ -272,32 +271,32 @@ compare_splits <- function(split_vals, scores, samples, subsetter) {
   samp_num <- ncol(split_vals)
   var_num <- nrow(split_vals)
   subset_num <- ncol(subsetter[[1]])
-  
+
   balanced_accuracy <- matrix(NA, nrow = var_num, ncol = samp_num)
   comparable_splits <- matrix(NA, nrow = var_num, ncol = samp_num)
   for (v in seq_len(var_num)) {
     if (any(!is.na(scores[v, ]))) {
       max_s <- which.max(scores[v, ])
-      
+
       for (s in seq_along(samples)) {
         if (!is.na(scores[v, s])) {
           obs_num <- sum(subsetter[[s]][, subset_num])
-          
+
           original_neg <- sum(
             samples[[s]][subsetter[[s]][, subset_num], v] < split_vals[v, s]
           )
           original_pos <- obs_num - original_neg
-          
+
           maximum_neg <- sum(
             samples[[s]][subsetter[[s]][, subset_num], v] < split_vals[v, max_s]
           )
           maximum_pos <- obs_num - maximum_neg
-          
+
           tp <- min(original_pos, maximum_pos)
           tn <- min(original_neg, maximum_neg)
           fp <- max(maximum_pos - original_pos, 0)
           fn <- max(maximum_neg - original_neg, 0)
-          
+
           fp + fn / obs_num
           balanced_accuracy[v, s] <- ((tp / (tp + fp)) + (tn / (tn + fn))) / 2
           comparable_splits[v, s] <- balanced_accuracy[v, s] >= 0.75
@@ -305,6 +304,6 @@ compare_splits <- function(split_vals, scores, samples, subsetter) {
       }
     }
   }
-  
+
   comparable_splits
 }

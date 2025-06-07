@@ -9,7 +9,7 @@ find_valley <- function(x) {
   counts <- x_ash$nc
   breaks <- seq(x_ash$ab[1], x_ash$ab[2], length.out = nbin + 1)
   midpoints <- (breaks[1:nbin] + breaks[-1]) / 2
-  
+
   w <- 1
   is_peak <- peak_left <- peak_right <- rep(FALSE, nbin)
   for (i in seq(w + 1, nbin - w)) {
@@ -18,20 +18,20 @@ find_valley <- function(x) {
     is_peak[i] <- peak_left[i] & peak_right[i]
   }
   is_peak
-  
+
   if (sum(is_peak) == 1) {
     best_valley <- NA
     best_depth <- NA
   } else {
     maxpeak_ind <- which.max(counts)
     maxpeak <- data.frame(x = midpoints[maxpeak_ind], y = counts[maxpeak_ind])
-    
+
     otherpeaks_ind <- which(is_peak & counts != max(counts))
     otherpeaks <- data.frame(
       x = midpoints[otherpeaks_ind],
       y = counts[otherpeaks_ind]
     )
-    
+
     depths <- valleys <- valley_ind <- c()
     interpeak <- matrix(nrow = nbin, ncol = length(otherpeaks$x))
     for (i in seq_along(otherpeaks$x)) {
@@ -42,7 +42,7 @@ find_valley <- function(x) {
       valleys[i] <- counts[valley_ind[i]]
       depths[i] <- otherpeaks$y[i] - valleys[i]
     }
-    
+
     if (is.null(depths)) {
       best_depth <- NA
       best_valley <- NA
@@ -51,7 +51,6 @@ find_valley <- function(x) {
       best_valley <- midpoints[valley_ind[which.max(depths)]]
     }
   }
-  
-  return(c(best_valley, best_depth))
-  
+
+  c(best_valley, best_depth)
 }
