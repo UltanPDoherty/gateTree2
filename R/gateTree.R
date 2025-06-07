@@ -41,8 +41,8 @@
 gatetree <- function(
     samples,
     plusminus,
-    min_depth = 50,
-    min_diff = 0.01,
+    min_depth = 100,
+    min_diff = 0.05,
     use_gmm = TRUE,
     min_cutoffs = NULL,
     max_cutoffs = NULL,

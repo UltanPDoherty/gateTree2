@@ -13,6 +13,8 @@
 #' @param var The variable number.
 #'
 #' @return `ggplot` object.
+#' 
+#' @export
 plot_split <- function(
     samples, gatetree_out, pop = NULL, samp = NULL, var = NULL) {
   plots <- list()
