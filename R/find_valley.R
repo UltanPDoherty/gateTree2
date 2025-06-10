@@ -12,9 +12,19 @@ find_valley <- function(x) {
 
   w <- 1
   is_peak <- peak_left <- peak_right <- rep(FALSE, nbin)
+  for (i in seq(1, w)) {
+    peak_left[i] <- all(counts[i] >= counts[1:i])
+    peak_right[i] <- all(counts[i] >= counts[(i + 1):(i + w)])
+    is_peak[i] <- peak_left[i] & peak_right[i]
+  }
   for (i in seq(w + 1, nbin - w)) {
     peak_left[i] <- all(counts[i] >= counts[(i - w):(i - 1)])
     peak_right[i] <- all(counts[i] >= counts[(i + 1):(i + w)])
+    is_peak[i] <- peak_left[i] & peak_right[i]
+  }
+  for (i in seq(nbin - w + 1, nbin)) {
+    peak_left[i] <- all(counts[i] >= counts[(i - w):(i - 1)])
+    peak_right[i] <- all(counts[i] >= counts[i:nbin])
     is_peak[i] <- peak_left[i] & peak_right[i]
   }
   is_peak

@@ -106,16 +106,15 @@ plot_single_split <- function(
 
   if (explore) {
     scenario <- "explore"
+    split_num <- max(gatetree_out[[pop]]$order, na.rm = TRUE) + 1
   } else if (is.na(gatetree_out[[pop]]$method[var])) {
     scenario <- "nothing"
+    split_num <- max(gatetree_out[[pop]]$order, na.rm = TRUE)
   } else {
     scenario <- gatetree_out[[pop]]$method[var]
+    split_num <- gatetree_out[[pop]]$order[var]
   }
 
-  split_num <- gatetree_out[[pop]]$order[var]
-  if (is.na(split_num)) {
-    split_num <- max(gatetree_out[[pop]]$order, na.rm = TRUE)
-  }
   x <- samples[[samp]][gatetree_out[[pop]]$subsetter[[samp]][, split_num], ]
 
   if (!is.null(names(samples))) {
@@ -144,6 +143,9 @@ plot_single_split <- function(
     valley <- find_valley(x)
     split_val <- valley[1]
     explore_valley_depth <- valley[2]
+    if (is.na(valley[1])) {
+      scenario <- "nothing"
+    }
   } else {
     split_val <- gatetree_out[[pop]]$splits[[samp]][var]
     explore_valley_depth <- NA
