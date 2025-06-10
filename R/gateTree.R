@@ -46,6 +46,7 @@ gatetree <- function(
     use_gmm = TRUE,
     min_cutoffs = NULL,
     max_cutoffs = NULL,
+    seed = NULL,
     verbose = TRUE) {
   pop_num <- nrow(plusminus)
   var_num <- ncol(plusminus)
@@ -53,6 +54,10 @@ gatetree <- function(
 
   if (is.null(rownames(plusminus))) {
     rownames(plusminus) <- paste0("pop", seq_len(pop_num))
+  }
+  
+  if (is.null(seed)) {
+    seed <- sample(1:1e6, size = 1)
   }
 
   if (is.null(min_cutoffs)) {
@@ -93,7 +98,7 @@ gatetree <- function(
     pop_list[[p]] <- recursive_gatetree(
       pop_list[[p]], samples,
       min_depth = min_depth, min_diff = min_diff,
-      use_gmm = use_gmm
+      use_gmm = use_gmm, seed = seed
     )
 
     if (verbose) {
@@ -104,7 +109,7 @@ gatetree <- function(
   list("output" = pop_list, "call" = this_call)
 }
 
-recursive_gatetree <- function(pop, samples, min_depth, min_diff, use_gmm) {
+recursive_gatetree <- function(pop, samples, min_depth, min_diff, use_gmm, seed) {
   if (pop$terminated) {
     return(pop)
   }
@@ -177,6 +182,7 @@ recursive_gatetree <- function(pop, samples, min_depth, min_diff, use_gmm) {
           x <- samples[[s]][pop$subsetter[[s]][, split_num], v]
           x <- x[x > pop$min_cutoffs[v]]
           x <- x[x < pop$max_cutoffs[v]]
+          set.seed(seed)
           boundaries[[s]][v, ] <- find_boundary(x, TRUE)
         } else {
           boundaries[[s]][v, ] <- c(NA, NA)
