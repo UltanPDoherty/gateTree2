@@ -4,7 +4,7 @@
 #'
 #' @returns Vector of length two: valley location and depth
 find_valley <- function(x) {
-  nbin <- 100
+  nbin <- min(100, floor(length(x) / 10))
   x_ash <- ash::bin1(x, nbin = nbin)
   counts <- x_ash$nc
   breaks <- seq(x_ash$ab[1], x_ash$ab[2], length.out = nbin + 1)
