@@ -73,9 +73,9 @@ compute_max_f1 <- function(
   f1 <- f1_output$f1
 
   if (clust_num < class_num) {
-    for (j in seq(clust_num + 1, class_num)) {
-      f1[, j] <- rep(-Inf, class_num)
-    }
+    f1 <- cbind(
+      f1, matrix(-Inf, nrow = class_num, ncol = class_num - clust_num)
+    )
   }
 
   if (!is.null(no_match_class)) {
