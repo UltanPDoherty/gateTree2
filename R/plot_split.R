@@ -17,7 +17,6 @@
 #' @export
 plot_split <- function(
     samples, gatetree_out, pop = NULL, samp = NULL, var = NULL) {
-  
   plots <- list()
   if (!is.null(pop) && !is.null(samp) && !is.null(var)) {
     plots[[1]] <- plot_single_split(
@@ -54,10 +53,9 @@ plot_split <- function(
 
 plot_single_split <- function(
     samples, gatetree_out, pop, samp, var, plot_num) {
-  
-  gatetree_call <- gatetree_out$call 
+  gatetree_call <- gatetree_out$call
   gatetree_out <- gatetree_out$output
-  
+
   scenario <- ifelse(
     is.na(gatetree_out[[pop]]$method[var]),
     "nothing",
@@ -184,13 +182,13 @@ plot_single_split <- function(
   }
   if (is.finite(min_cut)) {
     gg <- gg + ggplot2::geom_vline(
-      ggplot2::aes(xintercept = min_cut), 
+      ggplot2::aes(xintercept = min_cut),
       linetype = "dotted", linewidth = 2, colour = "red"
     )
   }
   if (is.finite(max_cut)) {
     gg <- gg + ggplot2::geom_vline(
-      ggplot2::aes(xintercept = max_cut), 
+      ggplot2::aes(xintercept = max_cut),
       linetype = "dotted", linewidth = 2, colour = "red"
     )
   }

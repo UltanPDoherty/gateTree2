@@ -61,13 +61,13 @@ gatetree <- function(
   if (is.null(max_cutoffs)) {
     max_cutoffs <- rep(Inf, var_num)
   }
-  
+
   this_call <- call(
     "ombc_gmm",
     "samples" = substitute(samples),
     "plusminus" = plusminus,
     "min_depth" = min_depth, "min_diff" = min_diff, "use_gmm" = use_gmm,
-    "min_cutoffs" = min_cutoffs, "max_cutoffs" = max_cutoffs, 
+    "min_cutoffs" = min_cutoffs, "max_cutoffs" = max_cutoffs,
     "verbose" = verbose
   )
 
