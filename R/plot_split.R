@@ -95,7 +95,7 @@ plot_explore <- function(
   } else {
     stop("At least two of pop, samp, and var are required.")
   }
-  
+
   plots
 }
 
@@ -139,7 +139,7 @@ plot_single_split <- function(
   max_cut <- gatetree_call$max_cutoffs[var]
   x <- x[x > min_cut]
   x <- x[x < max_cut]
-  
+
   if (explore) {
     valley <- find_valley(x)
     split_val <- valley[1]
@@ -148,15 +148,14 @@ plot_single_split <- function(
     split_val <- gatetree_out[[pop]]$splits[[samp]][var]
     explore_valley_depth <- NA
   }
-  
-  is_negative <- switch(
-    scenario,
+
+  is_negative <- switch(scenario,
     "valley"   = gatetree_out[[pop]]$pm_previous[var] == -1,
     "boundary" = gatetree_out[[pop]]$pm_previous[var] == -1,
     "nothing"  = NA,
     "explore"  = FALSE
   )
-  
+
   min_x <- min(x)
   max_x <- max(x)
   if (scenario == "nothing") {
@@ -186,30 +185,27 @@ plot_single_split <- function(
   hist_x <- midpoints
   hist_y <- counts
   hist_df <- data.frame(hist_x, hist_y)
-  
+
   # colours from ggokabeito package
-  rect_col <- switch(
-    scenario,
+  rect_col <- switch(scenario,
     "valley" = "#F0E442",
     "boundary" = "#56B4E9",
     "nothing" = NA,
     "explore" = "#CC79A7"
   )
-  score <- switch(
-    scenario,
+  score <- switch(scenario,
     "valley" = gatetree_out[[pop]]$depths[[samp]][var],
     "boundary" = gatetree_out[[pop]]$diffs[[samp]][var],
     "nothing" = NA,
     "explore" = explore_valley_depth
   )
-  score_title <- switch(
-    scenario,
+  score_title <- switch(scenario,
     "valley"   = paste0("depth = ", round(score, 1), " events"),
     "boundary" = paste0("scaled BIC diff. = ", round(score, 3)),
     "nothing"  = NA,
     "explore"  = paste0("depth = ", round(score, 1))
   )
-  
+
   gg <- ggplot2::ggplot(
     hist_df, ggplot2::aes(x = hist_x, y = hist_y)
   ) +
