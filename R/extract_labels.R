@@ -5,7 +5,7 @@
 #' @returns List of label vectors for each sample.
 #' @export
 extract_labels <- function(gatetree_out) {
-  bool_mats <- make_bool_mats(gatetree_out)
+  bool_mats <- make_bool_mats(gatetree_out$output)
 
   label_list <- list()
   for (s in seq_along(bool_mats)) {
@@ -49,7 +49,7 @@ make_bool_mats <- function(gatetree_out) {
     }
   }
   names(bool_mats) <- names(gatetree_out[[1]]$subsetter)
-
+  
   bool_mats
 }
 
@@ -59,7 +59,7 @@ merge_identical_columns <- function(mat) {
 
   if (col_num > 1) {
     for (i in seq(1, col_num - 1, by = 1)) {
-      for (j in seq(2, col_num, by = 1)) {
+      for (j in seq(i + 1, col_num, by = 1)) {
         same_bool <- identical(mat[, i], mat[, j])
         if (same_bool) {
           colnames(mat)[i] <- paste0(col_names[i], "_", col_names[j])
