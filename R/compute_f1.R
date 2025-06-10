@@ -1,4 +1,4 @@
-compute_f1 <- function(class_labels, cluster_labels, i, j) {
+compute_f1 <- function(class_labels, cluster_labels) {
   class_num <- length(unique(class_labels))
   clust_num <- length(unique(cluster_labels))
 
@@ -31,7 +31,32 @@ compute_f1 <- function(class_labels, cluster_labels, i, j) {
   )
 }
 
-
+#' Compute the maximum F1 for a single class with respect to a single cluster.
+#'
+#' @description
+#' Compute a matrix of F1 scores for each class-cluster pair, then optionally
+#' obtain maximum F1 values for each class, either independently or according
+#' to a one-to-one mapping by the Hungarian algorithm. Finally, a weighted or
+#' unweighted mean may be computed across the classes.
+#'
+#' @param class_labels Vector of true class labels.
+#' @param cluster_labels Vector of estimated cluster labels.
+#' @param weighted Logical: whether the mean should be weighted with respect to
+#'                 the size of the classes.
+#' @param hungarian Logical: whether the Hungarian algorithm should be used to
+#'                  obtain a one-to-one mapping of classes to clusters.
+#' @param return_option Character: whether to return the full pairwise F1
+#'                      matrix ("matrix"), the vector of maximum F1 scores for
+#'                      each class ("vector", default), or the mean ("value").
+#' @param no_match_class Classes to be excluded when matching. Their F1 values
+#'                       are set to -Inf.
+#' @param no_match_cluster Clusters to be excluded when matching. Their F1
+#'                         values are set to -Inf.
+#'
+#' @returns
+#' Either a matrix, vector, or mean value, depending on `return_option`.
+#'
+#' @export
 compute_max_f1 <- function(
     class_labels, cluster_labels,
     weighted = TRUE, hungarian = FALSE,
@@ -87,6 +112,23 @@ compute_max_f1 <- function(
   }
 }
 
+#' Compute the F1 for each class of the optimal merged set of cluster.
+#'
+#' @description
+#' For each class, merge clusters in order from highest to lowest precision,
+#' stopping when the F1 of the merged cluster with respect to that class is
+#' maximised.
+#'
+#' @inheritParams compute_max_f1
+#' @param merge_limit Maximum number of cluster merges to perform per class.
+#'
+#' @returns `compute_merged_f1` returns a list with the following elements:
+#' \describe{
+#'  \item{`f1`}{Vector: max merged F1 values for each class.}
+#'  \item{`merges`}{Vector: number of merges performed for each class.}
+#' }
+#'
+#' @export
 compute_merged_f1 <- function(
     class_labels, cluster_labels, merge_limit = NULL,
     no_match_class = NULL, no_match_cluster = NULL) {
@@ -127,6 +169,19 @@ compute_merged_f1 <- function(
   list("f1" = max_merged_f1, "merges" = merge_counts)
 }
 
+#' Compute the precision for a single class with respect to a single cluster.
+#'
+#' @description
+#' Compute a matrix of precision scores for each class-cluster pair, then
+#' optionally obtain recall-weighted mean precision values for each class,
+#' Finally, a weighted or unweighted mean may be computed across the classes.
+#'
+#' @inheritParams compute_max_f1
+#'
+#' @returns
+#' Either a matrix, vector, or mean value, depending on `return_option`.
+#'
+#' @export
 compute_precision <- function(
     class_labels, cluster_labels,
     return_option = c("vector", "value", "matrix"),
@@ -159,6 +214,19 @@ compute_precision <- function(
   }
 }
 
+#' Compute the entropy for a single class across all clusters.
+#'
+#' @description
+#' Compute a matrix of entropy scores for each class-cluster pair, then
+#' optionally obtain the summed total entropy values for each class,
+#' Finally, a weighted or unweighted mean may be computed across the classes.
+#'
+#' @inheritParams compute_max_f1
+#'
+#' @returns
+#' Either a matrix, vector, or mean value, depending on `return_option`.
+#'
+#' @export
 compute_recall_entropy <- function(
     class_labels, cluster_labels,
     return_option = c("vector", "value", "matrix"),

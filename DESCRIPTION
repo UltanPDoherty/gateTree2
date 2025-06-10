@@ -22,3 +22,5 @@ Imports:
     mclust,
     ash,
     rlang
+Depends:
+    R (>= 4.1.0)
