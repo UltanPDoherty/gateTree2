@@ -17,6 +17,7 @@
 #' @param use_gmm Logical value.
 #' @param min_cutoffs Minimum values for observations used when finding splits.
 #' @param max_cutoffs Maximum values for observations used when finding splits.
+#' @param seed Random seed for GMM fitting.
 #' @param verbose Logical value.
 #'
 #' @return A `list` object:
@@ -55,7 +56,7 @@ gatetree <- function(
   if (is.null(rownames(plusminus))) {
     rownames(plusminus) <- paste0("pop", seq_len(pop_num))
   }
-  
+
   if (is.null(seed)) {
     seed <- sample(1:1e6, size = 1)
   }
@@ -72,7 +73,7 @@ gatetree <- function(
     "samples" = substitute(samples),
     "plusminus" = plusminus,
     "min_depth" = min_depth, "min_diff" = min_diff, "use_gmm" = use_gmm,
-    "min_cutoffs" = min_cutoffs, "max_cutoffs" = max_cutoffs,
+    "min_cutoffs" = min_cutoffs, "max_cutoffs" = max_cutoffs, "seed" = seed,
     "verbose" = verbose
   )
 
@@ -109,7 +110,8 @@ gatetree <- function(
   list("output" = pop_list, "call" = this_call)
 }
 
-recursive_gatetree <- function(pop, samples, min_depth, min_diff, use_gmm, seed) {
+recursive_gatetree <- function(
+    pop, samples, min_depth, min_diff, use_gmm, seed) {
   if (pop$terminated) {
     return(pop)
   }
@@ -245,7 +247,7 @@ recursive_gatetree <- function(pop, samples, min_depth, min_diff, use_gmm, seed)
 
   recursive_gatetree(
     pop, samples,
-    min_depth = min_depth, min_diff = min_diff, use_gmm = use_gmm
+    min_depth = min_depth, min_diff = min_diff, use_gmm = use_gmm, seed = seed
   )
 }
 

@@ -12,6 +12,7 @@ gatetree(
   use_gmm = TRUE,
   min_cutoffs = NULL,
   max_cutoffs = NULL,
+  seed = NULL,
   verbose = TRUE
 )
 }
@@ -32,6 +33,8 @@ divided by 2 log(obs_num).}
 \item{min_cutoffs}{Minimum values for observations used when finding splits.}
 
 \item{max_cutoffs}{Maximum values for observations used when finding splits.}
+
+\item{seed}{Random seed for GMM fitting.}
 
 \item{verbose}{Logical value.}
 }
