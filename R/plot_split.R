@@ -1,7 +1,7 @@
-#' @title Histogram plot with a `gateTree` split.
+#' @title Density plot with a `gateTree` split.
 #'
 #' @description
-#' Plot a univariate histogram of the data with the `gateTree` split
+#' Plot a univariate density of the data with the `gateTree` split
 #' illustrated, and information about the split in the title and subtitle.
 #'
 #' @inheritParams gatetree
@@ -49,10 +49,10 @@ plot_split <- function(
   plots
 }
 
-#' @title Histogram plot with a `gateTree` split.
+#' @title Density plot with a `gateTree` split.
 #'
 #' @description
-#' Plot a univariate histogram of the data with the `gateTree` split
+#' Plot a univariate density of the data with the `gateTree` split
 #' illustrated, and information about the split in the title and subtitle.
 #'
 #' @inheritParams gatetree
@@ -177,16 +177,10 @@ plot_single_split <- function(
     size_after <- sum(x > split_val)
   }
 
-  nbin <- min(100, floor(length(x) / 10))
-  x_ash <- ash::bin1(x, nbin = nbin)
-  counts <- x_ash$nc
-  breaks <- seq(x_ash$ab[1], x_ash$ab[2], length.out = nbin + 1)
-  midpoints <- (breaks[1:nbin] + breaks[-1]) / 2
-  width <- (x_ash$ab[2] - x_ash$ab[1]) / nbin
-
-  hist_x <- midpoints
-  hist_y <- counts
-  hist_df <- data.frame(hist_x, hist_y)
+  dens <- density(x)
+  dens_x <- dens$x
+  counts_y <- dens$y * length(x)
+  dens_df <- data.frame(dens_x, counts_y)
 
   # colours from ggokabeito package
   rect_col <- switch(scenario,
@@ -205,19 +199,19 @@ plot_single_split <- function(
     "valley"   = paste0("depth = ", round(score, 1), " events"),
     "boundary" = paste0("scaled BIC diff. = ", round(score, 3)),
     "nothing"  = NA,
-    "explore"  = paste0("depth = ", round(score, 1))
+    "explore"  = paste0("depth = ", round(score, 1), " events")
   )
 
   gg <- ggplot2::ggplot(
-    hist_df, ggplot2::aes(x = hist_x, y = hist_y)
+    dens_df, ggplot2::aes(x = dens_x, y = counts_y)
   ) +
     ggplot2::geom_rect(
       ggplot2::aes(
-        xmin = xleft, xmax = xright, ymin = 0, ymax = max(counts)
+        xmin = xleft, xmax = xright, ymin = 0, ymax = max(counts_y)
       ),
       fill = rect_col, na.rm = TRUE
     ) +
-    ggplot2::geom_col(width = width) +
+    ggplot2::geom_line() +
     ggplot2::labs(
       title = paste0(
         "(", plot_num[1], "/", plot_num[2], "). ",
