@@ -2,7 +2,7 @@
 % Please edit documentation in R/plot_split.R
 \name{plot_split}
 \alias{plot_split}
-\title{Histogram plot with a \code{gateTree} split.}
+\title{Density plot with a \code{gateTree} split.}
 \usage{
 plot_split(samples, gatetree_out, pop = NULL, samp = NULL, var = NULL)
 }
@@ -21,6 +21,6 @@ plot_split(samples, gatetree_out, pop = NULL, samp = NULL, var = NULL)
 \code{ggplot} object.
 }
 \description{
-Plot a univariate histogram of the data with the \code{gateTree} split
+Plot a univariate density of the data with the \code{gateTree} split
 illustrated, and information about the split in the title and subtitle.
 }

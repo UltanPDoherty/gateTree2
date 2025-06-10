@@ -20,7 +20,6 @@ Imports:
     stats,
     ggplot2,
     mclust,
-    ash,
     rlang
 Depends:
     R (>= 4.1.0)

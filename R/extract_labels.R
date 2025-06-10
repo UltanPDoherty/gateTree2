@@ -5,7 +5,11 @@
 #' @returns List of label vectors for each sample.
 #' @export
 extract_labels <- function(gatetree_out) {
-  bool_mats <- make_bool_mats(gatetree_out$output)
+  if (!is.null(gatetree_out$output)) {
+    gatetree_out <- gatetree_out$output
+  }
+
+  bool_mats <- make_bool_mats(gatetree_out)
 
   label_list <- list()
   for (s in seq_along(bool_mats)) {
@@ -49,7 +53,7 @@ make_bool_mats <- function(gatetree_out) {
     }
   }
   names(bool_mats) <- names(gatetree_out[[1]]$subsetter)
-  
+
   bool_mats
 }
 

@@ -177,7 +177,7 @@ plot_single_split <- function(
     size_after <- sum(x > split_val)
   }
 
-  dens <- density(x)
+  dens <- stats::density(x)
   dens_x <- dens$x
   counts_y <- dens$y * length(x)
   dens_df <- data.frame(dens_x, counts_y)

@@ -4,13 +4,13 @@
 #'
 #' @returns Vector of length two: valley location and depth
 find_valley <- function(x) {
-  dens <- density(x)
+  dens <- stats::density(x)
   locations <- dens$x
   counts <- dens$y * length(x)
-  
+
   location_num <- length(locations)
   w <- round(location_num / 100)
-  
+
   is_peak <- peak_left <- peak_right <- rep(FALSE, location_num)
   for (i in seq(1, w)) {
     peak_left[i] <- all(counts[i] >= counts[1:i])
