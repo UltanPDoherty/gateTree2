@@ -72,17 +72,17 @@ compute_max_f1 <- function(
   class_count <- f1_output$class_count
   f1 <- f1_output$f1
 
-  if (clust_num < class_num) {
-    f1 <- cbind(
-      f1, matrix(-Inf, nrow = class_num, ncol = class_num - clust_num)
-    )
+  if (!is.null(no_match_class)) {
+    f1 <- f1[-which(rownames(f1) %in% no_match_class), ]
+  }
+  if (!is.null(no_match_class)) {
+    f1 <- f1[, -which(colnames(f1) %in% no_match_cluster)]
   }
 
-  if (!is.null(no_match_class)) {
-    f1[which(rownames(f1) %in% no_match_class), ] <- rep(-Inf, clust_num)
-  }
-  if (!is.null(no_match_class)) {
-    f1[, which(colnames(f1) %in% no_match_cluster)] <- rep(-Inf, class_num)
+  if (clust_num < class_num) {
+    f1 <- cbind(
+      f1, matrix(0, nrow = class_num, ncol = class_num - clust_num)
+    )
   }
 
   if (hungarian) {
