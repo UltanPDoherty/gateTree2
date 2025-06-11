@@ -73,10 +73,16 @@ compute_max_f1 <- function(
   f1 <- f1_output$f1
 
   if (!is.null(no_match_class)) {
-    f1 <- f1[-which(rownames(f1) %in% no_match_class), ]
+    bool_no_match_class <- rownames(f1) %in% no_match_class
+    f1 <- f1[-which(bool_no_match_class), ]
+    class_count <- class_count[-which(bool_no_match_class)]
+    class_num <- class_num - sum(bool_no_match_class)
   }
-  if (!is.null(no_match_class)) {
-    f1 <- f1[, -which(colnames(f1) %in% no_match_cluster)]
+  if (!is.null(no_match_cluster)) {
+    bool_no_match_clust <- rownames(f1) %in% no_match_cluster
+    f1 <- f1[, -which(bool_no_match_clust)]
+    clust_count <- clust_count[-which(bool_no_match_clust)]
+    clust_num <- clust_num - sum(bool_no_match_clust)
   }
 
   if (clust_num < class_num) {
@@ -96,9 +102,9 @@ compute_max_f1 <- function(
   }
 
   if (weighted) {
-    f1_val <- stats::weighted.mean(f1_vec, class_count)
+    f1_val <- stats::weighted.mean(f1_vec, class_count, na.rm = TRUE)
   } else {
-    f1_val <- mean(f1_vec)
+    f1_val <- mean(f1_vec, na.rm = TRUE)
   }
 
   if (return_option == "matrix") {
@@ -130,8 +136,7 @@ compute_max_f1 <- function(
 #'
 #' @export
 compute_merged_f1 <- function(
-    class_labels, cluster_labels, merge_limit = NULL,
-    no_match_class = NULL, no_match_cluster = NULL) {
+    class_labels, cluster_labels, merge_limit = NULL) {
   f1_output <- compute_f1(class_labels, cluster_labels)
   class_num <- f1_output$class_num
   clust_num <- f1_output$clust_num
