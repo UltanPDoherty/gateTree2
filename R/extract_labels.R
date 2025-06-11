@@ -71,20 +71,21 @@ make_bool_mats <- function(gatetree_out) {
 }
 
 merge_identical_columns <- function(mat) {
-  col_num <- ncol(mat)
-  col_names <- colnames(mat)
-
-  if (col_num > 1) {
-    for (i in seq(1, col_num - 1, by = 1)) {
-      for (j in seq(i + 1, col_num, by = 1)) {
+  if (ncol(mat) > 1) {
+    i <- 1
+    while (i < ncol(mat)) {
+      j <- i + 1
+      while (j <= ncol(mat)) {
         same_bool <- identical(mat[, i], mat[, j])
         if (same_bool) {
-          colnames(mat)[i] <- paste0(col_names[i], "_", col_names[j])
+          colnames(mat)[i] <- paste0(colnames(mat)[i], "_", colnames(mat)[j])
           mat <- mat[, -j, drop = FALSE]
 
           merge_identical_columns(mat)
         }
+        j <- j + 1
       }
+      i <- i + 1
     }
   }
 
