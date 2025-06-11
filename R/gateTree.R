@@ -104,7 +104,7 @@ gatetree <- function(
     )
 
     if (verbose) {
-      message("Population ", p, ", ", names(pop_list)[p], " complete.")
+      message("Population ", p, ", ", names(pop_list)[p], ", complete.")
     }
   }
 
