@@ -203,6 +203,7 @@ recursive_gatetree <- function(
             x <- matrices[[b]][[s]][pop$subsetter[[b]][[s]][, split_num], v]
             x <- x[x > pop$min_cutoffs[v]]
             x <- x[x < pop$max_cutoffs[v]]
+            set.seed(seed)
             boundaries[[b]][[s]][v, ] <- find_boundary(x)
           } else {
             boundaries[[b]][[s]][v, ] <- c(NA, NA)
