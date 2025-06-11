@@ -227,13 +227,71 @@ recursive_gatetree <- function(
         if (s == samp_num) {
           pop$order[var_choice] <- split_num
           pop$method[var_choice] <- "boundary"
-
+          pop$method[var_choice] <- "valley"
           same_path <- pop$other_pops[, var_choice] == pop$pm_future[var_choice]
           pop$other_pops <- pop$other_pops[same_path, , drop = FALSE]
           pop$pm_future[var_choice] <- 0
           pop$other_pops[, var_choice] <- 0
         }
       }
+    }
+  } else if (use_gmm) {
+    boundaries <- list()
+    samp_diffs <- list()
+    samp_diff_checks <- list()
+    for (b in seq_len(batch_num)) {
+      for (s in seq_len(samp_num[b])) {
+        for (v in seq_len(var_num)) {
+          if (pop$pm_future[v] != 0 && all(pop$other_pops[, v] != 0)) {
+            x <- matrices[[b]][[s]][pop$subsetter[[b]][[s]][, split_num], v]
+            x <- x[x > pop$min_cutoffs[v]]
+            x <- x[x < pop$max_cutoffs[v]]
+            boundaries[[b]][[s]][v, ] <- find_boundary(x)
+          } else {
+            boundaries[[b]][[s]][v, ] <- c(NA, NA)
+          }
+        }
+      }
+      samp_diffs[[b]] <- vapply(boundaries[[b]], \(x) x[, 2], double(var_num))
+      samp_diff_checks[[b]] <- samp_diffs[[b]] > min_diff
+    }
+    
+    bind_diffs <- Reduce(cbind, samp_diffs)
+    bind_diff_checks <- Reduce(cbind, samp_diff_checks)
+
+    if (any(bind_diff_checks, na.rm = TRUE)) {
+      choices <- make_choices(
+        boundaries, samp_diffs, samp_diff_checks, matrices, pop$subsetter
+      )
+      var_choice <- choices$var
+      boundary_choices <- choices$splits
+      choice_diffs <- choices$scores
+      
+      for (b in seq_len(batch_num)) {
+        for (s in seq_len(samp_num[b])) {
+          if (pop$pm_future[var_choice] == +1) {
+            x <- 
+              matrices[[b]][[s]][pop$subsetter[[b]][[s]][, split_num], var_choice]
+            temp_subsetter <- x >= boundary_choices[[b]][s]
+            pop$pm_previous[var_choice] <- +1
+            x <-
+              matrices[[b]][[s]][pop$subsetter[[b]][[s]][, split_num], var_choice]
+            temp_subsetter <- x < boundary_choices[[b]][s]
+            pop$pm_previous[var_choice] <- -1
+          } else {
+            browser()
+            stop("pop$pm_future[var_choice] should not be 0.")
+          }
+          
+          pop$splits[[b]][[s]][var_choice] <- boundary_choices[[b]][s]
+          pop$diffs[[b]][[s]][var_choice] <- choice_diffs[[b]][s]
+          
+          pop$subsetter[[b]][[s]] <-
+            cbind(pop$subsetter[[b]][[s]], pop$subsetter[[b]][[s]][, split_num])
+          
+          if (b == batch_num && s == samp_num[b]) {
+            pop$order[var_choice] <- split_num
+            
     } else {
       pop$terminated <- TRUE
     }
@@ -246,7 +304,7 @@ recursive_gatetree <- function(
   }
 
   recursive_gatetree(
-    pop, samples,
+    pop, matrices,
     min_depth = min_depth, min_diff = min_diff, use_gmm = use_gmm, seed = seed
   )
 }

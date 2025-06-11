@@ -4,6 +4,10 @@
 #'
 #' @returns Vector of length two: valley location and depth
 find_valley <- function(x) {
+  if (length(x) < 10) {
+    return(c(NA, NA))
+  }
+  
   dens <- stats::density(x)
   locations <- dens$x
   counts <- dens$y * length(x)

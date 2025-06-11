@@ -14,36 +14,51 @@
 #'
 #' @export
 plot_split <- function(
-    samples, gatetree_out, pop = NULL, samp = NULL, var = NULL) {
+    matrices, gatetree_out, pop = NULL, batch = NULL, samp = NULL, var = NULL) {
   plots <- list()
-  if (!is.null(pop) && !is.null(samp) && !is.null(var)) {
+  if (!is.null(pop) && !is.null(batch) && !is.null(samp) && !is.null(var)) {
     plots[[1]] <- plot_single_split(
-      samples, gatetree_out, pop, samp, var, c(1, 1)
+      matrices, gatetree_out, pop, batch, samp, var, c(1, 1)
     )
-  } else if (!is.null(pop) && !is.null(samp) && is.null(var)) {
+  } else if (!is.null(pop) && !is.null(batch) && !is.null(samp) && is.null(var)) {
     max_split <- max(gatetree_out$output[[pop]]$order, na.rm = TRUE)
     for (i in seq_len(max_split)) {
       var <- which(gatetree_out$output[[pop]]$order == i)
       plots[[i]] <- plot_single_split(
-        samples, gatetree_out, pop, samp, var, c(i, max_split)
+        matrices, gatetree_out, pop, batch, samp, var, c(i, max_split)
       )
     }
-  } else if (!is.null(pop) && is.null(samp) && !is.null(var)) {
-    samp_num <- length(samples)
+  } else if (!is.null(pop) && !is.null(batch) && is.null(samp) && !is.null(var)) {
+    samp_num <- length(matrices[[batch]])
     for (j in seq_len(samp_num)) {
       plots[[j]] <- plot_single_split(
-        samples, gatetree_out, pop, j, var, c(j, samp_num)
+        matrices, gatetree_out, pop, batch, j, var, c(j, samp_num)
       )
     }
-  } else if (is.null(pop) && !is.null(samp) && !is.null(var)) {
+  } else if (!is.null(pop) && is.null(batch) && is.null(samp) && !is.null(var)) {
+    batch_num <- length(matrices)
+    samp_num <- vapply(matrices, length, integer(1L))
+    samp_count <- 1
+    for (b in seq_len(batch_num)) {
+      for (j in seq_len(samp_num[b])) {
+        plots[[samp_count]] <- plot_single_split(
+          matrices, gatetree_out, pop, b, j, var, c(samp_count, sum(samp_num))
+        )
+        samp_count <- samp_count + 1
+      }
+    }
+  } else if (is.null(pop) && !is.null(batch) && !is.null(samp) && !is.null(var)) {
     pop_num <- length(gatetree_out$output)
     for (k in seq_len(pop_num)) {
       plots[[k]] <- plot_single_split(
-        samples, gatetree_out, k, samp, var, c(k, pop_num)
+        matrices, gatetree_out, k, batch, samp, var, c(k, pop_num)
       )
     }
   } else {
-    stop("At least two of pop, samp, and var are required.")
+    stop(paste0(
+      "At least three of pop, batch, samp, and var are required", 
+      " (or only pop and var)."
+    ))
   }
 
   plots
@@ -65,42 +80,58 @@ plot_split <- function(
 #'
 #' @export
 plot_explore <- function(
-    samples, gatetree_out, pop = NULL, samp = NULL, var = NULL) {
+    matrices, gatetree_out, pop = NULL, batch = NULL, samp = NULL, var = NULL) {
   plots <- list()
-  if (!is.null(pop) && !is.null(samp) && !is.null(var)) {
+  if (!is.null(pop) && !is.null(batch) && !is.null(samp) && !is.null(var)) {
     plots[[1]] <- plot_single_split(
-      samples, gatetree_out, pop, samp, var, c(1, 1), TRUE
+      matrices, gatetree_out, pop, batch, samp, var, c(1, 1), TRUE
     )
-  } else if (!is.null(pop) && !is.null(samp) && is.null(var)) {
-    var_num <- ncol(samples[[1]])
+  } else if (!is.null(pop) && !is.null(batch) && !is.null(samp) && is.null(var)) {
+    var_num <- ncol(matrices[[1]])
     for (i in seq_len(var_num)) {
       plots[[i]] <- plot_single_split(
-        samples, gatetree_out, pop, samp, i, c(i, var_num), TRUE
+        matrices, gatetree_out, pop, batch, samp, i, c(i, var_num), TRUE
       )
     }
-  } else if (!is.null(pop) && is.null(samp) && !is.null(var)) {
-    samp_num <- length(samples)
+  } else if (!is.null(pop) && !is.null(batch) && is.null(samp) && !is.null(var)) {
+    samp_num <- length(matrices)
     for (j in seq_len(samp_num)) {
       plots[[j]] <- plot_single_split(
-        samples, gatetree_out, pop, j, var, c(j, samp_num), TRUE
+        matrices, gatetree_out, pop, batch, j, var, c(j, samp_num), TRUE
       )
     }
-  } else if (is.null(pop) && !is.null(samp) && !is.null(var)) {
+  } else if (!is.null(pop) && is.null(batch) && is.null(samp) && !is.null(var)) {
+    batch_num <- length(matrices)
+    samp_num <- vapply(matrices, length, integer(1L))
+    samp_count <- 1
+    for (b in seq_len(batch_num)) {
+      for (j in seq_len(samp_num[b])) {
+        plots[[samp_count]] <- plot_single_split(
+          matrices, gatetree_out, pop, b, j, var, c(samp_count, sum(samp_num)),
+          TRUE
+        )
+        samp_count <- samp_count + 1
+      }
+    }
+  } else if (is.null(pop) && !is.null(batch) && !is.null(samp) && !is.null(var)) {
     pop_num <- length(gatetree_out$output)
     for (k in seq_len(pop_num)) {
       plots[[k]] <- plot_single_split(
-        samples, gatetree_out, k, samp, var, c(k, pop_num), TRUE
+        matrices, gatetree_out, k, batch, samp, var, c(k, pop_num), TRUE
       )
     }
   } else {
-    stop("At least two of pop, samp, and var are required.")
+    stop(paste0(
+      "At least three of pop, batch, samp, and var are required", 
+      " (or only pop and var)."
+    ))
   }
 
   plots
 }
 
 plot_single_split <- function(
-    samples, gatetree_out, pop, samp, var, plot_num, explore = FALSE) {
+    matrices, gatetree_out, pop, batch, samp, var, plot_num, explore = FALSE) {
   gatetree_call <- gatetree_out$call
   gatetree_out <- gatetree_out$output
 
@@ -115,10 +146,17 @@ plot_single_split <- function(
     split_num <- gatetree_out[[pop]]$order[var]
   }
 
-  x <- samples[[samp]][gatetree_out[[pop]]$subsetter[[samp]][, split_num], ]
+  x <- matrices[[batch]][[samp]][
+    gatetree_out[[pop]]$subsetter[[batch]][[samp]][, split_num], 
+  ]
 
-  if (!is.null(names(samples))) {
-    samp_name <- names(samples)[samp]
+  if (!is.null(names(matrices))) {
+    batch_name <- names(matrices)[batch]
+  } else {
+    batch_name <- batch
+  }
+  if (!is.null(names(matrices[[batch]]))) {
+    samp_name <- names(matrices[[batch]])[samp]
   } else {
     samp_name <- samp
   }
@@ -147,7 +185,7 @@ plot_single_split <- function(
       scenario <- "nothing"
     }
   } else {
-    split_val <- gatetree_out[[pop]]$splits[[samp]][var]
+    split_val <- gatetree_out[[pop]]$splits[[batch]][[samp]][var]
     explore_valley_depth <- NA
   }
 
@@ -190,8 +228,8 @@ plot_single_split <- function(
     "explore" = "#CC79A7"
   )
   score <- switch(scenario,
-    "valley" = gatetree_out[[pop]]$depths[[samp]][var],
-    "boundary" = gatetree_out[[pop]]$diffs[[samp]][var],
+    "valley" = gatetree_out[[pop]]$depths[[batch]][[samp]][var],
+    "boundary" = gatetree_out[[pop]]$diffs[[batch]][[samp]][var],
     "nothing" = NA,
     "explore" = explore_valley_depth
   )
@@ -215,7 +253,7 @@ plot_single_split <- function(
     ggplot2::labs(
       title = paste0(
         "(", plot_num[1], "/", plot_num[2], "). ",
-        "Sample: ", samp_name, ", ", score_title
+        "Batch: ", batch_name, ", Sample: ", samp_name, ", ", score_title
       ),
       subtitle = paste0(
         "Population: ", pop_name, ", ",

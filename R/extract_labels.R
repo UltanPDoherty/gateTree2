@@ -12,48 +12,61 @@ extract_labels <- function(gatetree_out) {
   bool_mats <- make_bool_mats(gatetree_out)
 
   label_list <- list()
-  for (s in seq_along(bool_mats)) {
-    pop_names <- colnames(bool_mats[[s]])
-    pop_num <- ncol(bool_mats[[s]])
-    obs_num <- nrow(bool_mats[[s]])
-    label_list[[s]] <- rep("other", obs_num)
-    for (p in seq_len(pop_num)) {
-      label_list[[s]][bool_mats[[s]][, p]] <- pop_names[p]
+  for (b in seq_along(bool_mats)) {
+    label_list[[b]] <- list()
+    for (s in seq_along(bool_mats[[b]])) {
+      pop_names <- colnames(bool_mats[[b]][[s]])
+      pop_num <- ncol(bool_mats[[b]][[s]])
+      obs_num <- nrow(bool_mats[[b]][[s]])
+      label_list[[b]][[s]] <- rep("other", obs_num)
+      for (p in seq_len(pop_num)) {
+        label_list[[b]][[s]][bool_mats[[b]][[s]][, p]] <- pop_names[p]
+      }
+      label_list[[b]][[s]] <- as.factor(label_list[[b]][[s]])
     }
-    label_list[[s]] <- as.factor(label_list[[s]])
+    names(label_list[[b]]) <- names(bool_mats[[b]])
   }
   names(label_list) <- names(bool_mats)
 
   label_list
 }
 
-
 make_bool_mats <- function(gatetree_out) {
   pop_num <- length(gatetree_out)
-  samp_num <- length(gatetree_out[[1]]$subsetter)
-  obs_num <- integer(samp_num)
-  subset_num <- integer(samp_num)
+  batch_num <- length(gatetree_out[[1]]$subsetter)
+  samp_num <- integer(batch_num)
+  
+  obs_num <- list()
+  subset_num <- list()
 
   pop_names <- names(gatetree_out)
 
   bool_mats <- list()
-  for (s in seq_len(samp_num)) {
-    obs_num[s] <- nrow(gatetree_out[[1]]$subsetter[[s]])
-    bool_mats[[s]] <- matrix(nrow = obs_num[s], ncol = pop_num)
-    for (p in seq_len(pop_num)) {
-      subset_num <- ncol(gatetree_out[[p]]$subsetter[[s]])
-      bool_mats[[s]][, p] <- gatetree_out[[p]]$subsetter[[s]][, subset_num]
+  for (b in seq_len(batch_num)) {
+    samp_num[b] <- length(gatetree_out[[1]]$subsetter[[b]])
+    obs_num[[b]] <- integer(samp_num[b])
+    subset_num[[b]] <- integer(samp_num[b])
+    bool_mats[[b]] <- list()
+    for (s in seq_len(samp_num[b])) {
+      obs_num[[b]][s] <- nrow(gatetree_out[[1]]$subsetter[[b]][[s]])
+      bool_mats[[b]][[s]] <- matrix(nrow = obs_num[[b]][s], ncol = pop_num)
+      for (p in seq_len(pop_num)) {
+        subset_num[[b]][s] <- ncol(gatetree_out[[p]]$subsetter[[b]][[s]])
+        bool_mats[[b]][[s]][, p] <- 
+          gatetree_out[[p]]$subsetter[[b]][[s]][, subset_num[[b]][s]]
+      }
+      colnames(bool_mats[[b]][[s]]) <- pop_names
+      
+      bool_mats[[b]][[s]] <- merge_identical_columns(bool_mats[[b]][[s]])
+      
+      if (max(rowSums(bool_mats[[b]][[s]])) > 1) {
+        stop("Populations are overlapping.")
+      }
     }
-    colnames(bool_mats[[s]]) <- pop_names
-
-    bool_mats[[s]] <- merge_identical_columns(bool_mats[[s]])
-
-    if (max(rowSums(bool_mats[[s]])) > 1) {
-      stop("Populations are overlapping.")
-    }
+    names(bool_mats[[b]]) <- names(gatetree_out[[1]]$subsetter[[b]])
   }
   names(bool_mats) <- names(gatetree_out[[1]]$subsetter)
-
+  
   bool_mats
 }
 

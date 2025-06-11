@@ -13,6 +13,10 @@
 #' boundary will be NA if its scaled BIC difference is less than
 #' `min_scaled_bic_diff`.
 find_boundary <- function(x, boundary_noise_comp = TRUE) {
+  if (length(x) < 10) {
+    return(c(NA, NA))
+  }
+  
   gmm1 <- mclust::Mclust(x, G = 1, modelNames = "E", verbose = FALSE)
   gmm2 <- mclust::Mclust(x, G = 2, modelNames = "E", verbose = FALSE)
 
