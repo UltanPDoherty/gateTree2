@@ -4,13 +4,7 @@
 \alias{compute_merged_f1}
 \title{Compute the F1 for each class of the optimal merged set of cluster.}
 \usage{
-compute_merged_f1(
-  class_labels,
-  cluster_labels,
-  merge_limit = NULL,
-  no_match_class = NULL,
-  no_match_cluster = NULL
-)
+compute_merged_f1(class_labels, cluster_labels, merge_limit = NULL)
 }
 \arguments{
 \item{class_labels}{Vector of true class labels.}
@@ -18,12 +12,6 @@ compute_merged_f1(
 \item{cluster_labels}{Vector of estimated cluster labels.}
 
 \item{merge_limit}{Maximum number of cluster merges to perform per class.}
-
-\item{no_match_class}{Classes to be excluded when matching. Their F1 values
-are set to -Inf.}
-
-\item{no_match_cluster}{Clusters to be excluded when matching. Their F1
-values are set to -Inf.}
 }
 \value{
 \code{compute_merged_f1} returns a list with the following elements:
