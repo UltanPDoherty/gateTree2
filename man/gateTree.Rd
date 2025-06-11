@@ -5,7 +5,7 @@
 \title{User-informed clustering decision tree.}
 \usage{
 gatetree(
-  samples,
+  matrices,
   plusminus,
   min_depth = 100,
   min_diff = 0.05,
@@ -17,7 +17,7 @@ gatetree(
 )
 }
 \arguments{
-\item{samples}{Dataset in \code{matrix} or \code{data.frame} form.}
+\item{matrices}{Dataset in \code{matrix} or \code{data.frame} form.}
 
 \item{plusminus}{Table indicating whether each population (row) is positive (+1),
 negative (-1), or neutral / unknown (0) for each variable (column).}
@@ -55,7 +55,7 @@ iris_plusminus <- rbind(
 colnames(iris_plusminus) <- colnames(iris_plusminus)[1:4]
 
 iris_gatetree <- gatetree(
-  list(iris[, -5]),
+  list(list(iris[, -5])),
   iris_plusminus,
   min_depth = 10,
   min_diff = 0.01

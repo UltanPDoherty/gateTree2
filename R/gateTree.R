@@ -4,7 +4,7 @@
 #' Construct a semi-supervised decision tree to identify user-described
 #' clusters.
 #'
-#' @param samples Dataset in `matrix` or `data.frame` form.
+#' @param matrices Dataset in `matrix` or `data.frame` form.
 #' @param plusminus
 #' Table indicating whether each population (row) is positive (+1),
 #' negative (-1), or neutral / unknown (0) for each variable (column).
@@ -34,13 +34,13 @@
 #' colnames(iris_plusminus) <- colnames(iris_plusminus)[1:4]
 #'
 #' iris_gatetree <- gatetree(
-#'   list(iris[, -5]),
+#'   list(list(iris[, -5])),
 #'   iris_plusminus,
 #'   min_depth = 10,
 #'   min_diff = 0.01
 #' )
 gatetree <- function(
-    samples,
+    matrices,
     plusminus,
     min_depth = 100,
     min_diff = 0.05,
@@ -51,7 +51,7 @@ gatetree <- function(
     verbose = TRUE) {
   pop_num <- nrow(plusminus)
   var_num <- ncol(plusminus)
-  samp_num <- length(samples)
+  samp_num <- vapply(matrices, length, integer(1L))
 
   if (is.null(rownames(plusminus))) {
     rownames(plusminus) <- paste0("pop", seq_len(pop_num))
@@ -70,7 +70,7 @@ gatetree <- function(
 
   this_call <- call(
     "ombc_gmm",
-    "samples" = substitute(samples),
+    "matrices" = substitute(matrices),
     "plusminus" = plusminus,
     "min_depth" = min_depth, "min_diff" = min_diff, "use_gmm" = use_gmm,
     "min_cutoffs" = min_cutoffs, "max_cutoffs" = max_cutoffs, "seed" = seed,
@@ -80,24 +80,25 @@ gatetree <- function(
   pop_list <- list()
   for (p in seq_len(pop_num)) {
     pop_list[[p]] <- list(
-      "subsetter" = lapply(samples, \(x) as.matrix(rep(TRUE, nrow(x)))),
+      "subsetter" = lapply(
+        matrices, \(x) lapply(x, \(y) as.matrix(rep(TRUE, nrow(y))))
+      ),
+      "splits" = lapply(samp_num, \(x) rep(list(rep(NA, var_num)), x)),
+      "depths" = lapply(samp_num, \(x) rep(list(rep(NA, var_num)), x)),
+      "diffs" = lapply(samp_num, \(x) rep(list(rep(NA, var_num)), x)),
       "pm_future" = plusminus[p, ],
       "pm_previous" = rep(0, var_num),
       "other_pops" = plusminus[-p, , drop = FALSE],
-      "splits" = rep(list(rep(NA, var_num)), samp_num),
-      "depths" = rep(list(rep(NA, var_num)), samp_num),
-      "diffs" = rep(list(rep(NA, var_num)), samp_num),
       "order" = rep(NA, var_num),
       "method" = rep(NA, var_num),
       "min_cutoffs" = min_cutoffs,
       "max_cutoffs" = max_cutoffs,
       "terminated" = FALSE
     )
-
     names(pop_list)[p] <- rownames(plusminus)[p]
 
     pop_list[[p]] <- recursive_gatetree(
-      pop_list[[p]], samples,
+      pop_list[[p]], matrices,
       min_depth = min_depth, min_diff = min_diff,
       use_gmm = use_gmm, seed = seed
     )
@@ -111,123 +112,77 @@ gatetree <- function(
 }
 
 recursive_gatetree <- function(
-    pop, samples, min_depth, min_diff, use_gmm, seed) {
+    pop, matrices, min_depth, min_diff, use_gmm, seed) {
   if (pop$terminated) {
     return(pop)
   }
 
   var_num <- length(pop$pm_future)
-  samp_num <- length(samples)
+  batch_num <- length(matrices)
+  samp_num <- vapply(matrices, length, integer(1L))
   split_num <- sum(pop$pm_previous != 0) + 1
 
-  valleys <- rep(list(matrix(nrow = var_num, ncol = 2)), samp_num)
-  for (s in seq_len(samp_num)) {
-    for (v in seq_len(var_num)) {
-      if (pop$pm_future[v] != 0 && all(pop$other_pops[, v] != 0)) {
-        x <- samples[[s]][pop$subsetter[[s]][, split_num], v]
-        x <- x[x > pop$min_cutoffs[v]]
-        x <- x[x < pop$max_cutoffs[v]]
-        valleys[[s]][v, ] <- find_valley(x)
-      } else {
-        valleys[[s]][v, ] <- c(NA, NA)
+  valleys <- list()
+  samp_depths <- list()
+  samp_depth_checks <- list()
+  for (b in seq_len(batch_num)) {
+    valleys[[b]] <- rep(list(matrix(nrow = var_num, ncol = 2)), samp_num[b])
+    for (s in seq_len(samp_num[b])) {
+      for (v in seq_len(var_num)) {
+        if (pop$pm_future[v] != 0 && all(pop$other_pops[, v] != 0)) {
+          x <- matrices[[b]][[s]][pop$subsetter[[b]][[s]][, split_num], v]
+          x <- x[x > pop$min_cutoffs[v]]
+          x <- x[x < pop$max_cutoffs[v]]
+          valleys[[b]][[s]][v, ] <- find_valley(x)
+        } else {
+          valleys[[b]][[s]][v, ] <- c(NA, NA)
+        }
       }
     }
+    samp_depths[[b]] <- vapply(valleys[[b]], \(x) x[, 2], double(var_num))
+    samp_depth_checks[[b]] <- samp_depths[[b]] > min_depth
   }
 
-  samp_depths <- vapply(valleys, \(x) x[, 2], double(var_num))
-  samp_depth_checks <- samp_depths > min_depth
+  bind_depth_checks <- Reduce(cbind, samp_depth_checks)
 
-  if (any(samp_depth_checks, na.rm = TRUE)) {
+  if (any(bind_depth_checks, na.rm = TRUE)) {
     choices <- make_choices(
-      valleys, samp_depths, samp_depth_checks, samples, pop$subsetter
+      valleys, samp_depths, samp_depth_checks, matrices, pop$subsetter
     )
     var_choice <- choices$var
     valley_choices <- choices$splits
     choice_depths <- choices$scores
 
-    for (s in seq_len(samp_num)) {
-      if (pop$pm_future[var_choice] == +1) {
-        x <- samples[[s]][pop$subsetter[[s]][, split_num], var_choice]
-        temp_subsetter <- x >= valley_choices[s]
-        pop$pm_previous[var_choice] <- +1
-      } else if (pop$pm_future[var_choice] == -1) {
-        x <- samples[[s]][pop$subsetter[[s]][, split_num], var_choice]
-        temp_subsetter <- x < valley_choices[s]
-        pop$pm_previous[var_choice] <- -1
-      } else {
-        stop("pop$pm_future[var_choice] should not be 0.")
-      }
-
-      pop$splits[[s]][var_choice] <- valley_choices[s]
-      pop$depths[[s]][var_choice] <- choice_depths[s]
-
-      pop$subsetter[[s]] <-
-        cbind(pop$subsetter[[s]], pop$subsetter[[s]][, split_num])
-      pop$subsetter[[s]][pop$subsetter[[s]][, split_num], split_num + 1] <-
-        temp_subsetter
-
-      if (s == samp_num) {
-        pop$order[var_choice] <- split_num
-        pop$method[var_choice] <- "valley"
-
-        same_path <- pop$other_pops[, var_choice] == pop$pm_future[var_choice]
-        pop$other_pops <- pop$other_pops[same_path, , drop = FALSE]
-        pop$pm_future[var_choice] <- 0
-        pop$other_pops[, var_choice] <- 0
-      }
-    }
-  } else if (use_gmm) {
-    boundaries <- rep(list(matrix(nrow = var_num, ncol = 2)), samp_num)
-    for (s in seq_len(samp_num)) {
-      for (v in seq_len(var_num)) {
-        if (pop$pm_future[v] != 0 && all(pop$other_pops[, v] != 0)) {
-          x <- samples[[s]][pop$subsetter[[s]][, split_num], v]
-          x <- x[x > pop$min_cutoffs[v]]
-          x <- x[x < pop$max_cutoffs[v]]
-          set.seed(seed)
-          boundaries[[s]][v, ] <- find_boundary(x, TRUE)
-        } else {
-          boundaries[[s]][v, ] <- c(NA, NA)
-        }
-      }
-    }
-
-    samp_diffs <- vapply(boundaries, \(x) x[, 2], double(var_num))
-    samp_diff_checks <- samp_diffs > min_diff
-
-    if (any(samp_diff_checks, na.rm = TRUE)) {
-      choices <- make_choices(
-        boundaries, samp_diffs, samp_diff_checks, samples, pop$subsetter
-      )
-      var_choice <- choices$var
-      boundary_choices <- choices$splits
-      choice_diffs <- choices$scores
-
-      for (s in seq_len(samp_num)) {
+    for (b in seq_len(batch_num)) {
+      for (s in seq_len(samp_num[b])) {
         if (pop$pm_future[var_choice] == +1) {
-          x <- samples[[s]][pop$subsetter[[s]][, split_num], var_choice]
-          temp_subsetter <- x >= boundary_choices[s]
+          x <-
+            matrices[[b]][[s]][pop$subsetter[[b]][[s]][, split_num], var_choice]
+          temp_subsetter <- x >= valley_choices[[b]][s]
           pop$pm_previous[var_choice] <- +1
         } else if (pop$pm_future[var_choice] == -1) {
-          x <- samples[[s]][pop$subsetter[[s]][, split_num], var_choice]
-          temp_subsetter <- x < boundary_choices[s]
+          x <-
+            matrices[[b]][[s]][pop$subsetter[[b]][[s]][, split_num], var_choice]
+          temp_subsetter <- x < valley_choices[[b]][s]
           pop$pm_previous[var_choice] <- -1
         } else {
+          browser()
           stop("pop$pm_future[var_choice] should not be 0.")
         }
 
-        pop$splits[[s]][var_choice] <- boundary_choices[s]
-        pop$diffs[[s]][var_choice] <- choice_diffs[s]
+        pop$splits[[b]][[s]][var_choice] <- valley_choices[[b]][s]
+        pop$depths[[b]][[s]][var_choice] <- choice_depths[[b]][s]
 
-        pop$subsetter[[s]] <-
-          cbind(pop$subsetter[[s]], pop$subsetter[[s]][, split_num])
-        pop$subsetter[[s]][pop$subsetter[[s]][, split_num], split_num + 1] <-
-          temp_subsetter
+        pop$subsetter[[b]][[s]] <-
+          cbind(pop$subsetter[[b]][[s]], pop$subsetter[[b]][[s]][, split_num])
+        pop$subsetter[[b]][[s]][
+          pop$subsetter[[b]][[s]][, split_num], split_num + 1
+        ] <- temp_subsetter
 
-        if (s == samp_num) {
+        if (b == batch_num && s == samp_num[b]) {
           pop$order[var_choice] <- split_num
-          pop$method[var_choice] <- "boundary"
           pop$method[var_choice] <- "valley"
+
           same_path <- pop$other_pops[, var_choice] == pop$pm_future[var_choice]
           pop$other_pops <- pop$other_pops[same_path, , drop = FALSE]
           pop$pm_future[var_choice] <- 0
@@ -240,6 +195,8 @@ recursive_gatetree <- function(
     samp_diffs <- list()
     samp_diff_checks <- list()
     for (b in seq_len(batch_num)) {
+      boundaries[[b]] <-
+        rep(list(matrix(nrow = var_num, ncol = 2)), samp_num[b])
       for (s in seq_len(samp_num[b])) {
         for (v in seq_len(var_num)) {
           if (pop$pm_future[v] != 0 && all(pop$other_pops[, v] != 0)) {
@@ -255,8 +212,7 @@ recursive_gatetree <- function(
       samp_diffs[[b]] <- vapply(boundaries[[b]], \(x) x[, 2], double(var_num))
       samp_diff_checks[[b]] <- samp_diffs[[b]] > min_diff
     }
-    
-    bind_diffs <- Reduce(cbind, samp_diffs)
+
     bind_diff_checks <- Reduce(cbind, samp_diff_checks)
 
     if (any(bind_diff_checks, na.rm = TRUE)) {
@@ -266,32 +222,49 @@ recursive_gatetree <- function(
       var_choice <- choices$var
       boundary_choices <- choices$splits
       choice_diffs <- choices$scores
-      
+
       for (b in seq_len(batch_num)) {
         for (s in seq_len(samp_num[b])) {
           if (pop$pm_future[var_choice] == +1) {
-            x <- 
-              matrices[[b]][[s]][pop$subsetter[[b]][[s]][, split_num], var_choice]
+            x <- matrices[[b]][[s]][
+              pop$subsetter[[b]][[s]][, split_num],
+              var_choice
+            ]
             temp_subsetter <- x >= boundary_choices[[b]][s]
             pop$pm_previous[var_choice] <- +1
-            x <-
-              matrices[[b]][[s]][pop$subsetter[[b]][[s]][, split_num], var_choice]
+          } else if (pop$pm_future[var_choice] == -1) {
+            x <- matrices[[b]][[s]][
+              pop$subsetter[[b]][[s]][, split_num],
+              var_choice
+            ]
             temp_subsetter <- x < boundary_choices[[b]][s]
             pop$pm_previous[var_choice] <- -1
           } else {
             browser()
             stop("pop$pm_future[var_choice] should not be 0.")
           }
-          
+
           pop$splits[[b]][[s]][var_choice] <- boundary_choices[[b]][s]
           pop$diffs[[b]][[s]][var_choice] <- choice_diffs[[b]][s]
-          
+
           pop$subsetter[[b]][[s]] <-
             cbind(pop$subsetter[[b]][[s]], pop$subsetter[[b]][[s]][, split_num])
-          
+          pop$subsetter[[b]][[s]][
+            pop$subsetter[[b]][[s]][, split_num], split_num + 1
+          ] <- temp_subsetter
+
           if (b == batch_num && s == samp_num[b]) {
             pop$order[var_choice] <- split_num
-            
+            pop$method[var_choice] <- "boundary"
+
+            same_path <-
+              pop$other_pops[, var_choice] == pop$pm_future[var_choice]
+            pop$other_pops <- pop$other_pops[same_path, , drop = FALSE]
+            pop$pm_future[var_choice] <- 0
+            pop$other_pops[, var_choice] <- 0
+          }
+        }
+      }
     } else {
       pop$terminated <- TRUE
     }
@@ -309,73 +282,98 @@ recursive_gatetree <- function(
   )
 }
 
-make_choices <- function(splits, scores, checks, samples, subsetter) {
-  var_num <- nrow(scores)
-  samp_num <- length(samples)
+make_choices <- function(splits, scores, checks, matrices, subsetter) {
+  var_num <- nrow(scores[[1]])
+  batch_num <- length(matrices)
+  samp_num <- vapply(matrices, length, integer(1L))
 
-  scores[!checks] <- NA
-  split_vals <- vapply(splits, \(x) x[, 1], double(var_num))
-  split_vals[!checks] <- NA
+  split_vals <- list()
+  score_sums <- list()
+  score_means <- list()
+  for (b in seq_len(batch_num)) {
+    scores[[b]][!checks[[b]]] <- NA
+    split_vals[[b]] <- vapply(splits[[b]], \(x) x[, 1], double(var_num))
+    split_vals[[b]][!checks[[b]]] <- NA
 
-  score_sums <- apply(scores, 1, sum, na.rm = TRUE)
-  score_means <- score_sums / samp_num
-  var_choice <- which.max(score_means)
-
-  choice_scores <- scores[var_choice, ]
-
-  comparable_splits <- compare_splits(split_vals, scores, samples, subsetter)
-  split_means <- vapply(
-    seq_len(var_num),
-    FUN.VALUE = double(1L),
-    \(x) {
-      stats::weighted.mean(
-        split_vals[x, ] * comparable_splits[x, ],
-        scores[x, ] * comparable_splits[x, ],
-        na.rm = TRUE
-      )
-    }
+    score_sums[[b]] <- as.matrix(apply(scores[[b]], 1, sum, na.rm = TRUE))
+    score_means[[b]] <- score_sums[[b]] / samp_num[b]
+  }
+  bind_score_means <- Reduce(cbind, score_means)
+  mean_score_means <- apply(
+    bind_score_means, 1, \(x) sum(x * samp_num / sum(samp_num))
   )
+  var_choice <- which.max(mean_score_means)
 
-  split_choices <- split_vals[var_choice, ]
-  split_choices[is.na(split_choices)] <- split_means[var_choice]
+  choice_scores <- lapply(scores, \(x) x[var_choice, ])
+
+  comparable_splits_batch <- list()
+  split_means <- double(batch_num)
+  for (b in seq_len(batch_num)) {
+    comparable_splits_batch[[b]] <- compare_splits(
+      split_vals[[b]], scores[[b]], matrices[[b]], subsetter[[b]], var_choice
+    )
+    split_means[b] <- stats::weighted.mean(
+      split_vals[[b]][var_choice, ] * comparable_splits_batch[[b]],
+      scores[[b]][var_choice, ] * comparable_splits_batch[[b]],
+      na.rm = TRUE
+    )
+  }
+
+  comparable_splits_study <- compare_splits(
+    Reduce(cbind, split_vals), Reduce(cbind, scores),
+    Reduce(append, matrices), Reduce(append, subsetter),
+    var_choice
+  )
+  split_mean_study <- stats::weighted.mean(
+    Reduce(cbind, split_vals)[var_choice, ] * comparable_splits_study,
+    Reduce(cbind, scores)[var_choice, ] * comparable_splits_study,
+    na.rm = TRUE
+  )
+  split_means[is.na(split_means)] <- split_mean_study
+
+  split_choices <- list()
+  for (b in seq_len(batch_num)) {
+    split_choices[[b]] <- split_vals[[b]][var_choice, ]
+    split_choices[[b]][is.na(split_choices[[b]])] <- split_means[b]
+  }
 
   list("var" = var_choice, "splits" = split_choices, "scores" = choice_scores)
 }
 
-compare_splits <- function(split_vals, scores, samples, subsetter) {
+compare_splits <- function(
+    split_vals, scores, matrices, subsetter, var_choice) {
   samp_num <- ncol(split_vals)
-  var_num <- nrow(split_vals)
   subset_num <- ncol(subsetter[[1]])
 
-  balanced_accuracy <- matrix(NA, nrow = var_num, ncol = samp_num)
-  comparable_splits <- matrix(NA, nrow = var_num, ncol = samp_num)
-  for (v in seq_len(var_num)) {
-    if (any(!is.na(scores[v, ]))) {
-      max_s <- which.max(scores[v, ])
+  balanced_accuracy <- double(samp_num)
+  comparable_splits <- logical(samp_num)
+  if (any(!is.na(scores[var_choice, ]))) {
+    max_s <- which.max(scores[var_choice, ])
 
-      for (s in seq_along(samples)) {
-        if (!is.na(scores[v, s])) {
-          obs_num <- sum(subsetter[[s]][, subset_num])
+    for (s in seq_along(matrices)) {
+      if (!is.na(scores[var_choice, s])) {
+        obs_num <- sum(subsetter[[s]][, subset_num])
 
-          original_neg <- sum(
-            samples[[s]][subsetter[[s]][, subset_num], v] < split_vals[v, s]
-          )
-          original_pos <- obs_num - original_neg
+        original_neg <- sum(
+          matrices[[s]][subsetter[[s]][, subset_num], var_choice] <
+            split_vals[var_choice, s]
+        )
+        original_pos <- obs_num - original_neg
 
-          maximum_neg <- sum(
-            samples[[s]][subsetter[[s]][, subset_num], v] < split_vals[v, max_s]
-          )
-          maximum_pos <- obs_num - maximum_neg
+        maximum_neg <- sum(
+          matrices[[s]][subsetter[[s]][, subset_num], var_choice] <
+            split_vals[var_choice, max_s]
+        )
+        maximum_pos <- obs_num - maximum_neg
 
-          tp <- min(original_pos, maximum_pos)
-          tn <- min(original_neg, maximum_neg)
-          fp <- max(maximum_pos - original_pos, 0)
-          fn <- max(maximum_neg - original_neg, 0)
+        tp <- min(original_pos, maximum_pos)
+        tn <- min(original_neg, maximum_neg)
+        fp <- max(maximum_pos - original_pos, 0)
+        fn <- max(maximum_neg - original_neg, 0)
 
-          fp + fn / obs_num
-          balanced_accuracy[v, s] <- ((tp / (tp + fp)) + (tn / (tn + fn))) / 2
-          comparable_splits[v, s] <- balanced_accuracy[v, s] >= 0.75
-        }
+        fp + fn / obs_num
+        balanced_accuracy[s] <- ((tp / (tp + fp)) + (tn / (tn + fn))) / 2
+        comparable_splits[s] <- balanced_accuracy[s] >= 0.75
       }
     }
   }

@@ -7,6 +7,7 @@
 #' @inheritParams gatetree
 #' @param gatetree_out Output from gatetree.
 #' @param pop The population number.
+#' @param batch The batch number.
 #' @param samp The sample number.
 #' @param var The variable number.
 #'
@@ -20,7 +21,9 @@ plot_split <- function(
     plots[[1]] <- plot_single_split(
       matrices, gatetree_out, pop, batch, samp, var, c(1, 1)
     )
-  } else if (!is.null(pop) && !is.null(batch) && !is.null(samp) && is.null(var)) {
+  } else if (
+    !is.null(pop) && !is.null(batch) && !is.null(samp) && is.null(var)
+  ) {
     max_split <- max(gatetree_out$output[[pop]]$order, na.rm = TRUE)
     for (i in seq_len(max_split)) {
       var <- which(gatetree_out$output[[pop]]$order == i)
@@ -28,14 +31,18 @@ plot_split <- function(
         matrices, gatetree_out, pop, batch, samp, var, c(i, max_split)
       )
     }
-  } else if (!is.null(pop) && !is.null(batch) && is.null(samp) && !is.null(var)) {
+  } else if (
+    !is.null(pop) && !is.null(batch) && is.null(samp) && !is.null(var)
+  ) {
     samp_num <- length(matrices[[batch]])
     for (j in seq_len(samp_num)) {
       plots[[j]] <- plot_single_split(
         matrices, gatetree_out, pop, batch, j, var, c(j, samp_num)
       )
     }
-  } else if (!is.null(pop) && is.null(batch) && is.null(samp) && !is.null(var)) {
+  } else if (
+    !is.null(pop) && is.null(batch) && is.null(samp) && !is.null(var)
+  ) {
     batch_num <- length(matrices)
     samp_num <- vapply(matrices, length, integer(1L))
     samp_count <- 1
@@ -47,7 +54,9 @@ plot_split <- function(
         samp_count <- samp_count + 1
       }
     }
-  } else if (is.null(pop) && !is.null(batch) && !is.null(samp) && !is.null(var)) {
+  } else if (
+    is.null(pop) && !is.null(batch) && !is.null(samp) && !is.null(var)
+  ) {
     pop_num <- length(gatetree_out$output)
     for (k in seq_len(pop_num)) {
       plots[[k]] <- plot_single_split(
@@ -56,7 +65,7 @@ plot_split <- function(
     }
   } else {
     stop(paste0(
-      "At least three of pop, batch, samp, and var are required", 
+      "At least three of pop, batch, samp, and var are required",
       " (or only pop and var)."
     ))
   }
@@ -71,10 +80,7 @@ plot_split <- function(
 #' illustrated, and information about the split in the title and subtitle.
 #'
 #' @inheritParams gatetree
-#' @param gatetree_out Output from gatetree.
-#' @param pop The population number.
-#' @param samp The sample number.
-#' @param var The variable number.
+#' @inheritParams plot_split
 #'
 #' @return `ggplot` object.
 #'
@@ -86,21 +92,27 @@ plot_explore <- function(
     plots[[1]] <- plot_single_split(
       matrices, gatetree_out, pop, batch, samp, var, c(1, 1), TRUE
     )
-  } else if (!is.null(pop) && !is.null(batch) && !is.null(samp) && is.null(var)) {
+  } else if (
+    !is.null(pop) && !is.null(batch) && !is.null(samp) && is.null(var)
+  ) {
     var_num <- ncol(matrices[[1]])
     for (i in seq_len(var_num)) {
       plots[[i]] <- plot_single_split(
         matrices, gatetree_out, pop, batch, samp, i, c(i, var_num), TRUE
       )
     }
-  } else if (!is.null(pop) && !is.null(batch) && is.null(samp) && !is.null(var)) {
+  } else if (
+    !is.null(pop) && !is.null(batch) && is.null(samp) && !is.null(var)
+  ) {
     samp_num <- length(matrices)
     for (j in seq_len(samp_num)) {
       plots[[j]] <- plot_single_split(
         matrices, gatetree_out, pop, batch, j, var, c(j, samp_num), TRUE
       )
     }
-  } else if (!is.null(pop) && is.null(batch) && is.null(samp) && !is.null(var)) {
+  } else if (
+    !is.null(pop) && is.null(batch) && is.null(samp) && !is.null(var)
+  ) {
     batch_num <- length(matrices)
     samp_num <- vapply(matrices, length, integer(1L))
     samp_count <- 1
@@ -113,7 +125,9 @@ plot_explore <- function(
         samp_count <- samp_count + 1
       }
     }
-  } else if (is.null(pop) && !is.null(batch) && !is.null(samp) && !is.null(var)) {
+  } else if (
+    is.null(pop) && !is.null(batch) && !is.null(samp) && !is.null(var)
+  ) {
     pop_num <- length(gatetree_out$output)
     for (k in seq_len(pop_num)) {
       plots[[k]] <- plot_single_split(
@@ -122,7 +136,7 @@ plot_explore <- function(
     }
   } else {
     stop(paste0(
-      "At least three of pop, batch, samp, and var are required", 
+      "At least three of pop, batch, samp, and var are required",
       " (or only pop and var)."
     ))
   }
@@ -147,7 +161,7 @@ plot_single_split <- function(
   }
 
   x <- matrices[[batch]][[samp]][
-    gatetree_out[[pop]]$subsetter[[batch]][[samp]][, split_num], 
+    gatetree_out[[pop]]$subsetter[[batch]][[samp]][, split_num],
   ]
 
   if (!is.null(names(matrices))) {

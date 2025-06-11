@@ -4,14 +4,23 @@
 \alias{plot_explore}
 \title{Density plot with a \code{gateTree} split.}
 \usage{
-plot_explore(samples, gatetree_out, pop = NULL, samp = NULL, var = NULL)
+plot_explore(
+  matrices,
+  gatetree_out,
+  pop = NULL,
+  batch = NULL,
+  samp = NULL,
+  var = NULL
+)
 }
 \arguments{
-\item{samples}{Dataset in \code{matrix} or \code{data.frame} form.}
+\item{matrices}{Dataset in \code{matrix} or \code{data.frame} form.}
 
 \item{gatetree_out}{Output from gatetree.}
 
 \item{pop}{The population number.}
+
+\item{batch}{The batch number.}
 
 \item{samp}{The sample number.}
 

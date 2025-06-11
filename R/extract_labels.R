@@ -35,7 +35,7 @@ make_bool_mats <- function(gatetree_out) {
   pop_num <- length(gatetree_out)
   batch_num <- length(gatetree_out[[1]]$subsetter)
   samp_num <- integer(batch_num)
-  
+
   obs_num <- list()
   subset_num <- list()
 
@@ -52,13 +52,13 @@ make_bool_mats <- function(gatetree_out) {
       bool_mats[[b]][[s]] <- matrix(nrow = obs_num[[b]][s], ncol = pop_num)
       for (p in seq_len(pop_num)) {
         subset_num[[b]][s] <- ncol(gatetree_out[[p]]$subsetter[[b]][[s]])
-        bool_mats[[b]][[s]][, p] <- 
+        bool_mats[[b]][[s]][, p] <-
           gatetree_out[[p]]$subsetter[[b]][[s]][, subset_num[[b]][s]]
       }
       colnames(bool_mats[[b]][[s]]) <- pop_names
-      
+
       bool_mats[[b]][[s]] <- merge_identical_columns(bool_mats[[b]][[s]])
-      
+
       if (max(rowSums(bool_mats[[b]][[s]])) > 1) {
         stop("Populations are overlapping.")
       }
@@ -66,7 +66,7 @@ make_bool_mats <- function(gatetree_out) {
     names(bool_mats[[b]]) <- names(gatetree_out[[1]]$subsetter[[b]])
   }
   names(bool_mats) <- names(gatetree_out[[1]]$subsetter)
-  
+
   bool_mats
 }
 
