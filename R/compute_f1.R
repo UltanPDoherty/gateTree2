@@ -74,22 +74,26 @@ compute_max_f1 <- function(
 
   if (!is.null(no_match_class)) {
     bool_no_match_class <- rownames(f1) %in% no_match_class
-    f1 <- f1[-which(bool_no_match_class), ]
-    class_count <- class_count[-which(bool_no_match_class)]
-    class_num <- class_num - sum(bool_no_match_class)
+    if (any(bool_no_match_class)) {
+      f1 <- f1[-which(bool_no_match_class), ]
+      class_count <- class_count[-which(bool_no_match_class)]
+      class_num <- class_num - sum(bool_no_match_class)
+    }
   }
   if (!is.null(no_match_cluster)) {
     bool_no_match_clust <- rownames(f1) %in% no_match_cluster
-    f1 <- f1[, -which(bool_no_match_clust)]
-    clust_num <- clust_num - sum(bool_no_match_clust)
+    if (any(bool_no_match_clust)) {
+      f1 <- f1[, -which(bool_no_match_clust)]
+      clust_num <- clust_num - sum(bool_no_match_clust)
+    }
   }
-
+  
   if (clust_num < class_num) {
     f1 <- cbind(
       f1, matrix(0, nrow = class_num, ncol = class_num - clust_num)
     )
   }
-
+  
   if (hungarian) {
     hungarian_order <- clue::solve_LSAP(f1, maximum = TRUE)
 
