@@ -1,11 +1,13 @@
 #' @title gateTree2 tree plot.
 #'
 #' @inheritParams plot_split
+#' @param x_pad x-axis padding around plot via `ggplot2::coord_cartesian`.
+#' @param y_pad y-axis padding around plot via `ggplot2::coord_cartesian`.
 #'
 #' @return `ggplot` object.
 #'
 #' @export
-plot_tree <- function(gatetree_out) {
+plot_tree <- function(gatetree_out, x_pad = 0.2, y_pad = 0.2) {
   if (!is.null(gatetree_out$output)) {
     gatetree_out <- gatetree_out$output
   }
@@ -45,8 +47,11 @@ plot_tree <- function(gatetree_out) {
   pop_x <- pop_y <- double(pop_num)
   old_pop_x <- old_pop_y <- double(pop_num)
   for (j in seq_len(node_num)) {
-    pop_j <- tree_df$Population[j][[1]]
-    sign_j <- tree_df$Sign[j][[1]]
+    pop_j <- tree_df$Population[j]
+    sign_j <- tree_df$Sign[j]
+    split_j <- tree_df$Split[j]
+
+    x_shift <- 1 / 2^split_j
 
     tree_df$node_x[j] <- pop_x[pop_j]
     tree_df$node_y[j] <- pop_y[pop_j]
@@ -55,12 +60,12 @@ plot_tree <- function(gatetree_out) {
 
     old_pop_x[pop_j] <- pop_x[pop_j]
     old_pop_y[pop_j] <- pop_y[pop_j]
-    pop_x[pop_j] <- pop_x[pop_j] + sign_j
-    pop_y[pop_j] <- tree_df$node_y[pop_j] + 1
+
+    pop_x[pop_j] <- pop_x[pop_j] + sign_j * x_shift
+    pop_y[pop_j] <- pop_y[pop_j] + 1
   }
-  tree_df$before_x <- tree_df$node_x - (tree_df$Split != 1) * 0.5
+  tree_df$before_x <- tree_df$last_node_x
   tree_df$before_y <- tree_df$node_y - (tree_df$Split != 1) * 0.5
-  tree_df$after_x <- tree_df$node_x + 0.5
   tree_df$after_y <- tree_df$node_y + 0.5
 
   for (p in seq_len(pop_num)) {
@@ -79,16 +84,14 @@ plot_tree <- function(gatetree_out) {
 
     tree_df$before_x[node_num + p] <- old_pop_x[p]
     tree_df$before_y[node_num + p] <- pop_y[p] - 0.5
-    tree_df$after_x[node_num + p] <- pop_x[p]
     tree_df$after_y[node_num + p] <- pop_y[p]
   }
 
   to_be_removed <- logical(node_num + pop_num)
   for (p in seq(node_num + 1, node_num + pop_num - 1)) {
     for (q in seq(p + 1, node_num + pop_num)) {
-      same_x <- tree_df$node_x[p] == tree_df$node_x[q]
-      same_y <- tree_df$node_y[p] == tree_df$node_y[q]
-      if (same_x && same_y) {
+      same_leaf <- all(tree_df[p, -c(1:5)] == tree_df[q, -c(1:5)])
+      if (same_leaf) {
         tree_df$node_label[p] <- paste0(
           tree_df$node_label[p], "_", tree_df$node_label[q]
         )
@@ -96,13 +99,15 @@ plot_tree <- function(gatetree_out) {
       }
     }
   }
-  tree_df <- tree_df[-which(to_be_removed), ]
+  if (any(to_be_removed)) {
+    tree_df <- tree_df[-which(to_be_removed), ]
+  }
 
-  tree_df$plus_x <- tree_df$node_x + 0.1
+  tree_df$plus_x <- tree_df$node_x + 0.025
   tree_df$plus_y <- (tree_df$node_y + tree_df$after_y) / 2
   tree_df$plus_text <- ifelse(tree_df$node_type != "leaf", "+", "")
 
-  tree_df$minus_x <- tree_df$node_x - 0.1
+  tree_df$minus_x <- tree_df$node_x - 0.025
   tree_df$minus_y <- (tree_df$node_y + tree_df$after_y) / 2
   tree_df$minus_text <- ifelse(tree_df$node_type != "leaf", "-", "")
 
@@ -117,6 +122,10 @@ plot_tree <- function(gatetree_out) {
   colour_scheme <- c(
     "valley" = "#F0E442", "boundary" = "#56B4E9", "leaf" = "#009E73"
   )
+  x_limits <- 
+    c(min(flip_tree_df$node_x) - x_pad, max(flip_tree_df$node_x) + x_pad)
+  y_limits <- 
+    c(min(flip_tree_df$node_y) - y_pad, max(flip_tree_df$node_y) + y_pad)
   node_x <- node_y <- node_label <- after_y <- before_y <- before_x <-
     node_type <- plus_x <- plus_y <- plus_text <- minus_x <- minus_y <-
     minus_text <- NULL
@@ -145,10 +154,7 @@ plot_tree <- function(gatetree_out) {
       ggplot2::aes(x = minus_x, y = minus_y, label = minus_text),
       size = 8
     ) +
-    ggplot2::coord_cartesian(
-      xlim = c(min(flip_tree_df$node_x) - 0.5, max(flip_tree_df$node_x) + 0.5),
-      ylim = c(min(flip_tree_df$node_y) - 0.5, max(flip_tree_df$node_y) + 0.5)
-    ) +
+    ggplot2::coord_cartesian(xlim = x_limits, ylim = y_limits) +
     ggplot2::scale_fill_manual(values = colour_scheme) +
     ggplot2::theme_void()
 }
