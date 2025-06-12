@@ -87,13 +87,13 @@ compute_max_f1 <- function(
       clust_num <- clust_num - sum(bool_no_match_clust)
     }
   }
-  
+
   if (clust_num < class_num) {
     f1 <- cbind(
       f1, matrix(0, nrow = class_num, ncol = class_num - clust_num)
     )
   }
-  
+
   if (hungarian) {
     hungarian_order <- clue::solve_LSAP(f1, maximum = TRUE)
 

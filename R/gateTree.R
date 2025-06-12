@@ -85,7 +85,7 @@ gatetree <- function(
     "min_cutoffs" = min_cutoffs, "max_cutoffs" = max_cutoffs, "seed" = seed,
     "verbose" = verbose
   )
-  
+
   var_named_nas <- rep(NA, var_num)
   var_named_0s <- rep(0, var_num)
   names(var_named_nas) <- names(var_named_0s) <- colnames(plusminus)

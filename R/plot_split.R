@@ -95,7 +95,7 @@ plot_explore <- function(
   } else if (
     !is.null(pop) && !is.null(batch) && !is.null(samp) && is.null(var)
   ) {
-    var_num <- ncol(matrices[[1]])
+    var_num <- ncol(matrices[[1]][[1]])
     for (i in seq_len(var_num)) {
       plots[[i]] <- plot_single_split(
         matrices, gatetree_out, pop, batch, samp, i, c(i, var_num), TRUE
