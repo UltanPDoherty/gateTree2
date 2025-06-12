@@ -3,11 +3,12 @@
 #' @inheritParams plot_split
 #' @param x_pad x-axis padding around plot via `ggplot2::coord_cartesian`.
 #' @param y_pad y-axis padding around plot via `ggplot2::coord_cartesian`.
+#' @param pm_pad Padding from vertical line to the plus / minus symbols.
 #'
 #' @return `ggplot` object.
 #'
 #' @export
-plot_tree <- function(gatetree_out, x_pad = 0.2, y_pad = 0.2) {
+plot_tree <- function(gatetree_out, x_pad = 0.2, y_pad = 0.2, pm_pad = 0.05) {
   if (!is.null(gatetree_out$output)) {
     gatetree_out <- gatetree_out$output
   }
@@ -103,11 +104,11 @@ plot_tree <- function(gatetree_out, x_pad = 0.2, y_pad = 0.2) {
     tree_df <- tree_df[-which(to_be_removed), ]
   }
 
-  tree_df$plus_x <- tree_df$node_x + 0.025
+  tree_df$plus_x <- tree_df$node_x + pm_pad
   tree_df$plus_y <- (tree_df$node_y + tree_df$after_y) / 2
   tree_df$plus_text <- ifelse(tree_df$node_type != "leaf", "+", "")
 
-  tree_df$minus_x <- tree_df$node_x - 0.025
+  tree_df$minus_x <- tree_df$node_x - pm_pad
   tree_df$minus_y <- (tree_df$node_y + tree_df$after_y) / 2
   tree_df$minus_text <- ifelse(tree_df$node_type != "leaf", "-", "")
 
