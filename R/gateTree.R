@@ -56,6 +56,9 @@ gatetree <- function(
   if (is.null(rownames(plusminus))) {
     rownames(plusminus) <- paste0("pop", seq_len(pop_num))
   }
+  if (is.null(colnames(plusminus))) {
+    colnames(plusminus) <- paste0("var", seq_len(var_num))
+  }
 
   if (is.null(seed)) {
     seed <- sample(1:1e6, size = 1)
@@ -67,6 +70,12 @@ gatetree <- function(
   if (is.null(max_cutoffs)) {
     max_cutoffs <- rep(Inf, var_num)
   }
+  if (is.null(names(min_cutoffs))) {
+    names(min_cutoffs) <- colnames(plusminus)
+  }
+  if (is.null(names(max_cutoffs))) {
+    names(max_cutoffs) <- colnames(plusminus)
+  }
 
   this_call <- call(
     "ombc_gmm",
@@ -76,6 +85,10 @@ gatetree <- function(
     "min_cutoffs" = min_cutoffs, "max_cutoffs" = max_cutoffs, "seed" = seed,
     "verbose" = verbose
   )
+  
+  var_named_nas <- rep(NA, var_num)
+  var_named_0s <- rep(0, var_num)
+  names(var_named_nas) <- names(var_named_0s) <- colnames(plusminus)
 
   pop_list <- list()
   for (p in seq_len(pop_num)) {
@@ -83,14 +96,14 @@ gatetree <- function(
       "subsetter" = lapply(
         matrices, \(x) lapply(x, \(y) as.matrix(rep(TRUE, nrow(y))))
       ),
-      "splits" = lapply(samp_num, \(x) rep(list(rep(NA, var_num)), x)),
-      "depths" = lapply(samp_num, \(x) rep(list(rep(NA, var_num)), x)),
-      "diffs" = lapply(samp_num, \(x) rep(list(rep(NA, var_num)), x)),
+      "splits" = lapply(samp_num, \(x) rep(list(var_named_nas), x)),
+      "depths" = lapply(samp_num, \(x) rep(list(var_named_nas), x)),
+      "diffs" = lapply(samp_num, \(x) rep(list(var_named_nas), x)),
       "pm_future" = plusminus[p, ],
-      "pm_previous" = rep(0, var_num),
+      "pm_previous" = var_named_0s,
       "other_pops" = plusminus[-p, , drop = FALSE],
-      "order" = rep(NA, var_num),
-      "method" = rep(NA, var_num),
+      "order" = var_named_nas,
+      "method" = var_named_nas,
       "min_cutoffs" = min_cutoffs,
       "max_cutoffs" = max_cutoffs,
       "terminated" = FALSE
