@@ -88,20 +88,23 @@ plot_tree <- function(gatetree_out, x_pad = 0.2, y_pad = 0.2, pm_pad = 0.05) {
     tree_df$after_y[node_num + p] <- pop_y[p]
   }
 
-  to_be_removed <- logical(node_num + pop_num)
-  for (p in seq(node_num + 1, node_num + pop_num - 1)) {
-    for (q in seq(p + 1, node_num + pop_num)) {
-      same_leaf <- all(tree_df[p, -c(1:5)] == tree_df[q, -c(1:5)])
-      if (same_leaf) {
-        tree_df$node_label[p] <- paste0(
-          tree_df$node_label[p], "_", tree_df$node_label[q]
-        )
-        to_be_removed[q] <- TRUE
+  if (pop_num > 1) {
+    to_be_removed <- logical(node_num + pop_num)
+    for (p in seq(node_num + 1, node_num + pop_num - 1)) {
+      for (q in seq(p + 1, node_num + pop_num)) {
+        same_leaf <- all(tree_df[p, -c(1:5)] == tree_df[q, -c(1:5)])
+        browser()
+        if (same_leaf) {
+          tree_df$node_label[p] <- paste0(
+            tree_df$node_label[p], "_", tree_df$node_label[q]
+          )
+          to_be_removed[q] <- TRUE
+        }
       }
     }
-  }
-  if (any(to_be_removed)) {
-    tree_df <- tree_df[-which(to_be_removed), ]
+    if (any(to_be_removed)) {
+      tree_df <- tree_df[-which(to_be_removed), ]
+    }
   }
 
   tree_df$plus_x <- tree_df$node_x + pm_pad
