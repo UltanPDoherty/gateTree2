@@ -75,7 +75,7 @@ compute_max_f1 <- function(
   if (!is.null(no_match_class)) {
     bool_no_match_class <- rownames(f1) %in% no_match_class
     if (any(bool_no_match_class)) {
-      f1 <- f1[-which(bool_no_match_class), ]
+      f1 <- f1[-which(bool_no_match_class), , drop = FALSE]
       class_count <- class_count[-which(bool_no_match_class)]
       class_num <- class_num - sum(bool_no_match_class)
     }
@@ -83,7 +83,7 @@ compute_max_f1 <- function(
   if (!is.null(no_match_cluster)) {
     bool_no_match_clust <- rownames(f1) %in% no_match_cluster
     if (any(bool_no_match_clust)) {
-      f1 <- f1[, -which(bool_no_match_clust)]
+      f1 <- f1[, -which(bool_no_match_clust), drop = FALSE]
       clust_num <- clust_num - sum(bool_no_match_clust)
     }
   }
