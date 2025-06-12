@@ -93,7 +93,6 @@ plot_tree <- function(gatetree_out, x_pad = 0.2, y_pad = 0.2, pm_pad = 0.05) {
     for (p in seq(node_num + 1, node_num + pop_num - 1)) {
       for (q in seq(p + 1, node_num + pop_num)) {
         same_leaf <- all(tree_df[p, -c(1:5)] == tree_df[q, -c(1:5)])
-        browser()
         if (same_leaf) {
           tree_df$node_label[p] <- paste0(
             tree_df$node_label[p], "_", tree_df$node_label[q]
