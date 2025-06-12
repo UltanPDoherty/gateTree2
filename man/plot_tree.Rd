@@ -4,10 +4,16 @@
 \alias{plot_tree}
 \title{gateTree2 tree plot.}
 \usage{
-plot_tree(gatetree_out)
+plot_tree(gatetree_out, x_pad = 0.2, y_pad = 0.2, pm_pad = 0.05)
 }
 \arguments{
 \item{gatetree_out}{Output from gatetree.}
+
+\item{x_pad}{x-axis padding around plot via \code{ggplot2::coord_cartesian}.}
+
+\item{y_pad}{y-axis padding around plot via \code{ggplot2::coord_cartesian}.}
+
+\item{pm_pad}{Padding from vertical line to the plus / minus symbols.}
 }
 \value{
 \code{ggplot} object.

@@ -126,9 +126,9 @@ plot_tree <- function(gatetree_out, x_pad = 0.2, y_pad = 0.2, pm_pad = 0.05) {
   colour_scheme <- c(
     "valley" = "#F0E442", "boundary" = "#56B4E9", "leaf" = "#009E73"
   )
-  x_limits <- 
+  x_limits <-
     c(min(flip_tree_df$node_x) - x_pad, max(flip_tree_df$node_x) + x_pad)
-  y_limits <- 
+  y_limits <-
     c(min(flip_tree_df$node_y) - y_pad, max(flip_tree_df$node_y) + y_pad)
   node_x <- node_y <- node_label <- after_y <- before_y <- before_x <-
     node_type <- plus_x <- plus_y <- plus_text <- minus_x <- minus_y <-
