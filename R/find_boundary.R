@@ -12,6 +12,8 @@
 #' @return Vector consisting of the boundary and its scaled BIC difference. The
 #' boundary will be NA if its scaled BIC difference is less than
 #' `min_scaled_bic_diff`.
+#'
+#' @export
 find_boundary <- function(x, boundary_noise_comp = TRUE) {
   if (length(x) < 10) {
     return(c(NA, NA))

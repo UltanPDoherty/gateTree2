@@ -2,7 +2,7 @@
 % Please edit documentation in R/find_valley.R
 \name{find_valley}
 \alias{find_valley}
-\title{Title}
+\title{Find the deepest univariate density valley.}
 \usage{
 find_valley(x)
 }
@@ -13,5 +13,5 @@ find_valley(x)
 Vector of length two: valley location and depth
 }
 \description{
-Title
+Find the deepest univariate density valley.
 }

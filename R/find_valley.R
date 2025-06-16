@@ -1,8 +1,10 @@
-#' Title
+#' Find the deepest univariate density valley.
 #'
 #' @param x Data vector
 #'
 #' @returns Vector of length two: valley location and depth
+#'
+#' @export
 find_valley <- function(x) {
   if (length(x) < 10) {
     return(c(NA, NA))
