@@ -6,16 +6,37 @@
 #'
 #' @inheritParams gatetree
 #' @param gatetree_out Output from gatetree.
-#' @param pop The population number.
-#' @param batch The batch number.
-#' @param samp The sample number.
-#' @param var The variable number.
+#' @param pop The population number or name.
+#' @param batch The batch number or name.
+#' @param samp The sample number or name.
+#' @param var The variable number or name.
 #'
 #' @return `ggplot` object.
 #'
 #' @export
 plot_split <- function(
     matrices, gatetree_out, pop = NULL, batch = NULL, samp = NULL, var = NULL) {
+  if (!is.null(pop) && is.character(pop)) {
+    if (pop %in% names(gatetree_out$output)) {
+      pop <- which(pop == names(gatetree_out$output))
+    }
+  }
+  if (!is.null(batch) && is.character(batch)) {
+    if (batch %in% names(matrices)) {
+      batch <- which(batch == names(matrices))
+    }
+  }
+  if (!is.null(samp) && is.character(samp)) {
+    if (samp %in% names(matrices[[batch]])) {
+      samp <- which(samp == names(matrices[[batch]]))
+    }
+  }
+  if (!is.null(var) && is.character(var)) {
+    if (var %in% colnames(matrices[[1]][[1]])) {
+      var <- which(var == colnames(matrices[[1]][[1]]))
+    }
+  }
+  
   plots <- list()
   if (!is.null(pop) && !is.null(batch) && !is.null(samp) && !is.null(var)) {
     plots[[1]] <- plot_single_split(
