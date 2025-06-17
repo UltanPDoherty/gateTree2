@@ -124,9 +124,9 @@ compute_max_f1 <- function(
 #' Compute the F1 for each class of the optimal merged set of cluster.
 #'
 #' @description
-#' For each class, merge clusters in order from highest to lowest precision,
-#' stopping when the F1 of the merged cluster with respect to that class is
-#' maximised.
+#' For each class, start with the highest F1 cluster, then repeatedly merge it
+#' with whichever cluster results in the best F1 score. Retrospectively identify
+#' when the F1 of the merged cluster with respect to that class is maximised.
 #'
 #' @inheritParams compute_max_f1
 #' @param merge_limit Maximum number of cluster merges to perform per class.
@@ -146,31 +146,45 @@ compute_merged_f1 <- function(
   class_count <- f1_output$class_count
   clust_count <- f1_output$clust_count
   contingency <- f1_output$contingency
-  precision <- f1_output$precision
+  f1 <- f1_output$f1
 
   if (is.null(merge_limit)) {
-    merge_limit <- clust_num
+    merge_limit <- clust_num - 1
   } else {
-    merge_limit <- max(clust_num, merge_limit)
+    merge_limit <- min(clust_num - 1, merge_limit)
   }
 
   merging_f1 <- matrix(nrow = class_num, ncol = clust_num)
   for (i in seq_len(class_num)) {
-    precision_order <- order(precision[i, ], decreasing = TRUE)
-    cont_temp_i <- contingency[i, precision_order]
-    clust_count_temp <- clust_count[precision_order]
+    f1_order <- order(f1[i, ], decreasing = TRUE)
+    cont_i <- contingency[i, f1_order]
+    clust_count_i <- clust_count[f1_order]
 
-    cont_temp_i[1] <- cont_temp_i[1]
-    merging_f1[i, 1] <-
-      2 * cont_temp_i[1] / (class_count[i] + clust_count_temp[1])
+    merging_f1[i, 1] <- max(f1[i, ])
 
-    for (j in seq(2, merge_limit)) {
-      cont_temp_i[j] <- cont_temp_i[j - 1] + cont_temp_i[j]
-      clust_count_temp[j] <- clust_count_temp[j - 1] + clust_count_temp[j]
-      merging_f1[i, j] <-
-        2 * cont_temp_i[j] / (class_count[i] + clust_count_temp[j])
+    merge_count <- 1
+    while (merge_count <= merge_limit) {
+      temp_merging_f1 <- double(clust_num - merge_count)
+
+      for (j in seq_len(clust_num - merge_count)) {
+        x <- cont_i[1] + cont_i[1 + j]
+        n <- clust_count_i[1] + clust_count_i[1 + j]
+        temp_merging_f1[j] <- 2 * x / (class_count[i] + n)
+      }
+      merge_choice <- which.max(temp_merging_f1) + 1
+
+      cont_i[1] <- cont_i[1] + cont_i[merge_choice]
+      cont_i <- cont_i[-merge_choice]
+      clust_count_i[1] <- clust_count_i[1] + clust_count_i[merge_choice]
+      clust_count_i <- clust_count_i[-merge_choice]
+
+      merging_f1[i, 1 + merge_count] <-
+        2 * cont_i[1] / (class_count[i] + clust_count_i[1])
+
+      merge_count <- merge_count + 1
     }
   }
+
   max_merged_f1 <- apply(merging_f1, 1, max, na.rm = TRUE)
   merge_counts <- apply(merging_f1, 1, which.max) - 1
 

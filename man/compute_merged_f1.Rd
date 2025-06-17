@@ -21,7 +21,7 @@ compute_merged_f1(class_labels, cluster_labels, merge_limit = NULL)
 }
 }
 \description{
-For each class, merge clusters in order from highest to lowest precision,
-stopping when the F1 of the merged cluster with respect to that class is
-maximised.
+For each class, start with the highest F1 cluster, then repeatedly merge it
+with whichever cluster results in the best F1 score. Retrospectively identify
+when the F1 of the merged cluster with respect to that class is maximised.
 }
