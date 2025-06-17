@@ -11,13 +11,13 @@ plot_split_overlay(matrices, gatetree_out, var, pop, batch = NULL, samp = NULL)
 
 \item{gatetree_out}{Output from gatetree.}
 
-\item{var}{The variable number.}
+\item{var}{The variable number or name.}
 
-\item{pop}{The population number.}
+\item{pop}{The population number or name.}
 
-\item{batch}{The batch number.}
+\item{batch}{The batch number or name.}
 
-\item{samp}{The sample number.}
+\item{samp}{The sample number or name.}
 }
 \value{
 \code{ggplot} object.

@@ -62,6 +62,7 @@ iris_gatetree <- gatetree(
   list(list(iris[, -5])),
   iris_plusminus,
   min_depth = 10,
-  min_diff = 0.01
+  min_diff = 0.01,
+  min_gmm_size = 50
 )
 }

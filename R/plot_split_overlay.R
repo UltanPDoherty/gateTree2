@@ -5,17 +5,34 @@
 #' illustrated, and information about the split in the title and subtitle.
 #'
 #' @inheritParams gatetree
-#' @param gatetree_out Output from gatetree.
-#' @param pop The population number.
-#' @param batch The batch number.
-#' @param samp The sample number.
-#' @param var The variable number.
+#' @inheritParams plot_split
 #'
 #' @return `ggplot` object.
 #'
 #' @export
 plot_split_overlay <- function(
     matrices, gatetree_out, var, pop, batch = NULL, samp = NULL) {
+  if (!is.null(pop) && is.character(pop)) {
+    if (pop %in% names(gatetree_out$output)) {
+      pop <- which(pop == names(gatetree_out$output))
+    }
+  }
+  if (!is.null(batch) && is.character(batch)) {
+    if (batch %in% names(matrices)) {
+      batch <- which(batch == names(matrices))
+    }
+  }
+  if (!is.null(samp) && is.character(samp)) {
+    if (samp %in% names(matrices[[batch]])) {
+      samp <- which(samp == names(matrices[[batch]]))
+    }
+  }
+  if (!is.null(var) && is.character(var)) {
+    if (var %in% colnames(matrices[[1]][[1]])) {
+      var <- which(var == colnames(matrices[[1]][[1]]))
+    }
+  }
+
   gatetree_call <- gatetree_out$call
   gatetree_out <- gatetree_out$output
 
@@ -80,7 +97,11 @@ plot_split_overlay <- function(
     ggplot2::theme_bw()
 
   if (!all(is.na(dens_df$split_val))) {
-    gg <- gg + ggplot2::geom_vline(xintercept = dens_df$split_val, na.rm = TRUE)
+    split_val <- NULL
+    gg <- gg + ggplot2::geom_vline(
+      ggplot2::aes(xintercept = split_val, colour = samp_name),
+      na.rm = TRUE, show.legend = FALSE
+    )
   }
 
   min_cut <- gatetree_call$min_cutoffs[var]
@@ -118,7 +139,10 @@ dens_single_split <- function(
   dens <- stats::density(x)
   dens_x <- dens$x
   counts_y <- dens$y * length(x)
-  dens_df <- data.frame(batch, samp, dens_x, counts_y, as.numeric(split_val))
+  dens_df <- data.frame(
+    batch, samp, dens_x, counts_y,
+    "split_val" = as.numeric(split_val)
+  )
 
   dens_df
 }

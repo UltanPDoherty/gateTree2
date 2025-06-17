@@ -36,7 +36,7 @@ plot_split <- function(
       var <- which(var == colnames(matrices[[1]][[1]]))
     }
   }
-  
+
   plots <- list()
   if (!is.null(pop) && !is.null(batch) && !is.null(samp) && !is.null(var)) {
     plots[[1]] <- plot_single_split(
