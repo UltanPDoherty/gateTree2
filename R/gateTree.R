@@ -179,7 +179,6 @@ recursive_gatetree <- function(
           temp_subsetter <- x < valley_choices[[b]][s]
           pop$pm_previous[var_choice] <- -1
         } else {
-          browser()
           stop("pop$pm_future[var_choice] should not be 0.")
         }
 

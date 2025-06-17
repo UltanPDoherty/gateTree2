@@ -4,7 +4,7 @@
 \alias{find_boundary}
 \title{Find the optimal univariate GMM boundary.}
 \usage{
-find_boundary(x, boundary_noise_comp = TRUE)
+find_boundary(x, boundary_noise_comp = FALSE)
 }
 \arguments{
 \item{x}{Data vector}

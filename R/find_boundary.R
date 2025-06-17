@@ -14,7 +14,7 @@
 #' `min_scaled_bic_diff`.
 #'
 #' @export
-find_boundary <- function(x, boundary_noise_comp = TRUE) {
+find_boundary <- function(x, boundary_noise_comp = FALSE) {
   if (length(x) < 10) {
     return(c(NA, NA))
   }
