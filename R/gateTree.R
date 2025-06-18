@@ -337,7 +337,7 @@ make_choices <- function(splits, scores, checks, matrices, subsetter) {
   mean_score_means <- apply(
     bind_score_means, 1, \(x) sum(x * samp_num / sum(samp_num))
   )
-  
+
   if (all(mean_score_means == 0)) {
     var_choice <- NA
   } else {
@@ -353,17 +353,14 @@ impute_splits <- function(
     splits, scores, checks, matrices, subsetter, var_choice) {
   var_num <- nrow(scores[[1]])
   batch_num <- length(matrices)
-  samp_num <- vapply(matrices, length, integer(1L))
-  
+
   split_vals <- list()
-  score_sums <- list()
-  score_means <- list()
   for (b in seq_len(batch_num)) {
     scores[[b]][!checks[[b]]] <- NA
     split_vals[[b]] <- vapply(splits[[b]], \(x) x[, 1], double(var_num))
     split_vals[[b]][!checks[[b]]] <- NA
   }
-  
+
   comparable_splits_batch <- list()
   split_means <- double(batch_num)
   for (b in seq_len(batch_num)) {
@@ -376,7 +373,7 @@ impute_splits <- function(
       na.rm = TRUE
     )
   }
-  
+
   comparable_splits_study <- compare_splits(
     Reduce(cbind, split_vals), Reduce(cbind, scores),
     Reduce(append, matrices), Reduce(append, subsetter),
@@ -387,14 +384,20 @@ impute_splits <- function(
     Reduce(cbind, scores)[var_choice, ] * comparable_splits_study,
     na.rm = TRUE
   )
-  split_means[is.na(split_means)] <- split_mean_study
-  
+  if (any(is.na(split_means))) {
+    message(paste0(
+      "Study-level imputation has been conducted. Variable: ", var_choice,
+      ". Batch: ", paste0(which(is.na(split_means)), collapse = ", "), "."
+    ))
+    split_means[is.na(split_means)] <- split_mean_study
+  }
+
   split_choices <- list()
   for (b in seq_len(batch_num)) {
     split_choices[[b]] <- split_vals[[b]][var_choice, ]
     split_choices[[b]][is.na(split_choices[[b]])] <- split_means[b]
   }
-  
+
   split_choices
 }
 
