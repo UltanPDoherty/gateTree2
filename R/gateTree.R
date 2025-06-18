@@ -337,7 +337,12 @@ make_choices <- function(splits, scores, checks, matrices, subsetter) {
   mean_score_means <- apply(
     bind_score_means, 1, \(x) sum(x * samp_num / sum(samp_num))
   )
-  var_choice <- which.max(mean_score_means)
+  
+  if (all(mean_score_means == 0)) {
+    var_choice <- NA
+  } else {
+    var_choice <- which.max(mean_score_means)
+  }
 
   choice_scores <- lapply(scores, \(x) x[var_choice, ])
 
