@@ -4,10 +4,12 @@
 \alias{find_valley}
 \title{Find the deepest univariate density valley.}
 \usage{
-find_valley(x)
+find_valley(x, min_kde_size = 100)
 }
 \arguments{
 \item{x}{Data vector}
+
+\item{min_kde_size}{Minimum number of events required to search for a KDE valley.}
 }
 \value{
 Vector of length two: valley location and depth

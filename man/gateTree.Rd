@@ -7,9 +7,10 @@
 gatetree(
   matrices,
   plusminus,
-  min_depth = 100,
+  min_depth = 0.05,
   min_diff = 0.05,
   use_gmm = TRUE,
+  min_kde_size = 100,
   min_gmm_size = 100,
   min_cutoffs = NULL,
   max_cutoffs = NULL,
@@ -31,8 +32,9 @@ divided by 2 log(obs_num).}
 
 \item{use_gmm}{Logical value.}
 
-\item{min_gmm_size}{Minimum number of events required to search for a GMM
-boundary.}
+\item{min_kde_size}{Minimum number of events required to search for a KDE valley.}
+
+\item{min_gmm_size}{Minimum number of events required to search for a GMM boundary.}
 
 \item{min_cutoffs}{Minimum values for observations used when finding splits.}
 

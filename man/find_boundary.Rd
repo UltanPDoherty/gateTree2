@@ -9,8 +9,7 @@ find_boundary(x, min_gmm_size = 100, boundary_noise_comp = FALSE)
 \arguments{
 \item{x}{Data vector}
 
-\item{min_gmm_size}{Minimum number of events required to search for a GMM
-boundary.}
+\item{min_gmm_size}{Minimum number of events required to search for a GMM boundary.}
 
 \item{boundary_noise_comp}{= TRUE}
 }

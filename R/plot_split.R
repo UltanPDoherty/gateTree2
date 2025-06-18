@@ -252,8 +252,8 @@ plot_single_split <- function(
 
   dens <- stats::density(x)
   dens_x <- dens$x
-  counts_y <- dens$y * length(x)
-  dens_df <- data.frame(dens_x, counts_y)
+  dens01_y <- dens$y / max(dens$y)
+  dens_df <- data.frame(dens_x, dens01_y)
 
   # colours from ggokabeito package
   rect_col <- switch(scenario,
@@ -269,18 +269,18 @@ plot_single_split <- function(
     "explore" = explore_valley_depth
   )
   score_title <- switch(scenario,
-    "valley"   = paste0("depth = ", round(score, 1), " events"),
+    "valley"   = paste0("depth = ", round(score, 1)),
     "boundary" = paste0("scaled BIC diff. = ", round(score, 3)),
     "nothing"  = NA,
-    "explore"  = paste0("depth = ", round(score, 1), " events")
+    "explore"  = paste0("depth = ", round(score, 1))
   )
 
   gg <- ggplot2::ggplot(
-    dens_df, ggplot2::aes(x = dens_x, y = counts_y)
+    dens_df, ggplot2::aes(x = dens_x, y = dens01_y)
   ) +
     ggplot2::geom_rect(
       ggplot2::aes(
-        xmin = xleft, xmax = xright, ymin = 0, ymax = max(counts_y)
+        xmin = xleft, xmax = xright, ymin = 0, ymax = max(dens01_y)
       ),
       fill = rect_col, na.rm = TRUE
     ) +
@@ -295,7 +295,7 @@ plot_single_split <- function(
         "Variable: ", var_name
       ),
       x = paste0("N before = ", size_before, ", N after = ", size_after),
-      y = "# of Events"
+      y = "Density (0-1 Scaled)"
     ) +
     ggplot2::theme_bw()
 

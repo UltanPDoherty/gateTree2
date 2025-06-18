@@ -80,10 +80,10 @@ plot_split_overlay <- function(
     \(x) samp_names[[c(dens_df$batch[x], dens_df$samp[x])]]
   )
 
-  dens_x <- counts_y <- samp_name <- NULL
+  dens_x <- dens01_y <- samp_name <- NULL
   gg <- dens_df |>
     ggplot2::ggplot(ggplot2::aes(
-      x = dens_x, y = counts_y, group = samp_name, colour = samp_name
+      x = dens_x, y = dens01_y, group = samp_name, colour = samp_name
     )) +
     ggplot2::geom_line(show.legend = FALSE) +
     ggplot2::labs(
@@ -92,7 +92,7 @@ plot_split_overlay <- function(
         "Variable: ", var_name
       ),
       x = var_name,
-      y = "# of Events"
+      y = "Density (0-1 Scaled)"
     ) +
     ggplot2::theme_bw()
 
@@ -138,9 +138,9 @@ dens_single_split <- function(
 
   dens <- stats::density(x)
   dens_x <- dens$x
-  counts_y <- dens$y * length(x)
+  dens01_y <- dens$y / max(dens$y)
   dens_df <- data.frame(
-    batch, samp, dens_x, counts_y,
+    batch, samp, dens_x, dens01_y,
     "split_val" = as.numeric(split_val)
   )
 
