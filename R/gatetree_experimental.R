@@ -195,20 +195,20 @@ recursive_gatetree2 <- function(
     var_choice <- NA
   }
 
-  boundary_needed <- matrix(nrow = var_num, ncol = batch_num)
+  boundary_needed <- matrix(nrow = batch_num, ncol = var_num)
   if (!use_gmm) {
     boundary_needed[] <- FALSE
   } else if (is.na(var_choice)) {
-    boundary_needed[splittable_vars, ] <- TRUE
-    boundary_needed[!splittable_vars, ] <- FALSE
+    boundary_needed[, splittable_vars] <- TRUE
+    boundary_needed[, !splittable_vars] <- FALSE
   } else {
     for (v in seq_len(var_num)) {
       if (v == var_choice) {
         for (b in seq_len(batch_num)) {
           if (all(is.na(depths[[b]][, v]))) {
-            boundary_needed[v, b] <- TRUE
+            boundary_needed[b, v] <- TRUE
           } else {
-            boundary_needed[v, b] <- FALSE
+            boundary_needed[b, v] <- FALSE
           }
         }
       } else {
@@ -222,7 +222,7 @@ recursive_gatetree2 <- function(
     boundaries[[b]] <- diffs[[b]] <- matrix(nrow = samp_num[b], ncol = var_num)
     for (s in seq_len(samp_num[b])) {
       for (v in seq_len(var_num)) {
-        if (boundary_needed[v, b]) {
+        if (boundary_needed[b, v]) {
           x <- matrices[[b]][[s]][pop$subsetter[[b]][[s]][, split_num], v]
           x <- x[x > pop$min_cutoffs[v]]
           x <- x[x < pop$max_cutoffs[v]]
