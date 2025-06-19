@@ -4,7 +4,13 @@
 \alias{find_boundary_2d}
 \title{Choose the slope and intercept for a two-dimensional boundary split.}
 \usage{
-find_boundary_2d(x, y, slope_type, degrees = NULL, boundary_noise_comp = TRUE)
+find_boundary_2d(
+  x,
+  y,
+  slope_type = NULL,
+  degrees = NULL,
+  boundary_noise_comp = TRUE
+)
 }
 \arguments{
 \item{x}{x axis data vector.}

@@ -4,7 +4,7 @@
 \alias{find_valley_2d}
 \title{Choose the slope and intercept for a two-dimensional valley split.}
 \usage{
-find_valley_2d(x, y, slope_type, degrees = NULL)
+find_valley_2d(x, y, slope_type = NULL, degrees = NULL)
 }
 \arguments{
 \item{x}{x axis data vector.}

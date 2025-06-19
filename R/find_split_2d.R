@@ -1,7 +1,10 @@
 find_split_2d <- function(
-    x, y, slope_type, mechanism, degrees = NULL, boundary_noise_comp = TRUE) {
+    x, y, mechanism, slope_type = NULL, degrees = NULL,
+    boundary_noise_comp = TRUE) {
   if (is.null(degrees)) {
-    if (slope_type == "incline") {
+    if (is.null(slope_type)) {
+      stop("Either slope_type or degrees must be provided.")
+    } else if (slope_type == "incline") {
       degrees <- seq(15, 75, by = 10)
     } else if (slope_type == "vertical") {
       degrees <- seq(60, 120, by = 10)
@@ -61,8 +64,8 @@ find_split_2d <- function(
 #' }
 #'
 #' @export
-find_valley_2d <- function(x, y, slope_type, degrees = NULL) {
-  find_split_2d(x, y, slope_type, "valley", degrees)
+find_valley_2d <- function(x, y, slope_type = NULL, degrees = NULL) {
+  find_split_2d(x, y, "valley", slope_type, degrees)
 }
 
 #' Choose the slope and intercept for a two-dimensional boundary split.
@@ -83,6 +86,6 @@ find_valley_2d <- function(x, y, slope_type, degrees = NULL) {
 #'
 #' @export
 find_boundary_2d <- function(
-    x, y, slope_type, degrees = NULL, boundary_noise_comp = TRUE) {
-  find_split_2d(x, y, slope_type, "boundary", degrees, boundary_noise_comp)
+    x, y, slope_type = NULL, degrees = NULL, boundary_noise_comp = TRUE) {
+  find_split_2d(x, y, "boundary", slope_type, degrees, boundary_noise_comp)
 }
