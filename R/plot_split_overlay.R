@@ -134,7 +134,7 @@ dens_single_split <- function(
   x <- x[x > min_cut]
   x <- x[x < max_cut]
 
-  split_val <- gatetree_out[[pop]]$splits[[batch]][[samp]][var]
+  split_val <- gatetree_out[[pop]]$splits[[batch]][samp, var]
 
   dens <- stats::density(x)
   dens_x <- dens$x

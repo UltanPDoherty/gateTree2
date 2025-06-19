@@ -173,11 +173,11 @@ plot_single_split <- function(
   if (explore) {
     scenario <- "explore"
     split_num <- max(gatetree_out[[pop]]$order, na.rm = TRUE) + 1
-  } else if (is.na(gatetree_out[[pop]]$method[var])) {
+  } else if (is.na(gatetree_out[[pop]]$method[[batch]][samp, var])) {
     scenario <- "nothing"
     split_num <- max(gatetree_out[[pop]]$order, na.rm = TRUE)
   } else {
-    scenario <- gatetree_out[[pop]]$method[var]
+    scenario <- gatetree_out[[pop]]$method[[batch]][samp, var]
     split_num <- gatetree_out[[pop]]$order[var]
   }
 
@@ -220,16 +220,17 @@ plot_single_split <- function(
       scenario <- "nothing"
     }
   } else {
-    split_val <- gatetree_out[[pop]]$splits[[batch]][[samp]][var]
+    split_val <- gatetree_out[[pop]]$splits[[batch]][samp, var]
     explore_valley_depth <- NA
   }
 
-  is_negative <- switch(scenario,
-    "valley"   = gatetree_out[[pop]]$pm_previous[var] == -1,
-    "boundary" = gatetree_out[[pop]]$pm_previous[var] == -1,
-    "nothing"  = NA,
-    "explore"  = FALSE
-  )
+  if (scenario == "nothing") {
+    is_negative <- NA
+  } else if (scenario == "explore") {
+    is_negative <- FALSE
+  } else {
+    is_negative <- gatetree_out[[pop]]$pm_previous[var] == -1
+  }
 
   min_x <- min(x)
   max_x <- max(x)
@@ -255,25 +256,28 @@ plot_single_split <- function(
   dens01_y <- dens$y / max(dens$y)
   dens_df <- data.frame(dens_x, dens01_y)
 
+  if (scenario == "nothing") {
+    rect_col <- NA
+    score <- NA
+    score_title <- NA
+  } else if (scenario == "explore") {
+    rect_col <- "#CC79A7"
+    score <- explore_valley_depth
+    score_title <- paste0("valley depth = ", round(score, 3))
+  } else if (scenario == "valley") {
+    rect_col <- "#F0E442"
+    score <- gatetree_out[[pop]]$depths[[batch]][samp, var]
+    score_title <- paste0("valley depth = ", round(score, 3))
+  } else if (scenario == "boundary") {
+    rect_col <- "#56B4E9"
+    score <- gatetree_out[[pop]]$diffs[[batch]][samp, var]
+    score_title <- paste0("boundary diff = ", round(score, 3))
+  } else {
+    rect_col <- "#E69F00"
+    score <- NA
+    score_title <- scenario
+  }
   # colours from ggokabeito package
-  rect_col <- switch(scenario,
-    "valley" = "#F0E442",
-    "boundary" = "#56B4E9",
-    "nothing" = NA,
-    "explore" = "#CC79A7"
-  )
-  score <- switch(scenario,
-    "valley" = gatetree_out[[pop]]$depths[[batch]][[samp]][var],
-    "boundary" = gatetree_out[[pop]]$diffs[[batch]][[samp]][var],
-    "nothing" = NA,
-    "explore" = explore_valley_depth
-  )
-  score_title <- switch(scenario,
-    "valley"   = paste0("depth = ", round(score, 1)),
-    "boundary" = paste0("scaled BIC diff. = ", round(score, 3)),
-    "nothing"  = NA,
-    "explore"  = paste0("depth = ", round(score, 1))
-  )
 
   gg <- ggplot2::ggplot(
     dens_df, ggplot2::aes(x = dens_x, y = dens01_y)
