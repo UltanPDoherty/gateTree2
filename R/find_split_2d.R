@@ -39,9 +39,9 @@ find_split_2d <- function(
   split_mat[, "beta"] <- beta
   split_mat[, "degree"] <- degrees
 
-  max_ind <- which.max(split_mat[, 2])
+  max_ind <- which.max(split_mat[, "score"])
 
-  split_mat[max_ind, ]
+  as.data.frame(split_mat[max_ind, , drop = FALSE])
 }
 
 #' Choose the slope and intercept for a two-dimensional valley split.
@@ -52,7 +52,7 @@ find_split_2d <- function(
 #' @param degrees
 #' The range of degrees to be searched over. Overrides `slope_type`.
 #'
-#' @returns A 1-row `data.frame` containing:
+#' @returns A 1-row `data.frame` containing the following:
 #' \describe{
 #'   \item{`split`}{Valley split value.}
 #'   \item{`score`}{Valley depth.}
@@ -73,7 +73,7 @@ find_valley_2d <- function(x, y, slope_type = NULL, degrees = NULL) {
 #' @inheritParams find_valley_2d
 #' @inheritParams find_boundary
 #'
-#' @returns A 1-row `data.frame` containing:
+#' @returns A 1-row `data.frame` containing the following:
 #' \describe{
 #'   \item{`split`}{Valley split value.}
 #'   \item{`score`}{Valley depth.}

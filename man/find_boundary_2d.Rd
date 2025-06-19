@@ -24,7 +24,7 @@ find_boundary_2d(
 \item{boundary_noise_comp}{= TRUE}
 }
 \value{
-A 1-row \code{data.frame} containing:
+A 1-row \code{data.frame} containing the following:
 \describe{
 \item{\code{split}}{Valley split value.}
 \item{\code{score}}{Valley depth.}

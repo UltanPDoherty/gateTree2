@@ -16,7 +16,7 @@ find_valley_2d(x, y, slope_type = NULL, degrees = NULL)
 \item{degrees}{The range of degrees to be searched over. Overrides \code{slope_type}.}
 }
 \value{
-A 1-row \code{data.frame} containing:
+A 1-row \code{data.frame} containing the following:
 \describe{
 \item{\code{split}}{Valley split value.}
 \item{\code{score}}{Valley depth.}
