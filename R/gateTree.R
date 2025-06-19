@@ -212,7 +212,7 @@ recursive_gatetree <- function(
           }
         }
       } else {
-        boundary_needed[] <- FALSE
+        boundary_needed[, v] <- FALSE
       }
     }
   }
