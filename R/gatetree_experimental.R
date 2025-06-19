@@ -99,20 +99,29 @@ gatetree2 <- function(
   var_named_0s <- rep(0, var_num)
   names(var_named_nas) <- names(var_named_0s) <- colnames(plusminus)
 
+  batch_num <- length(matrices)
+  batch_matrix_list <- list()
+  for (b in seq_len(batch_num)) {
+    batch_matrix_list[[b]] <- matrix(nrow = samp_num[b], ncol = var_num)
+    rownames(batch_matrix_list[[b]]) <- names(matrices[[b]])
+    colnames(batch_matrix_list[[b]]) <- colnames(plusminus)
+  }
+  names(batch_matrix_list) <- names(matrices)
+  
   pop_list <- list()
   for (p in seq_len(pop_num)) {
     pop_list[[p]] <- list(
       "subsetter" = lapply(
         matrices, \(x) lapply(x, \(y) as.matrix(rep(TRUE, nrow(y))))
       ),
-      "splits" = lapply(samp_num, \(x) rep(list(var_named_nas), x)),
-      "depths" = lapply(samp_num, \(x) rep(list(var_named_nas), x)),
-      "diffs" = lapply(samp_num, \(x) rep(list(var_named_nas), x)),
+      "splits" = batch_matrix_list,
+      "depths" = batch_matrix_list,
+      "diffs" = batch_matrix_list,
       "pm_future" = plusminus[p, ],
       "pm_previous" = var_named_0s,
       "other_pops" = plusminus[-p, , drop = FALSE],
       "order" = var_named_nas,
-      "method" = lapply(samp_num, \(x) rep(list(var_named_nas), x)),
+      "method" = batch_matrix_list,
       "min_cutoffs" = min_cutoffs,
       "max_cutoffs" = max_cutoffs,
       "terminated" = FALSE
@@ -155,7 +164,7 @@ recursive_gatetree2 <- function(
 
   valleys <- depths <- list()
   for (b in seq_len(batch_num)) {
-    valleys[[b]] <- depths[[b]] <- matrix(nrow = var_num, ncol = samp_num[b])
+    valleys[[b]] <- depths[[b]] <- matrix(nrow = samp_num[b], ncol = var_num)
     for (s in seq_len(samp_num[b])) {
       for (v in seq_len(var_num)) {
         if (splittable_vars[v]) {
@@ -164,22 +173,22 @@ recursive_gatetree2 <- function(
           x <- x[x < pop$max_cutoffs[v]]
           new_valley <- find_valley(x, min_kde_size = min_kde_size)
           if (is.na(new_valley[2]) || new_valley[2] < min_depth) {
-            valleys[[b]][v, s] <- depths[[b]][v, s] <- NA
+            valleys[[b]][s, v] <- depths[[b]][s, v] <- NA
           } else {
-            valleys[[b]][v, s] <- new_valley[1]
-            depths[[b]][v, s] <- new_valley[2]
+            valleys[[b]][s, v] <- new_valley[1]
+            depths[[b]][s, v] <- new_valley[2]
           }
         } else {
-          valleys[[b]][v, s] <- depths[[b]][v, s] <- NA
+          valleys[[b]][s, v] <- depths[[b]][s, v] <- NA
         }
       }
     }
   }
 
-  cbind_valleys <- Reduce(cbind, valleys)
-  cbind_depths <- Reduce(cbind, depths)
+  rbind_valleys <- Reduce(rbind, valleys)
+  rbind_depths <- Reduce(rbind, depths)
 
-  mean_depths <- apply(cbind_depths, 1, sum, na.rm = TRUE) / sum(samp_num)
+  mean_depths <- apply(rbind_depths, 2, sum, na.rm = TRUE) / sum(samp_num)
   if (any(mean_depths > 0)) {
     var_choice <- which.max(mean_depths)
   } else {
@@ -196,7 +205,7 @@ recursive_gatetree2 <- function(
     for (v in seq_len(var_num)) {
       if (v == var_choice) {
         for (b in seq_len(batch_num)) {
-          if (all(is.na(depths[[b]][v, ]))) {
+          if (all(is.na(depths[[b]][, v]))) {
             boundary_needed[v, b] <- TRUE
           } else {
             boundary_needed[v, b] <- FALSE
@@ -210,7 +219,7 @@ recursive_gatetree2 <- function(
 
   boundaries <- diffs <- list()
   for (b in seq_len(batch_num)) {
-    boundaries[[b]] <- diffs[[b]] <- matrix(nrow = var_num, ncol = samp_num[b])
+    boundaries[[b]] <- diffs[[b]] <- matrix(nrow = samp_num[b], ncol = var_num)
     for (s in seq_len(samp_num[b])) {
       for (v in seq_len(var_num)) {
         if (boundary_needed[v, b]) {
@@ -223,23 +232,23 @@ recursive_gatetree2 <- function(
             min_gmm_size = min_gmm_size
           )
           if (is.na(new_boundary[2]) || new_boundary[2] < min_diff) {
-            boundaries[[b]][v, s] <- diffs[[b]][v, s] <- NA
+            boundaries[[b]][s, v] <- diffs[[b]][s, v] <- NA
           } else {
-            boundaries[[b]][v, s] <- new_boundary[1]
-            diffs[[b]][v, s] <- new_boundary[2]
+            boundaries[[b]][s, v] <- new_boundary[1]
+            diffs[[b]][s, v] <- new_boundary[2]
           }
         } else {
-          boundaries[[b]][v, s] <- diffs[[b]][v, s] <- NA
+          boundaries[[b]][s, v] <- diffs[[b]][s, v] <- NA
         }
       }
     }
   }
 
-  cbind_boundaries <- Reduce(cbind, boundaries)
-  cbind_diffs <- Reduce(cbind, diffs)
+  rbind_boundaries <- Reduce(rbind, boundaries)
+  rbind_diffs <- Reduce(rbind, diffs)
 
   if (is.na(var_choice)) {
-    mean_diffs <- apply(cbind_diffs, 1, sum, na.rm = TRUE) / sum(samp_num)
+    mean_diffs <- apply(rbind_diffs, 2, sum, na.rm = TRUE) / sum(samp_num)
     if (any(mean_diffs > 0)) {
       var_choice <- which.max(mean_diffs)
     } else {
@@ -251,25 +260,25 @@ recursive_gatetree2 <- function(
     batch_valley_means <- batch_boundary_means <- double(batch_num)
     for (b in seq_len(batch_num)) {
       batch_valley_means[b] <- stats::weighted.mean(
-        valleys[[b]][var_choice, ],
-        depths[[b]][var_choice, ],
+        valleys[[b]][, var_choice],
+        depths[[b]][, var_choice],
         na.rm = TRUE
       )
       batch_boundary_means[b] <- stats::weighted.mean(
-        boundaries[[b]][var_choice, ],
-        diffs[[b]][var_choice, ],
+        boundaries[[b]][, var_choice],
+        diffs[[b]][, var_choice],
         na.rm = TRUE
       )
     }
 
     study_valley_mean <- stats::weighted.mean(
-      cbind_valleys[var_choice, ],
-      cbind_depths[var_choice, ],
+      rbind_valleys[, var_choice],
+      rbind_depths[, var_choice],
       na.rm = TRUE
     )
     study_boundary_mean <- stats::weighted.mean(
-      cbind_boundaries[var_choice, ],
-      cbind_diffs[var_choice, ],
+      rbind_boundaries[, var_choice],
+      rbind_diffs[, var_choice],
       na.rm = TRUE
     )
 
@@ -278,19 +287,19 @@ recursive_gatetree2 <- function(
       splits[[b]] <- double(samp_num[b])
       mechanisms[[b]] <- character(samp_num[b])
       for (s in seq_len(samp_num[b])) {
-        if (!is.na(valleys[[b]][var_choice, s])) {
-          splits[[b]][s] <- valleys[[b]][var_choice, s]
+        if (!is.na(valleys[[b]][s, var_choice])) {
+          splits[[b]][s] <- valleys[[b]][s, var_choice]
           mechanisms[[b]][s] <- "valley"
-        } else if (any(!is.na(valleys[[b]][var_choice, ]))) {
+        } else if (any(!is.na(valleys[[b]][, var_choice]))) {
           splits[[b]][s] <- batch_valley_means[b]
           mechanisms[[b]][s] <- "batch_valley"
-        } else if (!is.na(boundaries[[b]][var_choice, s])) {
-          splits[[b]][s] <- boundaries[[b]][var_choice, s]
+        } else if (!is.na(boundaries[[b]][s, var_choice])) {
+          splits[[b]][s] <- boundaries[[b]][s, var_choice]
           mechanisms[[b]][s] <- "boundary"
-        } else if (any(!is.na(boundaries[[b]][var_choice, ]))) {
+        } else if (any(!is.na(boundaries[[b]][, var_choice]))) {
           splits[[b]][s] <- batch_boundary_means[b]
           mechanisms[[b]][s] <- "batch_boundary"
-        } else if (any(!is.na(cbind_depths[var_choice, ]))) {
+        } else if (any(!is.na(rbind_depths[, var_choice]))) {
           splits[[b]][s] <- study_valley_mean
           mechanisms[[b]][s] <- "study_valley"
 
@@ -298,7 +307,7 @@ recursive_gatetree2 <- function(
             "Study-level valley imputation has been conducted. Variable: ",
             var_choice, ". Batch: ", b, "."
           ))
-        } else if (any(!is.na(cbind_diffs[var_choice, ]))) {
+        } else if (any(!is.na(rbind_diffs[, var_choice]))) {
           splits[[b]][s] <- study_boundary_mean
           mechanisms[[b]][s] <- "study_boundary"
 
@@ -328,11 +337,11 @@ recursive_gatetree2 <- function(
           stop("pop$pm_future[var_choice] should not be 0.")
         }
 
-        pop$splits[[b]][[s]][var_choice] <- splits[[b]][s]
+        pop$splits[[b]][s, var_choice] <- splits[[b]][s]
         if (mechanisms[[b]][s] == "valley") {
-          pop$depths[[b]][[s]][var_choice] <- depths[[b]][var_choice, s]
+          pop$depths[[b]][s, var_choice] <- depths[[b]][s, var_choice]
         } else if (mechanisms[[b]][s] == "boundary") {
-          pop$diffs[[b]][[s]][var_choice] <- diffs[[b]][var_choice, s]
+          pop$diffs[[b]][s, var_choice] <- diffs[[b]][s, var_choice]
         }
 
         pop$subsetter[[b]][[s]] <-
@@ -341,7 +350,7 @@ recursive_gatetree2 <- function(
           pop$subsetter[[b]][[s]][, split_num], split_num + 1
         ] <- temp_subsetter
 
-        pop$method[[b]][[s]][var_choice] <- mechanisms[[b]][s]
+        pop$method[[b]][s, var_choice] <- mechanisms[[b]][s]
 
         if (b == batch_num && s == samp_num[b]) {
           pop$order[var_choice] <- split_num
