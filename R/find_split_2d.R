@@ -41,10 +41,47 @@ find_split_2d <- function(
   split_mat[max_ind, ]
 }
 
+#' Choose the slope and intercept for a two-dimensional valley split.
+#'
+#' @param x x axis data vector.
+#' @param y y axis data vector.
+#' @param slope_type `"incline"`, `"vertical"`, or `"decline"`.
+#' @param degrees
+#' The range of degrees to be searched over. Overrides `slope_type`.
+#'
+#' @returns A 1-row `data.frame` containing:
+#' \describe{
+#'   \item{`split`}{Valley split value.}
+#'   \item{`score`}{Valley depth.}
+#'   \item{`intercept`}{Intercept for two-dimensional line.}
+#'   \item{`slope`}{Slope for two-dimensional line.}
+#'   \item{`alpha`}{Mixing coefficient for x-axis variable.}
+#'   \item{`beta`}{Mixing coefficient for y-axis variable.}
+#'   \item{`degree`}{Degree of chosen two-dimensional line.}
+#' }
+#'
+#' @export
 find_valley_2d <- function(x, y, slope_type, degrees = NULL) {
   find_split_2d(x, y, slope_type, "valley", degrees)
 }
 
+#' Choose the slope and intercept for a two-dimensional boundary split.
+#'
+#' @inheritParams find_valley_2d
+#' @inheritParams find_boundary
+#'
+#' @returns A 1-row `data.frame` containing:
+#' \describe{
+#'   \item{`split`}{Valley split value.}
+#'   \item{`score`}{Valley depth.}
+#'   \item{`intercept`}{Intercept for two-dimensional line.}
+#'   \item{`slope`}{Slope for two-dimensional line.}
+#'   \item{`alpha`}{Mixing coefficient for x-axis variable.}
+#'   \item{`beta`}{Mixing coefficient for y-axis variable.}
+#'   \item{`degree`}{Degree of chosen two-dimensional line.}
+#' }
+#'
+#' @export
 find_boundary_2d <- function(
     x, y, slope_type, degrees = NULL, boundary_noise_comp = TRUE) {
   find_split_2d(x, y, slope_type, "boundary", degrees, boundary_noise_comp)
