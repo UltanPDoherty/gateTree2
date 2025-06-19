@@ -133,7 +133,7 @@ gatetree2 <- function(
       min_depth = min_depth, min_diff = min_diff,
       use_gmm = use_gmm,
       min_kde_size = min_kde_size, min_gmm_size = min_gmm_size,
-      seed = seed
+      seed = seed, verbose = verbose
     )
 
     if (verbose) {
@@ -147,7 +147,7 @@ gatetree2 <- function(
 
 recursive_gatetree2 <- function(
     pop, matrices, min_depth, min_diff, use_gmm,
-    min_kde_size, min_gmm_size, seed) {
+    min_kde_size, min_gmm_size, seed, verbose) {
   if (pop$terminated) {
     return(pop)
   }
@@ -303,18 +303,22 @@ recursive_gatetree2 <- function(
           splits[[b]][s] <- study_valley_mean
           mechanisms[[b]][s] <- "study_valley"
 
-          message(paste0(
-            "Study-level valley imputation has been conducted. Variable: ",
-            var_choice, ". Batch: ", b, "."
-          ))
+          if (verbose) {
+            message(paste0(
+              "Study-level valley imputation has been conducted. Variable: ",
+              var_choice, ". Batch: ", b, "."
+            ))
+          }
         } else if (any(!is.na(rbind_diffs[, var_choice]))) {
           splits[[b]][s] <- study_boundary_mean
           mechanisms[[b]][s] <- "study_boundary"
 
-          message(paste0(
-            "Study-level boundary imputation has been conducted. Variable: ",
-            var_choice, ". Batch: ", b, "."
-          ))
+          if (verbose) {
+            message(paste0(
+              "Study-level boundary imputation has been conducted. Variable: ",
+              var_choice, ". Batch: ", b, "."
+            ))
+          }
         } else {
           stop("Unexpected scenario.")
         }
@@ -374,6 +378,6 @@ recursive_gatetree2 <- function(
     pop, matrices,
     min_depth = min_depth, min_diff = min_diff,
     use_gmm = use_gmm, min_kde_size = min_kde_size, min_gmm_size = min_gmm_size,
-    seed = seed
+    seed = seed, verbose = verbose
   )
 }
