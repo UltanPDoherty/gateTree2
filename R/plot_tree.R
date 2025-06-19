@@ -18,7 +18,26 @@ plot_tree <- function(gatetree_out, x_pad = 0.2, y_pad = 0.2, pm_pad = 0.05) {
 
   pm_list <- lapply(gatetree_out, \(x) x$pm_previous)
   order_list <- lapply(gatetree_out, \(x) x$order)
-  node_type_list <- lapply(gatetree_out, \(x) x$method)
+
+  node_type_list <- list()
+  rbind_method <- lapply(gatetree_out, \(x) Reduce(rbind, x$method))
+  var_num <- ncol(rbind_method[[1]])
+  v_bv <- c("valley", "batch_valley")
+  b_bb <- c("boundary", "batch_boundary")
+  for (p in seq_len(pop_num)) {
+    node_type_list[[p]] <- character(var_num)
+    for (v in seq_len(var_num)) {
+      if (all(rbind_method[[p]][, v] %in% v_bv)) {
+        node_type_list[[p]][v] <- "valley"
+      } else if (all(rbind_method[[p]][, v] %in% b_bb)) {
+        node_type_list[[p]][v] <- "valley"
+      } else if (all(rbind_method[[p]][, v] %in% c(v_bv, b_bb))) {
+        node_type_list[[p]][v] <- "mixed"
+      } else {
+        node_type_list[[p]][v] <- "study"
+      }
+    }
+  }
 
   max_splits <- vapply(order_list, max, double(1L), na.rm = TRUE)
 
@@ -123,7 +142,8 @@ plot_tree <- function(gatetree_out, x_pad = 0.2, y_pad = 0.2, pm_pad = 0.05) {
   flip_tree_df$minus_y <- -flip_tree_df$minus_y
 
   colour_scheme <- c(
-    "valley" = "#F0E442", "boundary" = "#56B4E9", "leaf" = "#009E73"
+    "valley" = "#F0E442", "boundary" = "#56B4E9", "leaf" = "#009E73",
+    "mixed" = "#E69F00", "study" = "#000000"
   )
   x_limits <-
     c(min(flip_tree_df$node_x) - x_pad, max(flip_tree_df$node_x) + x_pad)
