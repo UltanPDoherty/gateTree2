@@ -24,17 +24,20 @@ plot_tree <- function(gatetree_out, x_pad = 0.2, y_pad = 0.2, pm_pad = 0.05) {
   var_num <- ncol(rbind_method[[1]])
   v_bv <- c("valley", "batch_valley")
   b_bb <- c("boundary", "batch_boundary")
+  sv_sb <- c("study_valley", "study_boundary")
   for (p in seq_len(pop_num)) {
     node_type_list[[p]] <- character(var_num)
     for (v in seq_len(var_num)) {
       if (all(rbind_method[[p]][, v] %in% v_bv)) {
         node_type_list[[p]][v] <- "valley"
       } else if (all(rbind_method[[p]][, v] %in% b_bb)) {
-        node_type_list[[p]][v] <- "valley"
+        node_type_list[[p]][v] <- "boundary"
       } else if (all(rbind_method[[p]][, v] %in% c(v_bv, b_bb))) {
         node_type_list[[p]][v] <- "mixed"
-      } else {
+      } else if (all(rbind_method[[p]][, v] %in% c(v_bv, b_bb, sv_sb))) {
         node_type_list[[p]][v] <- "study"
+      } else {
+        node_type_list[[p]][v] <- NA
       }
     }
   }
