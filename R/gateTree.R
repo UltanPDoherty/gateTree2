@@ -300,10 +300,10 @@ recursive_gatetree <- function(
       splits[[b]] <- double(samp_num[b])
       mechanisms[[b]] <- character(samp_num[b])
       for (s in seq_len(samp_num[b])) {
-        if (!is.na(valleys[[b]][s, var_choice])) {
+        if (valid_valleys && !is.na(valleys[[b]][s, var_choice])) {
           splits[[b]][s] <- valleys[[b]][s, var_choice]
           mechanisms[[b]][s] <- "valley"
-        } else if (any(!is.na(valleys[[b]][, var_choice]))) {
+        } else if (valid_valleys && any(!is.na(valleys[[b]][, var_choice]))) {
           splits[[b]][s] <- batch_valley_means[b]
           mechanisms[[b]][s] <- "batch_valley"
         } else if (!is.na(boundaries[[b]][s, var_choice])) {
