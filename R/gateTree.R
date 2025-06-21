@@ -272,24 +272,24 @@ recursive_gatetree <- function(
   if (!is.na(var_choice)) {
     batch_valley_means <- batch_boundary_means <- double(batch_num)
     for (b in seq_len(batch_num)) {
-      batch_valley_means[b] <- stats::weighted.mean(
+      batch_valley_means[b] <- matrixStats::weightedMedian(
         valleys[[b]][, var_choice],
         depths[[b]][, var_choice],
         na.rm = TRUE
       )
-      batch_boundary_means[b] <- stats::weighted.mean(
+      batch_boundary_means[b] <- matrixStats::weightedMedian(
         boundaries[[b]][, var_choice],
         diffs[[b]][, var_choice],
         na.rm = TRUE
       )
     }
 
-    study_valley_mean <- stats::weighted.mean(
+    study_valley_mean <- matrixStats::weightedMedian(
       rbind_valleys[, var_choice],
       rbind_depths[, var_choice],
       na.rm = TRUE
     )
-    study_boundary_mean <- stats::weighted.mean(
+    study_boundary_mean <- matrixStats::weightedMedian(
       rbind_boundaries[, var_choice],
       rbind_diffs[, var_choice],
       na.rm = TRUE
