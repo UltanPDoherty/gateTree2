@@ -44,9 +44,10 @@ reconstruct_2d_line <- function(
   beta <- ifelse(is.na(slope), 0, -sign(slope) / sqrt(1 + slope^2))
 
   z <- alpha * x + beta * y
+  u <- z - min(z) + min_max_scaling[1]
 
   if (!is.null(min_max_scaling)) {
-    split <- split * (max(z) / min_max_scaling[2])
+    split <- split * (max(u) / min_max_scaling[2])
     split <- split + min(z) - min_max_scaling[1]
   }
 
