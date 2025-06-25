@@ -175,7 +175,7 @@ plot_single_split <- function(
     split_num <- max(gatetree_out[[pop]]$order, na.rm = TRUE) + 1
   } else if (is.na(gatetree_out[[pop]]$method[[batch]][samp, var])) {
     scenario <- "nothing"
-    split_num <- max(gatetree_out[[pop]]$order, na.rm = TRUE)
+    split_num <- max(gatetree_out[[pop]]$order, na.rm = TRUE) + 1
   } else {
     scenario <- gatetree_out[[pop]]$method[[batch]][samp, var]
     split_num <- gatetree_out[[pop]]$order[var]
