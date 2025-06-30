@@ -80,8 +80,7 @@ merge_identical_columns <- function(mat) {
         if (same_bool) {
           colnames(mat)[i] <- paste0(colnames(mat)[i], "_", colnames(mat)[j])
           mat <- mat[, -j, drop = FALSE]
-
-          merge_identical_columns(mat)
+          mat <- merge_identical_columns(mat)
         }
         j <- j + 1
       }
