@@ -15,6 +15,7 @@
 #' Minimum value of difference between one-component and two-component BIC
 #' divided by 2 log(obs_num).
 #' @param use_gmm Logical value.
+#' @param use_study_imputation Logical value.
 #' @param min_kde_size
 #' Minimum number of events required to search for a KDE valley.
 #' @param min_gmm_size
@@ -56,6 +57,7 @@ gatetree <- function(
     min_depth = 0.05,
     min_diff = 0.05,
     use_gmm = TRUE,
+    use_study_imputation = FALSE,
     min_kde_size = 100,
     min_gmm_size = 100,
     min_impute_depth = min_depth / 5,
@@ -97,7 +99,7 @@ gatetree <- function(
     "matrices" = substitute(matrices),
     "plusminus" = plusminus,
     "min_depth" = min_depth, "min_diff" = min_diff,
-    "use_gmm" = use_gmm,
+    "use_gmm" = use_gmm, "use_study_imputation" = use_study_imputation,
     "min_kde_size" = min_kde_size, "min_gmm_size" = min_gmm_size,
     "min_impute_depth" = min_impute_depth, "min_impute_diff" = min_impute_diff,
     "min_cutoffs" = min_cutoffs, "max_cutoffs" = max_cutoffs, "seed" = seed,
@@ -140,7 +142,7 @@ gatetree <- function(
     pop_list[[p]] <- recursive_gatetree(
       pop_list[[p]], matrices,
       min_depth = min_depth, min_diff = min_diff,
-      use_gmm = use_gmm,
+      use_gmm = use_gmm, use_study_imputation = use_study_imputation,
       min_kde_size = min_kde_size, min_gmm_size = min_gmm_size,
       min_impute_depth = min_impute_depth, min_impute_diff = min_impute_diff,
       seed = seed, verbose = verbose
@@ -156,8 +158,8 @@ gatetree <- function(
 
 
 recursive_gatetree <- function(
-    pop, matrices, min_depth, min_diff, use_gmm,
     min_kde_size, min_gmm_size, min_impute_depth, min_impute_diff,
+    pop, matrices, min_depth, min_diff, use_gmm, use_study_imputation,
     seed, verbose) {
   if (pop$terminated) {
     return(pop)
@@ -265,6 +267,18 @@ recursive_gatetree <- function(
     if (valid_boundaries) {
       var_choice <- which.max(mean_diffs)
     } else {
+      var_choice <- NA
+    }
+  }
+
+  if (!use_study_imputation) {
+    missing_batch <- missing_valleys <- missing_boundaries <- logical(batch_num)
+    for (b in seq_len(batch_num)) {
+      missing_valleys[b] <- all(is.na(valleys[[b]][, var_choice]))
+      missing_boundaries[b] <- all(is.na(boundaries[[b]][, var_choice]))
+      missing_batch[b] <- missing_valleys[b] && missing_boundaries[b]
+    }
+    if (any(missing_batch)) {
       var_choice <- NA
     }
   }
@@ -390,7 +404,7 @@ recursive_gatetree <- function(
   recursive_gatetree(
     pop, matrices,
     min_depth = min_depth, min_diff = min_diff,
-    use_gmm = use_gmm,
+    use_gmm = use_gmm, use_study_imputation = use_study_imputation,
     min_kde_size = min_kde_size, min_gmm_size = min_gmm_size,
     min_impute_depth = min_impute_depth, min_impute_diff = min_impute_diff,
     seed = seed, verbose = verbose
