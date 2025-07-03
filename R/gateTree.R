@@ -165,6 +165,8 @@ recursive_gatetree <- function(
     return(pop)
   }
 
+  rank_by_split_count <- FALSE
+
   var_num <- length(pop$pm_future)
   batch_num <- length(matrices)
   samp_num <- vapply(matrices, length, integer(1L))
@@ -206,18 +208,22 @@ recursive_gatetree <- function(
   mean_depths <- apply(rbind_depths, 2, sum, na.rm = TRUE) / samp_num_sum
   valid_valleys <- any(mean_depths > min_mean_depth)
   if (valid_valleys) {
-    i <- samp_num_sum
-    valley_chosen <- FALSE
-    while (i >= 1 && !valley_chosen) {
-      if (any(valley_counts == i)) {
-        var_choice <- which.max(mean_depths * (valley_counts == i))
-        valley_chosen <- TRUE
-      } else {
-        i <- i - 1
+    if (!rank_by_split_count) {
+      var_choice <- which.max(mean_depths)
+    } else {
+      i <- samp_num_sum
+      valley_chosen <- FALSE
+      while (i >= 1 && !valley_chosen) {
+        if (any(valley_counts == i)) {
+          var_choice <- which.max(mean_depths * (valley_counts == i))
+          valley_chosen <- TRUE
+        } else {
+          i <- i - 1
+        }
       }
-    }
-    if (!valley_chosen) {
-      var_choice <- NA
+      if (!valley_chosen) {
+        var_choice <- NA
+      }
     }
   } else {
     var_choice <- NA
@@ -280,18 +286,22 @@ recursive_gatetree <- function(
     mean_diffs <- apply(rbind_diffs, 2, sum, na.rm = TRUE) / samp_num_sum
     valid_boundaries <- any(mean_diffs > min_mean_diff)
     if (valid_boundaries) {
-      i <- samp_num_sum
-      boundary_chosen <- FALSE
-      while (i >= 1 && !boundary_chosen) {
-        if (any(boundary_counts == i)) {
-          var_choice <- which.max(mean_diffs * (boundary_counts == i))
-          boundary_chosen <- TRUE
-        } else {
-          i <- i - 1
+      if (!rank_by_split_count) {
+        var_choice <- which.max(mean_diffs)
+      } else {
+        i <- samp_num_sum
+        boundary_chosen <- FALSE
+        while (i >= 1 && !boundary_chosen) {
+          if (any(boundary_counts == i)) {
+            var_choice <- which.max(mean_diffs * (boundary_counts == i))
+            boundary_chosen <- TRUE
+          } else {
+            i <- i - 1
+          }
         }
-      }
-      if (!boundary_chosen) {
-        var_choice <- NA
+        if (!boundary_chosen) {
+          var_choice <- NA
+        }
       }
     } else {
       var_choice <- NA
