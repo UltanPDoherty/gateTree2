@@ -20,10 +20,10 @@
 #' Minimum number of events required to search for a KDE valley.
 #' @param min_gmm_size
 #' Minimum number of events required to search for a GMM boundary.
-#' @param min_impute_depth
+#' @param min_mean_depth
 #' Minimum average valley depth across all samples, counting depths less than
 #' `min_depth` as 0.
-#' @param min_impute_diff
+#' @param min_mean_diff
 #' Minimum average scaled BIC difference across all samples, counting diffs less
 #' than `min_depth` as 0.
 #' @param min_cutoffs Minimum values for observations used when finding splits.
@@ -60,8 +60,8 @@ gatetree <- function(
     use_study_imputation = FALSE,
     min_kde_size = 100,
     min_gmm_size = 100,
-    min_impute_depth = min_depth / 5,
-    min_impute_diff = min_diff / 5,
+    min_mean_depth = min_depth / 5,
+    min_mean_diff = min_diff / 5,
     min_cutoffs = NULL,
     max_cutoffs = NULL,
     seed = NULL,
@@ -101,7 +101,7 @@ gatetree <- function(
     "min_depth" = min_depth, "min_diff" = min_diff,
     "use_gmm" = use_gmm, "use_study_imputation" = use_study_imputation,
     "min_kde_size" = min_kde_size, "min_gmm_size" = min_gmm_size,
-    "min_impute_depth" = min_impute_depth, "min_impute_diff" = min_impute_diff,
+    "min_mean_depth" = min_mean_depth, "min_mean_diff" = min_mean_diff,
     "min_cutoffs" = min_cutoffs, "max_cutoffs" = max_cutoffs, "seed" = seed,
     "verbose" = verbose
   )
@@ -144,7 +144,7 @@ gatetree <- function(
       min_depth = min_depth, min_diff = min_diff,
       use_gmm = use_gmm, use_study_imputation = use_study_imputation,
       min_kde_size = min_kde_size, min_gmm_size = min_gmm_size,
-      min_impute_depth = min_impute_depth, min_impute_diff = min_impute_diff,
+      min_mean_depth = min_mean_depth, min_mean_diff = min_mean_diff,
       seed = seed, verbose = verbose
     )
 
@@ -158,8 +158,8 @@ gatetree <- function(
 
 
 recursive_gatetree <- function(
-    min_kde_size, min_gmm_size, min_impute_depth, min_impute_diff,
     pop, matrices, min_depth, min_diff, use_gmm, use_study_imputation,
+    min_kde_size, min_gmm_size, min_mean_depth, min_mean_diff,
     seed, verbose) {
   if (pop$terminated) {
     return(pop)
@@ -202,7 +202,7 @@ recursive_gatetree <- function(
   rbind_depths <- Reduce(rbind, depths)
 
   mean_depths <- apply(rbind_depths, 2, sum, na.rm = TRUE) / sum(samp_num)
-  valid_valleys <- any(mean_depths > min_impute_depth)
+  valid_valleys <- any(mean_depths > min_mean_depth)
   if (valid_valleys) {
     var_choice <- which.max(mean_depths)
   } else {
@@ -263,7 +263,7 @@ recursive_gatetree <- function(
 
   if (is.na(var_choice)) {
     mean_diffs <- apply(rbind_diffs, 2, sum, na.rm = TRUE) / sum(samp_num)
-    valid_boundaries <- any(mean_diffs > min_impute_diff)
+    valid_boundaries <- any(mean_diffs > min_mean_diff)
     if (valid_boundaries) {
       var_choice <- which.max(mean_diffs)
     } else {
@@ -406,7 +406,7 @@ recursive_gatetree <- function(
     min_depth = min_depth, min_diff = min_diff,
     use_gmm = use_gmm, use_study_imputation = use_study_imputation,
     min_kde_size = min_kde_size, min_gmm_size = min_gmm_size,
-    min_impute_depth = min_impute_depth, min_impute_diff = min_impute_diff,
+    min_mean_depth = min_mean_depth, min_mean_diff = min_mean_diff,
     seed = seed, verbose = verbose
   )
 }

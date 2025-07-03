@@ -13,8 +13,8 @@ gatetree(
   use_study_imputation = FALSE,
   min_kde_size = 100,
   min_gmm_size = 100,
-  min_impute_depth = min_depth/5,
-  min_impute_diff = min_diff/5,
+  min_mean_depth = min_depth/5,
+  min_mean_diff = min_diff/5,
   min_cutoffs = NULL,
   max_cutoffs = NULL,
   seed = NULL,
@@ -41,10 +41,10 @@ divided by 2 log(obs_num).}
 
 \item{min_gmm_size}{Minimum number of events required to search for a GMM boundary.}
 
-\item{min_impute_depth}{Minimum average valley depth across all samples, counting depths less than
+\item{min_mean_depth}{Minimum average valley depth across all samples, counting depths less than
 \code{min_depth} as 0.}
 
-\item{min_impute_diff}{Minimum average scaled BIC difference across all samples, counting diffs less
+\item{min_mean_diff}{Minimum average scaled BIC difference across all samples, counting diffs less
 than \code{min_depth} as 0.}
 
 \item{min_cutoffs}{Minimum values for observations used when finding splits.}
