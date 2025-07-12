@@ -426,15 +426,19 @@ recursive_gatetree <- function(
           x <-
             matrices[[b]][[s]][pop$subsetter[[b]][[s]][, split_num], var_choice]
           temp_subsetter <- x >= splits[[b]][s]
-          temp_subsetter <- temp_subsetter & x > pop$min_event_cutoff
-          temp_subsetter <- temp_subsetter & x < pop$max_event_cutoff
+          temp_subsetter <-
+            temp_subsetter & x > pop$min_event_cutoffs[var_choice]
+          temp_subsetter <-
+            temp_subsetter & x < pop$max_event_cutoffs[var_choice]
           pop$pm_previous[var_choice] <- +1
         } else if (pop$pm_future[var_choice] == -1) {
           x <-
             matrices[[b]][[s]][pop$subsetter[[b]][[s]][, split_num], var_choice]
           temp_subsetter <- x < splits[[b]][s]
-          temp_subsetter <- temp_subsetter & x > pop$min_event_cutoff
-          temp_subsetter <- temp_subsetter & x < pop$max_event_cutoff
+          temp_subsetter <-
+            temp_subsetter & x > pop$min_event_cutoffs[var_choice]
+          temp_subsetter <-
+            temp_subsetter & x < pop$max_event_cutoffs[var_choice]
           pop$pm_previous[var_choice] <- -1
         } else {
           stop("pop$pm_future[var_choice] should not be 0.")
