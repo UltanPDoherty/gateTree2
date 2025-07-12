@@ -26,8 +26,10 @@
 #' @param min_mean_diff
 #' Minimum average scaled BIC difference across all samples, counting diffs less
 #' than `min_depth` as 0.
-#' @param min_cutoffs Minimum values for observations used when finding splits.
-#' @param max_cutoffs Maximum values for observations used when finding splits.
+#' @param min_split_cutoffs
+#' Minimum values for observations used when finding splits.
+#' @param max_split_cutoffs
+#' Maximum values for observations used when finding splits.
 #' @param seed Random seed for GMM fitting.
 #' @param verbose Logical value.
 #'
@@ -62,8 +64,8 @@ gatetree <- function(
     min_gmm_size = 100,
     min_mean_depth = min_depth / 2,
     min_mean_diff = min_diff / 2,
-    min_cutoffs = NULL,
-    max_cutoffs = NULL,
+    min_split_cutoffs = NULL,
+    max_split_cutoffs = NULL,
     seed = NULL,
     verbose = TRUE) {
   pop_num <- nrow(plusminus)
@@ -81,17 +83,17 @@ gatetree <- function(
     seed <- sample(1:1e6, size = 1)
   }
 
-  if (is.null(min_cutoffs)) {
-    min_cutoffs <- rep(-Inf, var_num)
+  if (is.null(min_split_cutoffs)) {
+    min_split_cutoffs <- rep(-Inf, var_num)
   }
-  if (is.null(max_cutoffs)) {
-    max_cutoffs <- rep(Inf, var_num)
+  if (is.null(max_split_cutoffs)) {
+    max_split_cutoffs <- rep(Inf, var_num)
   }
-  if (is.null(names(min_cutoffs))) {
-    names(min_cutoffs) <- colnames(plusminus)
+  if (is.null(names(min_split_cutoffs))) {
+    names(min_split_cutoffs) <- colnames(plusminus)
   }
-  if (is.null(names(max_cutoffs))) {
-    names(max_cutoffs) <- colnames(plusminus)
+  if (is.null(names(max_split_cutoffs))) {
+    names(max_split_cutoffs) <- colnames(plusminus)
   }
 
   this_call <- call(
@@ -102,7 +104,9 @@ gatetree <- function(
     "use_gmm" = use_gmm, "use_study_imputation" = use_study_imputation,
     "min_kde_size" = min_kde_size, "min_gmm_size" = min_gmm_size,
     "min_mean_depth" = min_mean_depth, "min_mean_diff" = min_mean_diff,
-    "min_cutoffs" = min_cutoffs, "max_cutoffs" = max_cutoffs, "seed" = seed,
+    "min_split_cutoffs" = min_split_cutoffs,
+    "max_split_cutoffs" = max_split_cutoffs,
+    "seed" = seed,
     "verbose" = verbose
   )
 
@@ -133,8 +137,8 @@ gatetree <- function(
       "other_pops" = plusminus[-p, , drop = FALSE],
       "order" = var_named_nas,
       "method" = batch_matrix_list,
-      "min_cutoffs" = min_cutoffs,
-      "max_cutoffs" = max_cutoffs,
+      "min_split_cutoffs" = min_split_cutoffs,
+      "max_split_cutoffs" = max_split_cutoffs,
       "terminated" = FALSE
     )
     names(pop_list)[p] <- rownames(plusminus)[p]
@@ -185,8 +189,8 @@ recursive_gatetree <- function(
       for (v in seq_len(var_num)) {
         if (splittable_vars[v]) {
           x <- matrices[[b]][[s]][pop$subsetter[[b]][[s]][, split_num], v]
-          x <- x[x > pop$min_cutoffs[v]]
-          x <- x[x < pop$max_cutoffs[v]]
+          x <- x[x > pop$min_split_cutoffs[v]]
+          x <- x[x < pop$max_split_cutoffs[v]]
           new_valley <- find_valley(x, min_kde_size = min_kde_size)
           if (is.na(new_valley[2]) || new_valley[2] < min_depth) {
             valleys[[b]][s, v] <- depths[[b]][s, v] <- NA
@@ -258,8 +262,8 @@ recursive_gatetree <- function(
       for (v in seq_len(var_num)) {
         if (boundary_needed[b, v]) {
           x <- matrices[[b]][[s]][pop$subsetter[[b]][[s]][, split_num], v]
-          x <- x[x > pop$min_cutoffs[v]]
-          x <- x[x < pop$max_cutoffs[v]]
+          x <- x[x > pop$min_split_cutoffs[v]]
+          x <- x[x < pop$max_split_cutoffs[v]]
           set.seed(seed)
           new_boundary <- find_boundary(
             x,

@@ -15,8 +15,8 @@ gatetree(
   min_gmm_size = 100,
   min_mean_depth = min_depth/2,
   min_mean_diff = min_diff/2,
-  min_cutoffs = NULL,
-  max_cutoffs = NULL,
+  min_split_cutoffs = NULL,
+  max_split_cutoffs = NULL,
   seed = NULL,
   verbose = TRUE
 )
@@ -47,9 +47,9 @@ divided by 2 log(obs_num).}
 \item{min_mean_diff}{Minimum average scaled BIC difference across all samples, counting diffs less
 than \code{min_depth} as 0.}
 
-\item{min_cutoffs}{Minimum values for observations used when finding splits.}
+\item{min_split_cutoffs}{Minimum values for observations used when finding splits.}
 
-\item{max_cutoffs}{Maximum values for observations used when finding splits.}
+\item{max_split_cutoffs}{Maximum values for observations used when finding splits.}
 
 \item{seed}{Random seed for GMM fitting.}
 

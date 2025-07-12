@@ -104,8 +104,8 @@ plot_split_overlay <- function(
     )
   }
 
-  min_cut <- gatetree_call$min_cutoffs[var]
-  max_cut <- gatetree_call$max_cutoffs[var]
+  min_cut <- gatetree_call$min_split_cutoffs[var]
+  max_cut <- gatetree_call$max_split_cutoffs[var]
   if (is.finite(min_cut)) {
     gg <- gg + ggplot2::geom_vline(
       ggplot2::aes(xintercept = min_cut),
@@ -129,8 +129,8 @@ dens_single_split <- function(
   ]
 
   x <- x[, var]
-  min_cut <- gatetree_call$min_cutoffs[var]
-  max_cut <- gatetree_call$max_cutoffs[var]
+  min_cut <- gatetree_call$min_split_cutoffs[var]
+  max_cut <- gatetree_call$max_split_cutoffs[var]
   x <- x[x > min_cut]
   x <- x[x < max_cut]
 
