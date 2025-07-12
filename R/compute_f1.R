@@ -81,7 +81,7 @@ compute_max_f1 <- function(
     }
   }
   if (!is.null(no_match_cluster)) {
-    bool_no_match_clust <- rownames(f1) %in% no_match_cluster
+    bool_no_match_clust <- colnames(f1) %in% no_match_cluster
     if (any(bool_no_match_clust)) {
       f1 <- f1[, -which(bool_no_match_clust), drop = FALSE]
       clust_num <- clust_num - sum(bool_no_match_clust)
