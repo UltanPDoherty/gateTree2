@@ -207,8 +207,12 @@ plot_single_split <- function(
   }
 
   x <- x[, var]
-  min_cut <- gatetree_call$min_split_cutoffs[var]
-  max_cut <- gatetree_call$max_split_cutoffs[var]
+  min_cut <- max(
+    gatetree_call$min_split_cutoffs[var], gatetree_call$min_event_cutoffs[var]
+  )
+  max_cut <- min(
+    gatetree_call$max_split_cutoffs[var], gatetree_call$max_event_cutoffs[var]
+  )
   x <- x[x > min_cut]
   x <- x[x < max_cut]
 

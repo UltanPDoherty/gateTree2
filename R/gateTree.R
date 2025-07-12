@@ -30,6 +30,10 @@
 #' Minimum values for observations used when finding splits.
 #' @param max_split_cutoffs
 #' Maximum values for observations used when finding splits.
+#' @param min_event_cutoffs
+#' Minimum values for including observations in a target population.
+#' @param max_event_cutoffs
+#' Maximum values for including observations in a target population.
 #' @param seed Random seed for GMM fitting.
 #' @param verbose Logical value.
 #'
@@ -66,6 +70,8 @@ gatetree <- function(
     min_mean_diff = min_diff / 2,
     min_split_cutoffs = NULL,
     max_split_cutoffs = NULL,
+    min_event_cutoffs = NULL,
+    max_event_cutoffs = NULL,
     seed = NULL,
     verbose = TRUE) {
   pop_num <- nrow(plusminus)
@@ -96,6 +102,19 @@ gatetree <- function(
     names(max_split_cutoffs) <- colnames(plusminus)
   }
 
+  if (is.null(min_event_cutoffs)) {
+    min_event_cutoffs <- rep(-Inf, var_num)
+  }
+  if (is.null(max_event_cutoffs)) {
+    max_event_cutoffs <- rep(Inf, var_num)
+  }
+  if (is.null(names(min_event_cutoffs))) {
+    names(min_event_cutoffs) <- colnames(plusminus)
+  }
+  if (is.null(names(max_event_cutoffs))) {
+    names(max_event_cutoffs) <- colnames(plusminus)
+  }
+
   this_call <- call(
     "ombc_gmm",
     "matrices" = substitute(matrices),
@@ -106,6 +125,8 @@ gatetree <- function(
     "min_mean_depth" = min_mean_depth, "min_mean_diff" = min_mean_diff,
     "min_split_cutoffs" = min_split_cutoffs,
     "max_split_cutoffs" = max_split_cutoffs,
+    "min_event_cutoffs" = min_event_cutoffs,
+    "max_event_cutoffs" = max_event_cutoffs,
     "seed" = seed,
     "verbose" = verbose
   )
@@ -139,6 +160,8 @@ gatetree <- function(
       "method" = batch_matrix_list,
       "min_split_cutoffs" = min_split_cutoffs,
       "max_split_cutoffs" = max_split_cutoffs,
+      "min_event_cutoffs" = min_event_cutoffs,
+      "max_event_cutoffs" = max_event_cutoffs,
       "terminated" = FALSE
     )
     names(pop_list)[p] <- rownames(plusminus)[p]
@@ -191,6 +214,8 @@ recursive_gatetree <- function(
           x <- matrices[[b]][[s]][pop$subsetter[[b]][[s]][, split_num], v]
           x <- x[x > pop$min_split_cutoffs[v]]
           x <- x[x < pop$max_split_cutoffs[v]]
+          x <- x[x > pop$min_event_cutoffs[v]]
+          x <- x[x < pop$max_event_cutoffs[v]]
           new_valley <- find_valley(x, min_kde_size = min_kde_size)
           if (is.na(new_valley[2]) || new_valley[2] < min_depth) {
             valleys[[b]][s, v] <- depths[[b]][s, v] <- NA
@@ -264,6 +289,8 @@ recursive_gatetree <- function(
           x <- matrices[[b]][[s]][pop$subsetter[[b]][[s]][, split_num], v]
           x <- x[x > pop$min_split_cutoffs[v]]
           x <- x[x < pop$max_split_cutoffs[v]]
+          x <- x[x > pop$min_event_cutoffs[v]]
+          x <- x[x < pop$max_event_cutoffs[v]]
           set.seed(seed)
           new_boundary <- find_boundary(
             x,
@@ -399,11 +426,15 @@ recursive_gatetree <- function(
           x <-
             matrices[[b]][[s]][pop$subsetter[[b]][[s]][, split_num], var_choice]
           temp_subsetter <- x >= splits[[b]][s]
+          temp_subsetter <- temp_subsetter & x > pop$min_event_cutoff
+          temp_subsetter <- temp_subsetter & x < pop$max_event_cutoff
           pop$pm_previous[var_choice] <- +1
         } else if (pop$pm_future[var_choice] == -1) {
           x <-
             matrices[[b]][[s]][pop$subsetter[[b]][[s]][, split_num], var_choice]
           temp_subsetter <- x < splits[[b]][s]
+          temp_subsetter <- temp_subsetter & x > pop$min_event_cutoff
+          temp_subsetter <- temp_subsetter & x < pop$max_event_cutoff
           pop$pm_previous[var_choice] <- -1
         } else {
           stop("pop$pm_future[var_choice] should not be 0.")

@@ -17,6 +17,8 @@ gatetree(
   min_mean_diff = min_diff/2,
   min_split_cutoffs = NULL,
   max_split_cutoffs = NULL,
+  min_event_cutoffs = NULL,
+  max_event_cutoffs = NULL,
   seed = NULL,
   verbose = TRUE
 )
@@ -50,6 +52,10 @@ than \code{min_depth} as 0.}
 \item{min_split_cutoffs}{Minimum values for observations used when finding splits.}
 
 \item{max_split_cutoffs}{Maximum values for observations used when finding splits.}
+
+\item{min_event_cutoffs}{Minimum values for including observations in a target population.}
+
+\item{max_event_cutoffs}{Maximum values for including observations in a target population.}
 
 \item{seed}{Random seed for GMM fitting.}
 
