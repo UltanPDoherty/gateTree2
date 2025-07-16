@@ -261,15 +261,15 @@ plot_single_split <- function(
 
   plotted_breakdown <- c(sum(x < split_val), sum(x >= split_val))
 
-  size_before <- length(x)
+  total_size_before <- sum(cutoff_breakdown)
   if (is.na(is_negative)) {
     plotted_size_after <- total_size_after <- NA
   } else if (is_negative) {
     plotted_size_after <- plotted_breakdown[1]
-    total_size_after <- plotted_breakdown[1] + sum(cutoff_breakdown[1:2])
+    total_size_after <- plotted_breakdown[1] + cutoff_breakdown[2]
   } else {
     plotted_size_after <- plotted_breakdown[2]
-    total_size_after <- plotted_breakdown[2] + sum(cutoff_breakdown[4:5])
+    total_size_after <- plotted_breakdown[2] + cutoff_breakdown[4]
   }
 
   dens <- stats::density(x)
@@ -321,8 +321,8 @@ plot_single_split <- function(
       ),
       x = paste0(
         "(N before, N after): ",
-        "Total = (", size_before, ",", total_size_after, "), ",
-        "Plotted = (", cutoff_breakdown[3], ",", plotted_size_after, ")"
+        "Total = (", total_size_before, ", ", total_size_after, "), ",
+        "Plotted = (", cutoff_breakdown[3], ", ", plotted_size_after, ")"
       ),
       y = "Density (0-1 Scaled)"
     ) +
