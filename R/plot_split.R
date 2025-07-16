@@ -207,6 +207,19 @@ plot_single_split <- function(
   }
 
   x <- x[, var]
+  min_event_filter <- x >= gatetree_call$min_event_cutoffs[var]
+  min_split_filter <- x >= gatetree_call$min_split_cutoffs[var]
+  max_split_filter <- x <= gatetree_call$max_split_cutoffs[var]
+  max_event_filter <- x <= gatetree_call$max_event_cutoffs[var]
+  cutoff_filters <- list(
+    !min_event_filter,
+    min_event_filter & !min_split_filter,
+    min_event_filter & min_split_filter & max_split_filter & max_event_filter,
+    max_event_filter & !max_split_filter,
+    !max_event_filter
+  )
+  cutoff_breakdown <- sapply(cutoff_filters, sum)
+
   min_cut <- max(
     gatetree_call$min_split_cutoffs[var], gatetree_call$min_event_cutoffs[var]
   )
@@ -246,13 +259,17 @@ plot_single_split <- function(
     xright <- ifelse(is_negative, split_val, max_x)
   }
 
+  plotted_breakdown <- c(sum(x < split_val), sum(x >= split_val))
+
   size_before <- length(x)
   if (is.na(is_negative)) {
-    size_after <- NA
+    plotted_size_after <- total_size_after <- NA
   } else if (is_negative) {
-    size_after <- sum(x < split_val)
+    plotted_size_after <- plotted_breakdown[1]
+    total_size_after <- plotted_breakdown[1] + sum(cutoff_breakdown[1:2])
   } else {
-    size_after <- sum(x > split_val)
+    plotted_size_after <- plotted_breakdown[2]
+    total_size_after <- plotted_breakdown[2] + sum(cutoff_breakdown[4:5])
   }
 
   dens <- stats::density(x)
@@ -302,7 +319,11 @@ plot_single_split <- function(
         "Population: ", pop_name, ", ",
         "Variable: ", var_name
       ),
-      x = paste0("N before = ", size_before, ", N after = ", size_after),
+      x = paste0(
+        "(N before, N after): ",
+        "Total = (", size_before, ",", total_size_after, "), ",
+        "Plotted = (", cutoff_breakdown[3], ",", plotted_size_after, ")"
+      ),
       y = "Density (0-1 Scaled)"
     ) +
     ggplot2::theme_bw()
