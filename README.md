@@ -16,7 +16,10 @@ data(hd, package = "healthyFlowData")
 hfd_exprs <- lapply(hd.flowSet@frames, \(x) x@exprs)
 
 GGally::ggpairs(
-  hfd_exprs[[1]], upper = list(continuous = "density"), progress = FALSE
+  hfd_exprs[[1]],
+  upper = list(continuous = "density"),
+  lower = list(continuous = GGally::wrap("points", alpha = 0.5, size = 1)),
+  progress = FALSE
 )
 ```
 
@@ -64,7 +67,7 @@ plusminus2 <- openxlsx::read.xlsx(
 
 ``` r
 hfd_gatetree <- gateTree2::gatetree(
-  list("batch" = hfd_exprs),
+  list("all_samples" = hfd_exprs),
   as.matrix(plusminus2),
   min_depth = 0.05,
   min_diff = 0.05
@@ -85,7 +88,7 @@ gateTree2::plot_tree(hfd_gatetree)
 
 ``` r
 gateTree2::plot_split(
-  list("batch" = hfd_exprs),
+  list("all_samples" = hfd_exprs),
   hfd_gatetree,
   batch = 1, samp = "A_1", pop = "B"
 )
@@ -107,7 +110,7 @@ gateTree2::plot_split(
 
 ``` r
 gateTree2::plot_split(
-  list("batch" = hfd_exprs),
+  list("all_samples" = hfd_exprs),
   hfd_gatetree,
   batch = 1, samp = "A_1", pop = "CD8+_T"
 )
@@ -129,7 +132,7 @@ gateTree2::plot_split(
 
 ``` r
 gateTree2::plot_split(
-  list("batch" = hfd_exprs),
+  list("all_samples" = hfd_exprs),
   hfd_gatetree,
   batch = 1, samp = "A_1", pop = "CD4+_T"
 )
@@ -152,13 +155,33 @@ gateTree2::plot_split(
 ## Plot Sample A_1, coloured according to the `gateTree` labels.
 
 ``` r
-GGally::ggpairs(hfd_exprs$A_1,
-  progress = FALSE,
+GGally::ggpairs(
+  hfd_exprs$A_1,
   upper = list(continuous = "density"),
-  ggplot2::aes(colour = hfd_gatetree_labels$batch$A_1)
+  lower = list(continuous = GGally::wrap("points", alpha = 0.5, size = 1)),
+  diag = list(continuous = GGally::wrap("densityDiag", alpha = 0.5)),
+  mapping = ggplot2::aes(colour = hfd_gatetree_labels$all_samples$A_1),
+  progress = FALSE
 ) +
   ggokabeito::scale_colour_okabe_ito(order = c(1, 2, 3, 9)) +
   ggokabeito::scale_fill_okabe_ito(order = c(1, 2, 3, 9))
 ```
 
 ![](README_files/figure-gfm/ggpairs-1.png)<!-- -->
+
+## Plot Sample D_5, coloured according to the `gateTree` labels.
+
+``` r
+GGally::ggpairs(
+  hfd_exprs$D_5,
+  upper = list(continuous = "density"),
+  lower = list(continuous = GGally::wrap("points", alpha = 0.5, size = 1)),
+  diag = list(continuous = GGally::wrap("densityDiag", alpha = 0.5)),
+  mapping = ggplot2::aes(colour = hfd_gatetree_labels$all_samples$D_5),
+  progress = FALSE
+) +
+  ggokabeito::scale_colour_okabe_ito(order = c(1, 2, 3, 9)) +
+  ggokabeito::scale_fill_okabe_ito(order = c(1, 2, 3, 9))
+```
+
+![](README_files/figure-gfm/ggpairs_D5-1.png)<!-- -->
