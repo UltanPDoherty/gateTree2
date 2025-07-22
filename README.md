@@ -1,25 +1,26 @@
-gateTree
+gateTree2
 ================
 Ultán P. Doherty
-2024-04-25
+2025-07-22
 
-## Install `gateTree`.
+## Install `gateTree2`.
 
 ``` r
-remotes::install_github("UltanPDoherty/gateTree")
+remotes::install_github("UltanPDoherty/gateTree2")
 ```
 
 ## Load and plot data from the `healthyFlowData` package.
 
 ``` r
-library(healthyFlowData)
-data(hd)
-hfd1 <- hd.flowSet[[1]]@exprs
+data(hd, package = "healthyFlowData")
+hfd_exprs <- lapply(hd.flowSet@frames, \(x) x@exprs)
 
-GGally::ggpairs(hfd1, upper = list(continuous = "density"), progress = FALSE)
+GGally::ggpairs(
+  hfd_exprs[[1]], upper = list(continuous = "density"), progress = FALSE
+)
 ```
 
-![](README_files/figure-gfm/hfd1_setup-1.png)<!-- -->
+![](README_files/figure-gfm/hfd_exprs-1.png)<!-- -->
 
 ## Prepare a plusminus table which describes three populations.
 
@@ -33,7 +34,7 @@ plusminus1 <- as.data.frame(rbind(
   "CD8+_T" = c(-1, +1, +1, -1),
   "B"      = c(-1, -1, -1, +1)
 ))
-colnames(plusminus1) <- colnames(hfd1)
+colnames(plusminus1) <- colnames(hfd_exprs[[1]])
 plusminus1
 ```
 
@@ -59,38 +60,105 @@ plusminus2 <- openxlsx::read.xlsx(
 )
 ```
 
-## Run the `gatetree` function.
+## Apply `gateTree` to all 20 samples.
 
 ``` r
-hfd1_gatetree <- gateTree::gatetree(hfd1, plusminus2,
-  min_scaled_bic_diff = 50,
-  min_depth = 10,
-  show_plot = c(TRUE, FALSE)
+hfd_gatetree <- gateTree2::gatetree(
+  list("batch" = hfd_exprs),
+  as.matrix(plusminus2),
+  min_depth = 0.05,
+  min_diff = 0.05
 )
-```
 
-![](README_files/figure-gfm/gatetree-1.png)<!-- -->![](README_files/figure-gfm/gatetree-2.png)<!-- -->![](README_files/figure-gfm/gatetree-3.png)<!-- -->
+hfd_gatetree_labels <- gateTree2::extract_labels(hfd_gatetree)
+```
 
 ## Plot the tree diagram.
 
 ``` r
-hfd1_gatetree$tree_plot +
-  ggplot2::scale_y_continuous(expand = c(0.1, 0.1)) +
-  ggplot2::scale_x_continuous(expand = c(0.1, 0.1))
+gateTree2::plot_tree(hfd_gatetree)
 ```
 
-![](README_files/figure-gfm/tree_plot-1.png)<!-- -->
+![](README_files/figure-gfm/plot_tree-1.png)<!-- -->
 
-## Plot the data, coloured according to the `gateTree` labels.
+## Plot the splits for Sample A_1.
 
 ``` r
-GGally::ggpairs(hfd1,
+gateTree2::plot_split(
+  list("batch" = hfd_exprs),
+  hfd_gatetree,
+  batch = 1, samp = "A_1", pop = "B"
+)
+```
+
+    ## [[1]]
+
+![](README_files/figure-gfm/plot_split-1.png)<!-- -->
+
+    ## 
+    ## [[2]]
+
+![](README_files/figure-gfm/plot_split-2.png)<!-- -->
+
+    ## 
+    ## [[3]]
+
+![](README_files/figure-gfm/plot_split-3.png)<!-- -->
+
+``` r
+gateTree2::plot_split(
+  list("batch" = hfd_exprs),
+  hfd_gatetree,
+  batch = 1, samp = "A_1", pop = "CD8+_T"
+)
+```
+
+    ## [[1]]
+
+![](README_files/figure-gfm/plot_split-4.png)<!-- -->
+
+    ## 
+    ## [[2]]
+
+![](README_files/figure-gfm/plot_split-5.png)<!-- -->
+
+    ## 
+    ## [[3]]
+
+![](README_files/figure-gfm/plot_split-6.png)<!-- -->
+
+``` r
+gateTree2::plot_split(
+  list("batch" = hfd_exprs),
+  hfd_gatetree,
+  batch = 1, samp = "A_1", pop = "CD4+_T"
+)
+```
+
+    ## [[1]]
+
+![](README_files/figure-gfm/plot_split-7.png)<!-- -->
+
+    ## 
+    ## [[2]]
+
+![](README_files/figure-gfm/plot_split-8.png)<!-- -->
+
+    ## 
+    ## [[3]]
+
+![](README_files/figure-gfm/plot_split-9.png)<!-- -->
+
+## Plot Sample A_1, coloured according to the `gateTree` labels.
+
+``` r
+GGally::ggpairs(hfd_exprs$A_1,
   progress = FALSE,
   upper = list(continuous = "density"),
-  ggplot2::aes(colour = as.factor(1 + hfd1_gatetree$labels))
+  ggplot2::aes(colour = hfd_gatetree_labels$batch$A_1)
 ) +
-  ggokabeito::scale_colour_okabe_ito(order = c(9, 1, 2, 3)) +
-  ggokabeito::scale_fill_okabe_ito(order = c(9, 1, 2, 3))
+  ggokabeito::scale_colour_okabe_ito(order = c(1, 2, 3, 9)) +
+  ggokabeito::scale_fill_okabe_ito(order = c(1, 2, 3, 9))
 ```
 
 ![](README_files/figure-gfm/ggpairs-1.png)<!-- -->
